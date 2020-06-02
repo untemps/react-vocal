@@ -2,7 +2,7 @@
 
 React component to initiate a SpeechRecognition session.
 
-![.github/workflows/index.yml](https://github.com/untemps/Vocal/workflows/.github/workflows/index.yml/badge.svg?branch=master)
+![.github/workflows/index.yml](https://github.com/untemps/react-vocal/workflows/.github/workflows/index.yml/badge.svg?branch=master)
 
 ## Disclaimer
 
@@ -19,7 +19,7 @@ yarn add @untemps/react-vocal
 Import the `Vocal` component:
 
 ```javascript
-import { Vocal } from '@untemps/react-vocal'
+import Vocal from '@untemps/react-vocal'
 ```
 
 Instantiate it:
@@ -54,7 +54,6 @@ const App = () => {
 By default, `Vocal` displays an icon with two states (idle/listening):
 
 ![Idle icon](./icon-idle.png)
-
 ![Listening icon](./icon-listening.png)
 
 But you can provide your own component:
@@ -103,4 +102,4 @@ The component passed as children must respect the following constraints:
 
 -   Rewrite with TypeScript
 -   Expose SpeechRecognition properties via props
--   Add a connector management to plug external speech-to-text services in 
+-   Add a connector management to plug external speech-to-text services in
