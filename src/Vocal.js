@@ -8,6 +8,8 @@ import MicrophoneIcon from './MicrophoneIcon'
 const Vocal = ({
 	children,
 	timeout,
+	ariaLabel,
+	tabIndex,
 	style,
 	className,
 	onStart,
@@ -134,6 +136,9 @@ const Vocal = ({
 	const _renderDefault = () => (
 		<div
 			data-testid="__vocal-root__"
+			role="button"
+			aria-label={ariaLabel}
+			tabIndex={tabIndex}
 			style={className ? null : { width: 24, height: 24, cursor: !isListening ? 'pointer' : null, ...style }}
 			className={className}
 		>
@@ -152,6 +157,10 @@ const Vocal = ({
 Vocal.propTypes = {
 	/** Defines the time in ms to wait before discarding the recognition */
 	timeout: PropTypes.number,
+	/** Defines the a11y label for the default button */
+	ariaLabel: PropTypes.string,
+	/** Defines the a11y tab index for the default button */
+	tabIndex: PropTypes.number,
 	/** Defines the styles of the default element if className is not specified */
 	style: PropTypes.object,
 	/** Defines the class of the default element */
@@ -174,6 +183,8 @@ Vocal.propTypes = {
 
 Vocal.defaultProps = {
 	timeout: 3000,
+	ariaLabel: 'speech',
+	tabIndex: -1,
 	style: null,
 	className: null,
 	onStart: null,
