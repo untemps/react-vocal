@@ -39,20 +39,20 @@ describe('Vocal', () => {
 
 	it('renders default children', () => {
 		const { queryByTestId } = render(getInstance())
-		expect(queryByTestId('__speech-root__')).toBeInTheDocument()
+		expect(queryByTestId('__vocal-root__')).toBeInTheDocument()
 	})
 
 	it('renders custom children', () => {
-		const { queryByTestId } = render(getInstance(null, <div data-testid="__speech-custom-root__" />))
-		expect(queryByTestId('__speech-root__')).not.toBeInTheDocument()
-		expect(queryByTestId('__speech-custom-root__')).toBeInTheDocument()
+		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
+		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
+		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
 	})
 
 	it('triggers onStart handler', async () => {
 		const onStart = jest.fn()
 		const { queryByTestId } = render(getInstance({ onStart }))
 		await act(async () => {
-			fireEvent.click(queryByTestId('__speech-root__'))
+			fireEvent.click(queryByTestId('__vocal-root__'))
 			await waitFor(() => expect(onStart).toHaveBeenCalled())
 		})
 	})
@@ -66,7 +66,7 @@ describe('Vocal', () => {
 				recognition.instance.say('Foo')
 				await waitFor(() => expect(onResult).toHaveBeenCalledWith('Foo', expect.anything()))
 			})
-			fireEvent.click(queryByTestId('__speech-root__'))
+			fireEvent.click(queryByTestId('__vocal-root__'))
 		})
 	})
 
@@ -79,7 +79,7 @@ describe('Vocal', () => {
 				recognition.instance.say('Foo')
 				await waitFor(() => expect(onSpeechStart).toHaveBeenCalled())
 			})
-			fireEvent.click(queryByTestId('__speech-root__'))
+			fireEvent.click(queryByTestId('__vocal-root__'))
 		})
 	})
 
@@ -92,7 +92,7 @@ describe('Vocal', () => {
 				recognition.instance.say('Foo')
 				await waitFor(() => expect(onSpeechEnd).toHaveBeenCalled())
 			})
-			fireEvent.click(queryByTestId('__speech-root__'))
+			fireEvent.click(queryByTestId('__vocal-root__'))
 		})
 	})
 
@@ -101,7 +101,7 @@ describe('Vocal', () => {
 		const onEnd = jest.fn()
 		const { queryByTestId } = render(getInstance({ timeout, onEnd }))
 		await act(async () => {
-			fireEvent.click(queryByTestId('__speech-root__'))
+			fireEvent.click(queryByTestId('__vocal-root__'))
 			await waitFor(() => expect(onEnd).toHaveBeenCalled(), { timeout: 200 })
 		})
 	})
@@ -111,7 +111,7 @@ describe('Vocal', () => {
 		const recognition = new SpeechRecognitionWrapper()
 		const { queryByTestId } = render(getInstance({ __recognitionInstance: recognition, onEnd }))
 		await act(async () => {
-			fireEvent.click(queryByTestId('__speech-root__'))
+			fireEvent.click(queryByTestId('__vocal-root__'))
 			recognition.instance.addEventListener('start', async () => {
 				recognition.instance.say('Foo')
 				await waitFor(() => expect(onEnd).toHaveBeenCalled())

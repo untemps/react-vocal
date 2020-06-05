@@ -133,7 +133,7 @@ const Vocal = ({
 
 	const _renderDefault = () => (
 		<div
-			data-testid="__speech-root__"
+			data-testid="__vocal-root__"
 			style={className ? null : { width: 24, height: 24, cursor: !isListening ? 'pointer' : null, ...style }}
 			className={className}
 		>
