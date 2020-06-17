@@ -27,11 +27,13 @@ const Vocal = ({
 	const [isListening, setIsListening] = useState(false)
 
 	useEffect(() => {
-		recognitionRef.current = __recognitionInstance || new SpeechRecognitionWrapper()
-		return () => {
-			recognitionRef.current.abort()
-			recognitionRef.current.cleanup()
-			clearTimeout(timeoutRef.current)
+		if (SpeechRecognitionWrapper.isSupported) {
+			recognitionRef.current = __recognitionInstance || new SpeechRecognitionWrapper()
+			return () => {
+				recognitionRef.current.abort()
+				recognitionRef.current.cleanup()
+				clearTimeout(timeoutRef.current)
+			}
 		}
 	}, [__recognitionInstance])
 
