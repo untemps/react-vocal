@@ -3,10 +3,6 @@ import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { toBeInTheDocument } from '@testing-library/jest-dom/matchers'
 
-import SpeechRecognitionMock from './SpeechRecognitionMock'
-import NavigatorPermissionsMock from './NavigatorPermissionsMock'
-import NavigatorMediaDevicesMock from './NavigatorMediaDevicesMock'
-
 import SpeechRecognitionWrapper from '../SpeechRecognitionWrapper'
 import Vocal from '../Vocal'
 
@@ -21,15 +17,61 @@ describe('Vocal', () => {
 	beforeAll(() => {
 		expect.extend({ toBeInTheDocument })
 
-		SpeechRecognitionMock.mock()
-		NavigatorPermissionsMock.mock('granted')
-		NavigatorMediaDevicesMock.mock('foo')
+		global.PermissionStatus = jest.fn(() => ({
+			state: 'granted',
+			addEventListener: jest.fn(),
+		}))
+		const status = new PermissionStatus()
+		global.Permissions = jest.fn(() => ({
+			query: jest.fn().mockResolvedValue(status),
+		}))
+		global.navigator.permissions = new Permissions()
+		global.MediaDevices = jest.fn(() => ({
+			getUserMedia: jest.fn().mockResolvedValue('foo'),
+		}))
+		global.navigator.mediaDevices = new MediaDevices()
+		global.SpeechRecognition = jest.fn(() => {
+			const handlers = {}
+			return {
+				addEventListener: jest.fn((type, callback) => {
+					handlers[type] = callback
+				}),
+				removeEventListener: jest.fn(),
+				dispatchEvent: jest.fn(),
+				start: jest.fn(() => {
+					!!handlers.start && handlers.start()
+				}),
+				stop: jest.fn(() => {
+					!!handlers.end && handlers.end()
+				}),
+				abort: jest.fn(() => {
+					!!handlers.end && handlers.end()
+				}),
+				say: jest.fn((sentence) => {
+					!!handlers.speechstart && handlers.speechstart()
+
+					const resultEvent = new Event('result')
+					resultEvent.resultIndex = 0
+					resultEvent.results = [
+						[
+							{
+								transcript: sentence,
+							},
+						],
+					]
+
+					!!handlers.result && handlers.result(resultEvent)
+					!!handlers.speechend && handlers.speechend()
+				}),
+			}
+		})
 	})
 
 	afterAll(() => {
-		SpeechRecognitionMock.unmock()
-		NavigatorPermissionsMock.unmock()
-		NavigatorMediaDevicesMock.unmock()
+		global.PermissionStatus.mockReset()
+		global.Permissions.mockReset()
+		global.MediaDevices.mockReset()
+		global.SpeechRecognition.mockReset()
 	})
 
 	it('matches snapshot', () => {
@@ -60,62 +102,90 @@ describe('Vocal', () => {
 	it('triggers onResult handler', async () => {
 		const onResult = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { queryByTestId } = render(getInstance({ __recognitionInstance: recognition, onResult }))
+		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onResult }))
+
+		let flag = false
+		recognition.addEventListener('start', async () => {
+			flag = true
+		})
+
 		await act(async () => {
-			recognition.instance.addEventListener('start', async () => {
-				recognition.instance.say('Foo')
-				await waitFor(() => expect(onResult).toHaveBeenCalledWith('Foo', expect.anything()))
-			})
-			fireEvent.click(queryByTestId('__vocal-root__'))
+			fireEvent.click(getByTestId('__vocal-root__'))
+
+			await waitFor(() => flag)
+
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('Foo', expect.anything()))
 		})
 	})
 
 	it('triggers onSpeechStart handler', async () => {
 		const onSpeechStart = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { queryByTestId } = render(getInstance({ __recognitionInstance: recognition, onSpeechStart }))
+		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onSpeechStart }))
+
+		let flag = false
+		recognition.addEventListener('start', async () => {
+			flag = true
+		})
+
 		await act(async () => {
-			recognition.instance.addEventListener('start', async () => {
-				recognition.instance.say('Foo')
-				await waitFor(() => expect(onSpeechStart).toHaveBeenCalled())
-			})
-			fireEvent.click(queryByTestId('__vocal-root__'))
+			fireEvent.click(getByTestId('__vocal-root__'))
+
+			await waitFor(() => flag)
+
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onSpeechStart).toHaveBeenCalled())
 		})
 	})
 
 	it('triggers onSpeechEnd handler', async () => {
 		const onSpeechEnd = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { queryByTestId } = render(getInstance({ __recognitionInstance: recognition, onSpeechEnd }))
+		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onSpeechEnd }))
+
+		let flag = false
+		recognition.addEventListener('start', async () => {
+			flag = true
+		})
+
 		await act(async () => {
-			recognition.instance.addEventListener('start', async () => {
-				recognition.instance.say('Foo')
-				await waitFor(() => expect(onSpeechEnd).toHaveBeenCalled())
-			})
-			fireEvent.click(queryByTestId('__vocal-root__'))
+			fireEvent.click(getByTestId('__vocal-root__'))
+
+			await waitFor(() => flag)
+
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onSpeechEnd).toHaveBeenCalled())
 		})
 	})
 
 	it('triggers onEnd handler after timeout', async () => {
 		const timeout = 100
 		const onEnd = jest.fn()
-		const { queryByTestId } = render(getInstance({ timeout, onEnd }))
+		const { getByTestId } = render(getInstance({ timeout, onEnd }))
 		await act(async () => {
-			fireEvent.click(queryByTestId('__vocal-root__'))
-			await waitFor(() => expect(onEnd).toHaveBeenCalled(), { timeout: 200 })
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalled(), { timeout: timeout * 2 })
 		})
 	})
 
 	it('triggers onEnd handler after speech', async () => {
 		const onEnd = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { queryByTestId } = render(getInstance({ __recognitionInstance: recognition, onEnd }))
+		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onEnd }))
+
+		let flag = false
+		recognition.addEventListener('start', async () => {
+			flag = true
+		})
+
 		await act(async () => {
-			fireEvent.click(queryByTestId('__vocal-root__'))
-			recognition.instance.addEventListener('start', async () => {
-				recognition.instance.say('Foo')
-				await waitFor(() => expect(onEnd).toHaveBeenCalled())
-			})
+			fireEvent.click(getByTestId('__vocal-root__'))
+
+			await waitFor(() => flag)
+
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
 })

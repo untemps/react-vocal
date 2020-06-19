@@ -78,7 +78,7 @@ const Vocal = ({
 			r.removeEventListener('nomatch', _onNoMatch)
 			r.stop()
 		} catch (error) {
-			_onError(error)
+			!!onError && onError(error)
 		}
 	}
 
