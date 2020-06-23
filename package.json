@@ -35,7 +35,7 @@
 		"@testing-library/jest-dom": "^5.9.0",
 		"@testing-library/react": "^10.0.4",
 		"@untemps/event-dispatcher": "^1.1.0",
-		"@untemps/user-media-utils": "^1.0.3",
+		"@untemps/user-permissions-utils": "^1.0.0",
 		"babel-jest": "^26.0.1",
 		"cross-env": "^7.0.2",
 		"husky": "^4.2.5",
@@ -57,10 +57,7 @@
 	"jest": {
 		"transform": {
 			"^.+\\.[t|j]sx?$": "babel-jest"
-		},
-		"testPathIgnorePatterns": [
-			".+Mock.js"
-		]
+		}
 	},
 	"husky": {
 		"hooks": {
