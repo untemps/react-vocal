@@ -2,7 +2,9 @@
 
 React component to initiate a SpeechRecognition session.
 
-![.github/workflows/index.yml](https://github.com/untemps/react-vocal/workflows/.github/workflows/index.yml/badge.svg?branch=master)
+![npm](https://img.shields.io/npm/v/@untemps/react-vocal?style=for-the-badge)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/untemps/react-vocal/deploy?style=for-the-badge)
+![Codecov](https://img.shields.io/codecov/c/github/untemps/react-vocal?style=for-the-badge)
 
 ## Disclaimer
 
