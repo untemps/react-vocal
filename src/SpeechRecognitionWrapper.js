@@ -1,4 +1,4 @@
-import { getUserMediaStream } from '@untemps/user-media-utils'
+import { getUserMediaStream } from '@untemps/user-permissions-utils'
 
 class SpeechRecognitionWrapper {
 	static defaultOptions = {
