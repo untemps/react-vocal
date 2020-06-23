@@ -57,8 +57,9 @@
 	"jest": {
 		"transform": {
 			"^.+\\.[t|j]sx?$": "babel-jest"
-			"coverageDirectory": "./coverage/",
-			"collectCoverage": true
+		},
+		"coverageDirectory": "./coverage/",
+		"collectCoverage": true
 	},
 	"husky": {
 		"hooks": {
