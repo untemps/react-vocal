@@ -1904,10 +1904,10 @@
   resolved "https://npm.lajavaness.com:443/@untemps%2fevent-dispatcher/-/event-dispatcher-1.1.0.tgz#138d93c51dbc578bc17c5dc2dc3bb67684d49ac3"
   integrity sha512-mPmCYT/SVlHVRjmjHf3onAAGrKhzh+CcKuCnOO/lovtUiAKb39YW+F5/EUk16cW37vPXh0NFFWq/iXOlokYlxQ==
 
-"@untemps/user-permissions-utils@^1.0.0":
-  version "1.0.0"
-  resolved "https://npm.lajavaness.com:443/@untemps%2fuser-permissions-utils/-/user-permissions-utils-1.0.0.tgz#0a608e2f5cd930f310aab0d21394eda03219af81"
-  integrity sha512-WZ/cPH5gvYaS0y+K1/M4FR4JcORSJKd7+0X2N1xLLHalXUAyBdVXlbiCw2S2uTrFVlszRlMRYX32B2UdNvMRuw==
+"@untemps/user-permissions-utils@^1.0.1":
+  version "1.0.1"
+  resolved "https://npm.lajavaness.com:443/@untemps%2fuser-permissions-utils/-/user-permissions-utils-1.0.1.tgz#1ad1d7fd9b9d30d3a0dfbd5f5b4c39c7d3bcff26"
+  integrity sha512-23/VLI5T6Wckkl2dn28Xv8KDRkO0TNf/yKJRmPvyul7XdidYuvK88pHwcsf5ATQFBOH9bchn6OjcDDUnKGXnkA==
 
 JSONStream@^1.0.4, JSONStream@^1.3.4, JSONStream@^1.3.5:
   version "1.3.5"
