@@ -1,6 +1,7 @@
-# @untemps/react-vocal
+![react-vocal](./microphone.png)
+# Vocal
 
-React component to initiate a SpeechRecognition session.
+A React component to initiate a SpeechRecognition session
 
 ![npm](https://img.shields.io/npm/v/@untemps/react-vocal?style=for-the-badge)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/untemps/react-vocal/deploy?style=for-the-badge)
