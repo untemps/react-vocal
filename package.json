@@ -76,7 +76,7 @@
         {
           "releaseRules": [
             {
-              "type": "dep",
+              "type": "chore",
               "release": "patch"
             }
           ]
