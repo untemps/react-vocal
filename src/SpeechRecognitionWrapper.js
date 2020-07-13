@@ -2,10 +2,12 @@ import { getUserMediaStream } from '@untemps/user-permissions-utils'
 
 class SpeechRecognitionWrapper {
 	static defaultOptions = {
-		lang: 'fr-FR',
+		grammars: null,
+		lang: 'en-US',
 		continuous: false,
 		interimResults: false,
 		maxAlternatives: 1,
+		serviceURI: null,
 	}
 
 	static eventTypes = {
