@@ -1,3 +1,12 @@
+## [1.0.5](https://github.com/untemps/react-vocal/compare/v1.0.4...v1.0.5) (2020-07-13)
+
+
+### Bug Fixes
+
+* Fix CHANGELOG.md ([05ac7c6](https://github.com/untemps/react-vocal/commit/05ac7c63a1aa72ae5ea4b7ea3568a2899950d2f7))
+
+## [1.0.4](https://github.com/untemps/react-vocal/compare/v1.0.3...v1.0.4) (2020-07-13)
+
 ## [1.0.3](https://github.com/untemps/react-vocal/compare/v1.0.2...v1.0.3) (2020-06-28)
 
 ## [1.0.2](https://github.com/untemps/react-vocal/compare/v1.0.1...v1.0.2) (2020-06-23)
