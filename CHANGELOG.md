@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/untemps/react-vocal/compare/v1.0.5...v1.1.0) (2020-07-13)
+
+
+### Features
+
+* Add recognition grammar and lang options ([#12](https://github.com/untemps/react-vocal/issues/12)) ([c3825d9](https://github.com/untemps/react-vocal/commit/c3825d9bb085bb8b8c9318aff7e8eab4d489ae9b))
+
 ## [1.0.5](https://github.com/untemps/react-vocal/compare/v1.0.4...v1.0.5) (2020-07-13)
 
 
