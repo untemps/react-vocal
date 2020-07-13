@@ -104,5 +104,4 @@ The component passed as children must respect the following constraints:
 ## Todos
 
 -   Rewrite with TypeScript
--   Expose SpeechRecognition properties via props
 -   Add a connector management to plug external speech-to-text services in

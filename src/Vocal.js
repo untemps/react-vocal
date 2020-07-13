@@ -7,6 +7,8 @@ import MicrophoneIcon from './MicrophoneIcon'
 
 const Vocal = ({
 	children,
+	grammars,
+	lang,
 	timeout,
 	ariaLabel,
 	tabIndex,
@@ -28,7 +30,7 @@ const Vocal = ({
 
 	useEffect(() => {
 		if (SpeechRecognitionWrapper.isSupported) {
-			recognitionRef.current = __recognitionInstance || new SpeechRecognitionWrapper()
+			recognitionRef.current = __recognitionInstance || new SpeechRecognitionWrapper({ grammars, lang })
 			return () => {
 				recognitionRef.current.abort()
 				recognitionRef.current.cleanup()
@@ -157,6 +159,10 @@ const Vocal = ({
 }
 
 Vocal.propTypes = {
+	/** Defines the grammars understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/grammars) */
+	grammars: PropTypes.object,
+	/** Defines the language understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/lang) */
+	lang: PropTypes.string,
 	/** Defines the time in ms to wait before discarding the recognition */
 	timeout: PropTypes.number,
 	/** Defines the a11y label for the default button */
@@ -175,7 +181,7 @@ Vocal.propTypes = {
 	onSpeechStart: PropTypes.func,
 	/** Defines the handler called when the speech ends */
 	onSpeechEnd: PropTypes.func,
-	/** Defines the handler called when a result is recognized */
+	/** Defines the handler called when a result is returned from te recognition */
 	onResult: PropTypes.func,
 	/** Defines the handler called when an error occurs */
 	onError: PropTypes.func,
@@ -184,6 +190,8 @@ Vocal.propTypes = {
 }
 
 Vocal.defaultProps = {
+	grammars: null,
+	lang: 'en-US',
 	timeout: 3000,
 	ariaLabel: 'speech',
 	tabIndex: -1,
