@@ -1,3 +1,11 @@
+## [1.1.2](https://github.com/untemps/react-vocal/compare/v1.1.1...v1.1.2) (2020-07-15)
+
+
+### Bug Fixes
+
+* Fix grammars default value to null ([d27db45](https://github.com/untemps/react-vocal/commit/d27db45db49a41b01875975c9a7d73525a847330))
+* Regenerate yarn.lock ([9fc0556](https://github.com/untemps/react-vocal/commit/9fc0556ff96ede76a679e618f822f1942171a569))
+
 ## [1.1.1](https://github.com/untemps/react-vocal/compare/v1.1.0...v1.1.1) (2020-07-13)
 
 # [1.1.0](https://github.com/untemps/react-vocal/compare/v1.0.5...v1.1.0) (2020-07-13)
