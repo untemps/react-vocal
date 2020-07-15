@@ -30,6 +30,9 @@ describe('Vocal', () => {
 			getUserMedia: jest.fn().mockResolvedValue('foo'),
 		}))
 		global.navigator.mediaDevices = new MediaDevices()
+		global.SpeechGrammarList = jest.fn(() => ({
+			length: 0,
+		}))
 		global.SpeechRecognition = jest.fn(() => {
 			const handlers = {}
 			return {
@@ -71,6 +74,7 @@ describe('Vocal', () => {
 		global.PermissionStatus.mockReset()
 		global.Permissions.mockReset()
 		global.MediaDevices.mockReset()
+		global.SpeechGrammarList.mockReset()
 		global.SpeechRecognition.mockReset()
 	})
 

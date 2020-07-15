@@ -50,6 +50,16 @@ class SpeechRecognitionWrapper {
 		this._instance = new SpeechRecognition()
 		this._listeners = {}
 
+		if(!!options && !options.grammars) {
+			const SpeechGrammarList =
+				window.SpeechGrammarList ||
+				window.webkitSpeechGrammarList ||
+				window.mozSpeechGrammarList ||
+				window.msSpeechGrammarList ||
+				{}
+			this._instance.grammars = new SpeechGrammarList()
+		}
+
 		Object.entries({ ...SpeechRecognitionWrapper.defaultOptions, ...(options || {}) }).forEach(
 			([key, value]) => (this._instance[key] = value)
 		)
