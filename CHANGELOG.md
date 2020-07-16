@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/untemps/react-vocal/compare/v1.1.2...v1.1.3) (2020-07-16)
+
+
+### Bug Fixes
+
+* Fix grammars setting ([5e55a20](https://github.com/untemps/react-vocal/commit/5e55a201cddd536d1af3202b6816552530936f3f))
+
 ## [1.1.2](https://github.com/untemps/react-vocal/compare/v1.1.1...v1.1.2) (2020-07-15)
 
 
