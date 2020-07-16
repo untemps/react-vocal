@@ -37,7 +37,7 @@ const Vocal = ({
 				clearTimeout(timeoutRef.current)
 			}
 		}
-	}, [__recognitionInstance])
+	}, [__recognitionInstance, grammars, lang])
 
 	const startTimer = () => {
 		timeoutRef.current = setTimeout(_onEnd, timeout)

@@ -25,12 +25,7 @@ class SpeechRecognitionWrapper {
 	}
 
 	static get isSupported() {
-		return (
-			!!window.SpeechRecognition ||
-			!!window.webkitSpeechRecognition ||
-			!!window.mozSpeechRecognition ||
-			!!window.msSpeechRecognition
-		)
+		return !!SpeechRecognitionWrapper._resolveSpeechRecognition()
 	}
 
 	static set isSupported(_) {
@@ -41,28 +36,20 @@ class SpeechRecognitionWrapper {
 	_listeners = null
 
 	constructor(options) {
-		const SpeechRecognition =
-			window.SpeechRecognition ||
-			window.webkitSpeechRecognition ||
-			window.mozSpeechRecognition ||
-			window.msSpeechRecognition ||
-			{}
+		const SpeechRecognition = SpeechRecognitionWrapper._resolveSpeechRecognition() || {}
 		this._instance = new SpeechRecognition()
 		this._listeners = {}
 
-		if(!!options && !options.grammars) {
-			const SpeechGrammarList =
-				window.SpeechGrammarList ||
-				window.webkitSpeechGrammarList ||
-				window.mozSpeechGrammarList ||
-				window.msSpeechGrammarList ||
-				{}
-			this._instance.grammars = new SpeechGrammarList()
-		}
-
-		Object.entries({ ...SpeechRecognitionWrapper.defaultOptions, ...(options || {}) }).forEach(
-			([key, value]) => (this._instance[key] = value)
-		)
+		Object.entries({
+			...SpeechRecognitionWrapper.defaultOptions,
+			...(options || {}),
+		}).forEach(([key, value]) => {
+			if (key === 'grammars' && !value) {
+				const SpeechGrammarList = SpeechRecognitionWrapper._resolveSpeechGrammarList() || {}
+				value = new SpeechGrammarList()
+			}
+			this._instance[key] = value
+		})
 	}
 
 	get instance() {
@@ -150,8 +137,27 @@ class SpeechRecognitionWrapper {
 		return this
 	}
 
-	_includesEventType = (eventType) =>
-		Object.values(SpeechRecognitionWrapper.eventTypes).find((type) => type === eventType)
+	_includesEventType(eventType) {
+		return Object.values(SpeechRecognitionWrapper.eventTypes).find((type) => type === eventType)
+	}
+
+	static _resolveSpeechRecognition() {
+		return (
+			window.SpeechRecognition ||
+			window.webkitSpeechRecognition ||
+			window.mozSpeechRecognition ||
+			window.msSpeechRecognition
+		)
+	}
+
+	static _resolveSpeechGrammarList() {
+		return (
+			window.SpeechGrammarList ||
+			window.webkitSpeechGrammarList ||
+			window.mozSpeechGrammarList ||
+			window.msSpeechGrammarList
+		)
+	}
 }
 
 export default SpeechRecognitionWrapper

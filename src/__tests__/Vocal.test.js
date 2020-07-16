@@ -14,7 +14,7 @@ const getInstance = (props = {}, children = null) => (
 )
 
 describe('Vocal', () => {
-	beforeAll(() => {
+	beforeEach(() => {
 		expect.extend({ toBeInTheDocument })
 
 		global.PermissionStatus = jest.fn(() => ({
@@ -62,15 +62,18 @@ describe('Vocal', () => {
 							},
 						],
 					]
-
-					!!handlers.result && handlers.result(resultEvent)
+					if(sentence) {
+						!!handlers.result && handlers.result(resultEvent)
+					} else {
+						!!handlers.nomatch && handlers.nomatch()
+					}
 					!!handlers.speechend && handlers.speechend()
 				}),
 			}
 		})
 	})
 
-	afterAll(() => {
+	afterEach(() => {
 		global.PermissionStatus.mockReset()
 		global.Permissions.mockReset()
 		global.MediaDevices.mockReset()
@@ -120,6 +123,26 @@ describe('Vocal', () => {
 
 			recognition.instance.say('Foo')
 			await waitFor(() => expect(onResult).toHaveBeenCalledWith('Foo', expect.anything()))
+		})
+	})
+
+	it('triggers onNoMatch handler', async () => {
+		const onNoMatch = jest.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onNoMatch }))
+
+		let flag = false
+		recognition.addEventListener('start', async () => {
+			flag = true
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+
+			await waitFor(() => flag)
+
+			recognition.instance.say(null)
+			await waitFor(() => expect(onNoMatch).toHaveBeenCalled())
 		})
 	})
 
