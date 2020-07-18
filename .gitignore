@@ -1,6 +1,5 @@
 # Build
 .cache/
-dist/
 stats.html
 
 # Dependencies
