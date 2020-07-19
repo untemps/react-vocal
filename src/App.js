@@ -4,15 +4,18 @@ import Vocal from '@untemps/react-vocal'
 
 const App = () => {
 	const [result, setResult] = useState('')
+	const [lang, setLang] = useState('en-US')
 
 	const _onVocalStart = () => setResult('')
 
 	const _onVocalResult = (result) => setResult(result)
 
+	const _onLangChange = (e) => setLang(e.target.value)
+
 	const _onInputChange = (e) => setResult(e.target.value)
 
 	return (
-		<div className="container mx-auto p-10 min-w-full h-screen flex flex-col items-center justify-center">
+		<div className="container w-full max-w-4xl h-screen flex flex-col items-center justify-center mx-auto p-10">
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="100%"
@@ -29,21 +32,40 @@ const App = () => {
 				</g>
 			</svg>
 			<h1 className="font-display font-bold text-2xl xs:text-4xl text-center leading-none mb-6">react-vocal</h1>
-			<p className="font-display text-base text-center leading-none mb-6">
-				Click the microphone icon below and say something...
-			</p>
-			<span className="relative w-full max-w-4xl mb-10">
-				<Vocal
-					onStart={_onVocalStart}
-					onResult={_onVocalResult}
-					className="absolute w-6 right-0 mr-4 top-0 mt-6"
-				/>
-				<input
-					value={result}
-					onChange={_onInputChange}
-					className="font-display text-gray-700 leading-tight appearance-none border rounded-full w-full py-6 pl-6 pr-12 focus:outline-none focus:shadow-outline"
-				/>
-			</span>
+			<div className="w-full flex flex-col mx-auto">
+				<p className="font-display text-base leading-none ml-6 mb-6">1<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />Choose a lang option...</p>
+				<div className="relative w-40 mb-10">
+					<select
+						value={lang}
+						onChange={_onLangChange}
+						className="font-display text-gray-700 leading-tight appearance-none border rounded-full w-full py-6 pl-6 pr-12 focus:outline-none focus:shadow-outline"
+					>
+						<option>en-US</option>
+						<option>fr-FR</option>
+					</select>
+					<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-gray-700">
+						<svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+							<path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+						</svg>
+					</div>
+				</div>
+				<p className="font-display text-base leading-none ml-6 mb-6">
+					2<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />Click the microphone icon below and say something...
+				</p>
+				<div className="relative w-full mb-10">
+					<Vocal
+						lang={lang}
+						onStart={_onVocalStart}
+						onResult={_onVocalResult}
+						className="absolute w-6 right-0 mr-4 top-0 mt-6"
+					/>
+					<input
+						value={result}
+						onChange={_onInputChange}
+						className="font-display text-gray-700 leading-tight appearance-none border rounded-full w-full py-6 pl-6 pr-12 focus:outline-none focus:shadow-outline"
+					/>
+				</div>
+			</div>
 			<hr className="h-4 w-4 border-none rounded-full bg-primary" />
 		</div>
 	)
