@@ -15,12 +15,8 @@ export default {
 		name: 'react-vocal',
 		file: 'dist/index.js',
 		format: 'umd',
-		globals: {
-			react: 'React',
-			'react-dom': 'ReactDOM',
-		},
-		sourcemap: 'inline',
 	},
+	external: ['node_module', 'src'],
 	plugins: [
 		babel({
 			exclude: 'node_modules/**',
