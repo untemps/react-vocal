@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import Vocal from '@untemps/react-vocal'
+import Vocal, { isSupported } from '@untemps/react-vocal'
 
 const App = () => {
 	const [result, setResult] = useState('')
@@ -16,6 +16,29 @@ const App = () => {
 
 	return (
 		<div className="container w-full max-w-4xl h-screen flex flex-col items-center justify-center mx-auto p-10">
+			{!isSupported && (
+				<div
+					className="w-full bg-red-400 text-indigo-100 leading-none rounded-full flex items-center px-12 py-6 mb-6"
+					role="alert"
+				>
+					<div className="py-1">
+						<svg
+							className="fill-current h-6 w-6 text-white mr-4"
+							xmlns="http://www.w3.org/2000/svg"
+							viewBox="0 0 20 20"
+						>
+							<path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+						</svg>
+					</div>
+
+					<div>
+						<p className="font-display font-bold text-left">
+							Web Speech API is not supported by your browser
+						</p>
+						<p className="font-display text-left">Please switch to Chrome</p>
+					</div>
+				</div>
+			)}
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
 				width="100%"
@@ -33,7 +56,10 @@ const App = () => {
 			</svg>
 			<h1 className="font-display font-bold text-2xl xs:text-4xl text-center leading-none mb-6">react-vocal</h1>
 			<div className="w-full flex flex-col mx-auto">
-				<p className="font-display text-base leading-none ml-6 mb-6">1<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />Choose a lang option...</p>
+				<p className="font-display text-base leading-none ml-6 mb-6">
+					1<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />
+					Choose a lang option...
+				</p>
 				<div className="relative w-40 mb-10">
 					<select
 						value={lang}
@@ -50,7 +76,8 @@ const App = () => {
 					</div>
 				</div>
 				<p className="font-display text-base leading-none ml-6 mb-6">
-					2<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />Click the microphone icon below and say something...
+					2<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />
+					Click the microphone icon below and say something...
 				</p>
 				<div className="relative w-full mb-10">
 					<Vocal
