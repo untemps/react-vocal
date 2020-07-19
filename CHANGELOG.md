@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/untemps/react-vocal/compare/v1.1.3...v1.2.0) (2020-07-19)
+
+
+### Features
+
+* Export isSupported flag ([#15](https://github.com/untemps/react-vocal/issues/15)) ([d41e8f6](https://github.com/untemps/react-vocal/commit/d41e8f62af403922ea6acca9a277a54207d330ba))
+
 ## [1.1.3](https://github.com/untemps/react-vocal/compare/v1.1.2...v1.1.3) (2020-07-16)
 
 
