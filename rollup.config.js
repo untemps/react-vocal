@@ -13,7 +13,7 @@ export default {
 	input: 'src/index.js',
 	output: {
 		name: 'react-vocal',
-		file: 'dist/index.js',
+		file: 'index.js',
 		format: 'umd',
 	},
 	external: ['node_module', 'src'],
