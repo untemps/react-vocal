@@ -98,7 +98,7 @@ const App = () => {
 			<h1 className="font-display font-bold text-2xl xs:text-4xl text-center leading-none mb-6">react-vocal</h1>
 			<div className="w-full flex flex-col mx-auto">
 				<p className="font-display text-base leading-none ml-6 mb-6">
-					1<RedDot size={1} className="mx-1"/>
+					1<RedDot size={1} className="mx-1" />
 					Choose a lang option...
 				</p>
 				<div className="relative w-40 mb-10">
@@ -118,7 +118,7 @@ const App = () => {
 					</div>
 				</div>
 				<p className="font-display text-base leading-none ml-6 mb-6">
-					2<RedDot size={1} className="mx-1"/>
+					2<RedDot size={1} className="mx-1" />
 					Click the microphone icon below and say something...
 				</p>
 				<div className="relative w-full mb-10">
@@ -135,7 +135,7 @@ const App = () => {
 					/>
 				</div>
 			</div>
-			<RedDot size={4}/>
+			<RedDot size={4} />
 		</div>
 	)
 }
