@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 
 import Vocal, { isSupported } from '@untemps/react-vocal'
+import RedDot from './RedDot'
 
 const LANGS = {
 	'ar-SA': 'Arabic Saudi Arabia',
@@ -97,7 +98,7 @@ const App = () => {
 			<h1 className="font-display font-bold text-2xl xs:text-4xl text-center leading-none mb-6">react-vocal</h1>
 			<div className="w-full flex flex-col mx-auto">
 				<p className="font-display text-base leading-none ml-6 mb-6">
-					1<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />
+					1<RedDot size={1} className="mx-1"/>
 					Choose a lang option...
 				</p>
 				<div className="relative w-40 mb-10">
@@ -107,7 +108,7 @@ const App = () => {
 						className="font-display text-gray-700 leading-tight appearance-none border rounded-full w-full py-6 pl-6 pr-12 focus:outline-none focus:shadow-outline"
 					>
 						{Object.keys(LANGS).map((lang) => (
-							<option>{lang}</option>
+							<option key={lang}>{lang}</option>
 						))}
 					</select>
 					<div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-6 text-gray-700">
@@ -117,7 +118,7 @@ const App = () => {
 					</div>
 				</div>
 				<p className="font-display text-base leading-none ml-6 mb-6">
-					2<hr className="inline-block h-1 w-1 border-none rounded-full bg-primary mx-1" />
+					2<RedDot size={1} className="mx-1"/>
 					Click the microphone icon below and say something...
 				</p>
 				<div className="relative w-full mb-10">
@@ -134,7 +135,7 @@ const App = () => {
 					/>
 				</div>
 			</div>
-			<hr className="h-4 w-4 border-none rounded-full bg-primary" />
+			<RedDot size={4}/>
 		</div>
 	)
 }

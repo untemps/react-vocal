@@ -7,7 +7,7 @@ import serve from 'rollup-plugin-serve'
 import livereload from 'rollup-plugin-livereload'
 import postcss from 'rollup-plugin-postcss'
 
-const production = process.env.NODE_ENV === 'production'
+const production = !!process.env.PRODUCTION
 
 export default {
 	input: 'src/index.js',
@@ -24,24 +24,26 @@ export default {
 		}),
 		postcss({
 			config: {
-				path: "./postcss.config.js",
+				path: './postcss.config.js',
 			},
-			extensions: [".css"],
+			extensions: ['.css'],
 			modules: true,
-			minimize: production
+			minimize: production,
 		}),
 		replace({
-			'process.env.NODE_ENV': JSON.stringify('production'),
+			'process.env.NODE_ENV': JSON.stringify(production ? 'production' : 'development'),
 		}),
 		resolve(),
 		commonjs(),
 		production && terser(),
-		!production && serve({
-			open: true,
-			contentBase: '',
-		}),
-		!production && livereload({
-			watch: 'dist',
-		}),
+		!production &&
+			serve({
+				open: true,
+				contentBase: '',
+			}),
+		!production &&
+			livereload({
+				watch: 'dist',
+			}),
 	],
 }

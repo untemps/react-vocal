@@ -98,8 +98,8 @@
   "scripts": {
     "test": "jest -u --watch",
     "test:ci": "CI=true jest -u -b --coverage",
-    "start": "cross-env NODE_ENV=development rollup -c -w",
-    "build": "cross-env NODE_ENV=production rollup -c",
+    "start": "rollup -c -w --environment DEVELOPMENT",
+    "build": "rollup -c --environment PRODUCTION",
     "prettier": "prettier \"*/**/*.js\" --ignore-path ./.prettierignore --write"
   }
 }
