@@ -13,7 +13,7 @@
 
 ## Links
 
-[Demo](https://untemps.github.io/react-vocal/)
+<a href="https://untemps.github.io/react-vocal" target="_blank" rel="noopener">Demo</a>
 
 ## Disclaimer
 
