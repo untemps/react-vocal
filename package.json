@@ -35,6 +35,7 @@
     "@testing-library/dom": "^7.7.1",
     "@testing-library/jest-dom": "^5.9.0",
     "@testing-library/react": "^10.0.4",
+    "@testing-library/react-hooks": "^3.3.0",
     "@untemps/event-dispatcher": "^1.1.0",
     "@untemps/user-permissions-utils": "^1.0.1",
     "babel-jest": "^26.0.1",
@@ -45,6 +46,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-test-renderer": "^16.13.1",
     "rollup": "^2.11.2",
     "rollup-plugin-filesize": "^9.0.0",
     "rollup-plugin-terser": "^6.1.0",
@@ -56,11 +58,11 @@
     "react-dom": "^16.13.1"
   },
   "jest": {
-    "transform": {
-      "^.+\\.[t|j]sx?$": "babel-jest"
-    },
     "coverageDirectory": "./coverage/",
-    "collectCoverage": true
+    "collectCoverage": true,
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest/jest.setup.js"
+    ]
   },
   "husky": {
     "hooks": {

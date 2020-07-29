@@ -1,9 +1,8 @@
 import React from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
-import { toBeInTheDocument } from '@testing-library/jest-dom/matchers'
 
-import SpeechRecognitionWrapper from '../SpeechRecognitionWrapper'
+import SpeechRecognitionWrapper from '../../core/SpeechRecognitionWrapper'
 import Vocal from '../Vocal'
 
 const defaultProps = {}
@@ -14,73 +13,6 @@ const getInstance = (props = {}, children = null) => (
 )
 
 describe('Vocal', () => {
-	beforeEach(() => {
-		expect.extend({ toBeInTheDocument })
-
-		global.PermissionStatus = jest.fn(() => ({
-			state: 'granted',
-			addEventListener: jest.fn(),
-		}))
-		const status = new PermissionStatus()
-		global.Permissions = jest.fn(() => ({
-			query: jest.fn().mockResolvedValue(status),
-		}))
-		global.navigator.permissions = new Permissions()
-		global.MediaDevices = jest.fn(() => ({
-			getUserMedia: jest.fn().mockResolvedValue('foo'),
-		}))
-		global.navigator.mediaDevices = new MediaDevices()
-		global.SpeechGrammarList = jest.fn(() => ({
-			length: 0,
-		}))
-		global.SpeechRecognition = jest.fn(() => {
-			const handlers = {}
-			return {
-				addEventListener: jest.fn((type, callback) => {
-					handlers[type] = callback
-				}),
-				removeEventListener: jest.fn(),
-				dispatchEvent: jest.fn(),
-				start: jest.fn(() => {
-					!!handlers.start && handlers.start()
-				}),
-				stop: jest.fn(() => {
-					!!handlers.end && handlers.end()
-				}),
-				abort: jest.fn(() => {
-					!!handlers.end && handlers.end()
-				}),
-				say: jest.fn((sentence) => {
-					!!handlers.speechstart && handlers.speechstart()
-
-					const resultEvent = new Event('result')
-					resultEvent.resultIndex = 0
-					resultEvent.results = [
-						[
-							{
-								transcript: sentence,
-							},
-						],
-					]
-					if(sentence) {
-						!!handlers.result && handlers.result(resultEvent)
-					} else {
-						!!handlers.nomatch && handlers.nomatch()
-					}
-					!!handlers.speechend && handlers.speechend()
-				}),
-			}
-		})
-	})
-
-	afterEach(() => {
-		global.PermissionStatus.mockReset()
-		global.Permissions.mockReset()
-		global.MediaDevices.mockReset()
-		global.SpeechGrammarList.mockReset()
-		global.SpeechRecognition.mockReset()
-	})
-
 	it('matches snapshot', () => {
 		const { asFragment } = render(getInstance())
 		expect(asFragment()).toMatchSnapshot()
@@ -97,6 +29,27 @@ describe('Vocal', () => {
 		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
 	})
 
+	it('renders pointer cursor when idle', () => {
+		const { getByTestId } = render(getInstance())
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
+	})
+
+	it('renders default cursor when listening', () => {
+		const { getByTestId } = render(getInstance())
+		fireEvent.click(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: null })
+	})
+
+	it('not uses style when className is set', () => {
+		const { getByTestId } = render(getInstance({ className: 'foo' }))
+		expect(getByTestId('__vocal-root__')).not.toHaveStyle({ cursor: 'pointer' })
+	})
+
+	it('uses custom styles', () => {
+		const { getByTestId } = render(getInstance({ style: { backgroundColor: 'blue' } }))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ backgroundColor: 'blue' })
+	})
+
 	it('triggers onStart handler', async () => {
 		const onStart = jest.fn()
 		const { queryByTestId } = render(getInstance({ onStart }))
@@ -109,7 +62,7 @@ describe('Vocal', () => {
 	it('triggers onResult handler', async () => {
 		const onResult = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onResult }))
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
 
 		let flag = false
 		recognition.addEventListener('start', async () => {
@@ -129,7 +82,7 @@ describe('Vocal', () => {
 	it('triggers onNoMatch handler', async () => {
 		const onNoMatch = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onNoMatch }))
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onNoMatch }))
 
 		let flag = false
 		recognition.addEventListener('start', async () => {
@@ -149,7 +102,7 @@ describe('Vocal', () => {
 	it('triggers onSpeechStart handler', async () => {
 		const onSpeechStart = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onSpeechStart }))
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechStart }))
 
 		let flag = false
 		recognition.addEventListener('start', async () => {
@@ -169,7 +122,7 @@ describe('Vocal', () => {
 	it('triggers onSpeechEnd handler', async () => {
 		const onSpeechEnd = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onSpeechEnd }))
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechEnd }))
 
 		let flag = false
 		recognition.addEventListener('start', async () => {
@@ -199,7 +152,7 @@ describe('Vocal', () => {
 	it('triggers onEnd handler after speech', async () => {
 		const onEnd = jest.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { getByTestId } = render(getInstance({ __recognitionInstance: recognition, onEnd }))
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
 		let flag = false
 		recognition.addEventListener('start', async () => {
