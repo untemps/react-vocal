@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import SpeechRecognitionWrapper from '../core/SpeechRecognitionWrapper'
 
-const useVocal = (lang = null, grammars = null, __rsInstance = null) => {
+const useVocal = (lang = 'en-US', grammars = null, __rsInstance = null) => {
 	const ref = useRef(null)
 
 	useEffect(() => {
