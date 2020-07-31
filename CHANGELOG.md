@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/untemps/react-vocal/compare/v1.2.0...v1.3.0) (2020-07-31)
+
+
+### Features
+
+* Export hook to abstract SpeechRecognition instance creation ([cf36b86](https://github.com/untemps/react-vocal/commit/cf36b862280a3de4ed67afa484afafbdf5613b86))
+
 # [1.2.0](https://github.com/untemps/react-vocal/compare/v1.1.3...v1.2.0) (2020-07-19)
 
 
