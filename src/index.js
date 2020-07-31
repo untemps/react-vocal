@@ -1,6 +1,7 @@
-import Vocal from './Vocal'
-import SpeechRecognitionWrapper from './SpeechRecognitionWrapper'
+import Vocal from './components/Vocal'
+import SpeechRecognitionWrapper from './core/SpeechRecognitionWrapper'
 
+export { default as useVocal } from './hooks/useVocal'
 export const isSupported = SpeechRecognitionWrapper.isSupported
 
 export default Vocal

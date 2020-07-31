@@ -1,14 +1,17 @@
-import React, { cloneElement, isValidElement, useEffect, useRef, useState } from 'react'
+import React, { cloneElement, isValidElement, useState } from 'react'
 import PropTypes from 'prop-types'
 
-import SpeechRecognitionWrapper from './SpeechRecognitionWrapper'
+import SpeechRecognitionWrapper from '../core/SpeechRecognitionWrapper'
 
-import MicrophoneIcon from './MicrophoneIcon'
+import useVocal from '../hooks/useVocal'
+import useTimeout from '../hooks/useTimeout'
+
+import Icon from './Icon'
 
 const Vocal = ({
 	children,
-	grammars,
 	lang,
+	grammars,
 	timeout,
 	ariaLabel,
 	tabIndex,
@@ -21,46 +24,25 @@ const Vocal = ({
 	onResult,
 	onError,
 	onNoMatch,
-	__recognitionInstance,
+	__rsInstance,
 }) => {
-	const timeoutRef = useRef(null)
-	const recognitionRef = useRef(null)
-
 	const [isListening, setIsListening] = useState(false)
 
-	useEffect(() => {
-		if (SpeechRecognitionWrapper.isSupported) {
-			recognitionRef.current = __recognitionInstance || new SpeechRecognitionWrapper({ grammars, lang })
-			return () => {
-				recognitionRef.current.abort()
-				recognitionRef.current.cleanup()
-				clearTimeout(timeoutRef.current)
-			}
-		}
-	}, [__recognitionInstance, grammars, lang])
-
-	const startTimer = () => {
-		timeoutRef.current = setTimeout(_onEnd, timeout)
-	}
-
-	const stopTimer = () => {
-		clearTimeout(timeoutRef.current)
-		timeoutRef.current = null
-	}
+	const [, {start, stop, subscribe, unsubscribe}] = useVocal(lang, grammars, __rsInstance)
+	const [startTimer, stopTimer] = useTimeout(() => _onEnd(), timeout)
 
 	const startRecognition = () => {
 		try {
 			setIsListening(true)
 
-			const { current: r } = recognitionRef
-			r.addEventListener('start', _onStart)
-			r.addEventListener('end', _onEnd)
-			r.addEventListener('speechstart', _onSpeechStart)
-			r.addEventListener('speechend', _onSpeechEnd)
-			r.addEventListener('result', _onResult)
-			r.addEventListener('error', _onError)
-			r.addEventListener('nomatch', _onNoMatch)
-			r.start()
+			subscribe('start', _onStart)
+			subscribe('end', _onEnd)
+			subscribe('speechstart', _onSpeechStart)
+			subscribe('speechend', _onSpeechEnd)
+			subscribe('result', _onResult)
+			subscribe('error', _onError)
+			subscribe('nomatch', _onNoMatch)
+			start()
 		} catch (error) {
 			_onError(error)
 		}
@@ -70,27 +52,17 @@ const Vocal = ({
 		try {
 			setIsListening(false)
 
-			const { current: r } = recognitionRef
-			r.removeEventListener('start', _onStart)
-			r.removeEventListener('end', _onEnd)
-			r.removeEventListener('speechstart', _onSpeechStart)
-			r.removeEventListener('speechend', _onSpeechEnd)
-			r.removeEventListener('result', _onResult)
-			r.removeEventListener('error', _onError)
-			r.removeEventListener('nomatch', _onNoMatch)
-			r.stop()
+			unsubscribe('start', _onStart)
+			unsubscribe('end', _onEnd)
+			unsubscribe('speechstart', _onSpeechStart)
+			unsubscribe('speechend', _onSpeechEnd)
+			unsubscribe('result', _onResult)
+			unsubscribe('error', _onError)
+			unsubscribe('nomatch', _onNoMatch)
+			stop()
 		} catch (error) {
 			!!onError && onError(error)
 		}
-	}
-
-	const start = () => {
-		startTimer()
-	}
-
-	const end = () => {
-		stopTimer()
-		stopRecognition()
 	}
 
 	const _onClick = () => {
@@ -98,13 +70,14 @@ const Vocal = ({
 	}
 
 	const _onStart = (e) => {
-		start()
+		startTimer()
 
 		!!onStart && onStart(e)
 	}
 
 	const _onEnd = (e) => {
-		end()
+		stopTimer()
+		stopRecognition()
 
 		!!onEnd && onEnd(e)
 	}
@@ -146,7 +119,7 @@ const Vocal = ({
 			style={className ? null : { width: 24, height: 24, cursor: !isListening ? 'pointer' : null, ...style }}
 			className={className}
 		>
-			<MicrophoneIcon isActive={isListening} iconColor="#aaa" />
+			<Icon isActive={isListening} iconColor="#aaa" />
 		</div>
 	)
 
@@ -159,10 +132,10 @@ const Vocal = ({
 }
 
 Vocal.propTypes = {
-	/** Defines the grammars understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/grammars) */
-	grammars: PropTypes.object,
 	/** Defines the language understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/lang) */
 	lang: PropTypes.string,
+	/** Defines the grammars understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/grammars) */
+	grammars: PropTypes.object,
 	/** Defines the time in ms to wait before discarding the recognition */
 	timeout: PropTypes.number,
 	/** Defines the a11y label for the default button */
@@ -190,8 +163,8 @@ Vocal.propTypes = {
 }
 
 Vocal.defaultProps = {
-	grammars: null,
 	lang: 'en-US',
+	grammars: null,
 	timeout: 3000,
 	ariaLabel: 'speech',
 	tabIndex: -1,
