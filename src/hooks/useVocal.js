@@ -33,15 +33,15 @@ const useVocal = (lang = 'en-US', grammars = null, __rsInstance = null) => {
 		}
 	}, [])
 
-	const subscribe = useCallback((event, handler) => {
+	const subscribe = useCallback((eventType, handler) => {
 		if (ref.current) {
-			ref.current.addEventListener(event, handler)
+			ref.current.addEventListener(eventType, handler)
 		}
 	}, [])
 
-	const unsubscribe = useCallback((event, handler) => {
+	const unsubscribe = useCallback((eventType, handler) => {
 		if (ref.current) {
-			ref.current.removeEventListener(event, handler)
+			ref.current.removeEventListener(eventType, handler)
 		}
 	}, [])
 
