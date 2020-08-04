@@ -95,15 +95,15 @@ class SpeechRecognitionWrapper {
 		return this
 	}
 
-	addEventListener(type, callback) {
-		if (!!this._instance && this._includesEventType(type)) {
-			if (!!this._listeners[type]) {
-				this.removeEventListener(type)
+	addEventListener(eventType, callback) {
+		if (!!this._instance && this._includesEventType(eventType)) {
+			if (!!this._listeners[eventType]) {
+				this.removeEventListener(eventType)
 			}
 
 			const handler = (event) => {
 				let additionalArgs = []
-				if (type === SpeechRecognitionWrapper.eventTypes.RESULT) {
+				if (eventType === SpeechRecognitionWrapper.eventTypes.RESULT) {
 					if (!!event.results && event.results.length > 0) {
 						additionalArgs.push(event.results[0][0].transcript)
 					}
@@ -111,19 +111,19 @@ class SpeechRecognitionWrapper {
 
 				!!callback && callback.apply(this, [...additionalArgs, event])
 			}
-			this._instance.addEventListener(type, (e) => handler(e))
+			this._instance.addEventListener(eventType, handler)
 
-			this._listeners[type] = handler
+			this._listeners[eventType] = handler
 		}
 
 		return this
 	}
 
-	removeEventListener(type) {
-		const handler = this._listeners[type]
-		this._instance.removeEventListener(type, handler)
+	removeEventListener(eventType) {
+		const handler = this._listeners[eventType]
+		this._instance.removeEventListener(eventType, handler)
 
-		delete this._listeners[type]
+		delete this._listeners[eventType]
 
 		return this
 	}
@@ -138,7 +138,7 @@ class SpeechRecognitionWrapper {
 	}
 
 	_includesEventType(eventType) {
-		return Object.values(SpeechRecognitionWrapper.eventTypes).find((type) => type === eventType)
+		return !!Object.values(SpeechRecognitionWrapper.eventTypes).find((type) => type === eventType)
 	}
 
 	static _resolveSpeechRecognition() {

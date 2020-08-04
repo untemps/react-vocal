@@ -28,8 +28,16 @@ const Vocal = ({
 }) => {
 	const [isListening, setIsListening] = useState(false)
 
-	const [, {start, stop, subscribe, unsubscribe}] = useVocal(lang, grammars, __rsInstance)
-	const [startTimer, stopTimer] = useTimeout(() => _onEnd(), timeout)
+	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
+
+	const _onEnd = (e) => {
+		stopTimer()
+		stopRecognition()
+
+		!!onEnd && onEnd(e)
+	}
+
+	const [startTimer, stopTimer] = useTimeout(_onEnd, timeout)
 
 	const startRecognition = () => {
 		try {
@@ -75,13 +83,6 @@ const Vocal = ({
 		!!onStart && onStart(e)
 	}
 
-	const _onEnd = (e) => {
-		stopTimer()
-		stopRecognition()
-
-		!!onEnd && onEnd(e)
-	}
-
 	const _onSpeechStart = (e) => {
 		stopTimer()
 
@@ -95,6 +96,7 @@ const Vocal = ({
 	}
 
 	const _onResult = (result, event) => {
+		stopTimer()
 		stopRecognition()
 
 		!!onResult && onResult(result, event)
@@ -107,6 +109,9 @@ const Vocal = ({
 	}
 
 	const _onNoMatch = (e) => {
+		stopTimer()
+		stopRecognition()
+
 		!!onNoMatch && onNoMatch(e)
 	}
 
