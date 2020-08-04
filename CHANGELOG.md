@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/untemps/react-vocal/compare/v1.3.0...v1.3.1) (2020-08-04)
+
+
+### Bug Fixes
+
+* Fix event unsubscriptions by removing callback function overriding ([#19](https://github.com/untemps/react-vocal/issues/19)) ([3a8dca4](https://github.com/untemps/react-vocal/commit/3a8dca41f5dfc4a87eb979a2693022ff719d3855))
+
 # [1.3.0](https://github.com/untemps/react-vocal/compare/v1.2.0...v1.3.0) (2020-07-31)
 
 
