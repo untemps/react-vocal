@@ -4,12 +4,16 @@
   "author": "Vincent Le Badezet <v.lebadezet@untemps.net>",
   "repository": "git@github.com:untemps/react-vocal.git",
   "license": "MIT",
-  "description": "React component to initiate a SpeechRecognition session",
+  "description": "React component and hook to initiate a SpeechRecognition session",
   "keywords": [
+    "Web Speech API",
     "SpeechRecognition",
+    "speech",
     "speech-to-text",
     "React",
+    "ReactJS",
     "component",
+    "hook",
     "javascript"
   ],
   "private": false,
@@ -55,7 +59,7 @@
   },
   "dependencies": {
     "@untemps/event-dispatcher": "^1.1.0",
-    "@untemps/react-vocal": "^1.2.0",
+    "@untemps/react-vocal": "^1.3.1",
     "@untemps/user-permissions-utils": "^1.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
