@@ -7,13 +7,13 @@
 
 ---
 
-![npm](https://img.shields.io/npm/v/@untemps/react-vocal?style=for-the-badge)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/untemps/react-vocal/deploy?style=for-the-badge)
-![Codecov](https://img.shields.io/codecov/c/github/untemps/react-vocal?style=for-the-badge)
+[![npm](https://img.shields.io/npm/v/@untemps/react-vocal?style=for-the-badge)](https://www.npmjs.com/package/@untemps/react-vocal)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/untemps/react-vocal/deploy?style=for-the-badge)](https://github.com/untemps/react-vocal/actions)
+[![Codecov](https://img.shields.io/codecov/c/github/untemps/react-vocal?style=for-the-badge)](https://codecov.io/gh/untemps/react-vocal)
 
 ## Links
 
-<a href="https://untemps.github.io/react-vocal" target="_blank" rel="noopener">Demo</a>
+:red_circle: <big><a href="https://untemps.github.io/react-vocal" target="_blank" rel="noopener">LIVE DEMO</a></big> :red_circle:
 
 ## Disclaimer
 
