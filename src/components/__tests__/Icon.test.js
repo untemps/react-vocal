@@ -19,7 +19,7 @@ describe('Icon', () => {
 
 	it('renders component color', () => {
 		const color = 'green'
-		const { queryByTestId } = render(getInstance({color}))
+		const { queryByTestId } = render(getInstance({ color }))
 		expect(queryByTestId('__icon-path__')).toHaveAttribute('fill', color)
 	})
 
