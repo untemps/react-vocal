@@ -233,6 +233,16 @@ const App = () => {
 
 The process to grant microphone access permissions is automatically managed by the hook (internally used by the `Vocal` component).
 
-## Todos
+## Contributing
 
--   Add a connector management to plug external speech-to-text services in
+Contributions are warmly welcomed:
+- Fork the repository
+- Create a feature branch (preferred name convention: `[feature type]_[imperative verb]-[description of the feature]`)
+- Develop the feature AND write the tests (or write the tests AND develop the feature)
+- Commit your changes using [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
+- Submit a Pull Request
+
+## Roadmap
+
+- Add a connector management to plug external speech-to-text services in
+- Accept more ways to customize children

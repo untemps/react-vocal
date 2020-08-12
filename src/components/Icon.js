@@ -3,7 +3,13 @@ import PropTypes from 'prop-types'
 
 const Icon = ({ color, activeColor, isActive }) => {
 	return (
-		<svg data-testid="__icon-root__" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24">
+		<svg
+			data-testid="__icon-root__"
+			xmlns="http://www.w3.org/2000/svg"
+			width="100%"
+			height="100%"
+			viewBox="0 0 24 24"
+		>
 			<g>
 				<path
 					data-testid="__icon-path__"
@@ -19,13 +25,13 @@ const Icon = ({ color, activeColor, isActive }) => {
 Icon.propTypes = {
 	color: PropTypes.string,
 	activeColor: PropTypes.string,
-	isActive: PropTypes.bool
+	isActive: PropTypes.bool,
 }
 
 Icon.defaultProps = {
 	color: 'black',
 	activeColor: 'red',
-	isActive: false
+	isActive: false,
 }
 
 export default Icon
