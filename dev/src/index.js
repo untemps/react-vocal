@@ -30,12 +30,42 @@ const App = () => {
 		console.error(e)
 	}
 
-	return <div style={{backgroundColor: '#eeeeee', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+	return (
+		<div
+			style={{
+				backgroundColor: '#eeeeee',
+				width: '100%',
+				height: '100%',
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}
+		>
 			<span style={{ position: 'relative' }}>
-				<Vocal onStart={_onVocalStart} onEnd={_onVocalEnd} onResult={_onVocalResult} onError={_onVocalError} style={{ position: 'absolute', right: 6, top: 13  }}/>
-				<input defaultValue={result} style={{ width: 300, height: 40, paddingLeft: 16, paddingRight: 32, borderWidth: 2, borderStyle: 'solid', borderRadius: 5, boxShadow: '10px 10px 5px -6px rgba(0,0,0,0.2)', borderColor: isListening ? 'rgba(30, 116, 255, 1)' : 'rgba(30, 116, 255, 0)' }} />
+				<Vocal
+					onStart={_onVocalStart}
+					onEnd={_onVocalEnd}
+					onResult={_onVocalResult}
+					onError={_onVocalError}
+					style={{ position: 'absolute', right: 6, top: 13 }}
+				/>
+				<input
+					defaultValue={result}
+					style={{
+						width: 300,
+						height: 40,
+						paddingLeft: 16,
+						paddingRight: 32,
+						borderWidth: 2,
+						borderStyle: 'solid',
+						borderRadius: 5,
+						boxShadow: '10px 10px 5px -6px rgba(0,0,0,0.2)',
+						borderColor: isListening ? 'rgba(30, 116, 255, 1)' : 'rgba(30, 116, 255, 0)',
+					}}
+				/>
 			</span>
-	</div>
+		</div>
+	)
 }
 
-ReactDOM.render(<App/>, document.getElementById('root'))
+ReactDOM.render(<App />, document.getElementById('root'))
