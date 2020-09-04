@@ -118,7 +118,7 @@
     ]
   },
   "scripts": {
-    "dev": "cd dev && yarn && yarn start",
+    "dev": "cd dev && rm -rf dist && yarn && yarn start",
     "test": "jest -u --watch",
     "test:ci": "CI=true jest -u -b --coverage",
     "build": "rm -rf dist && yarn build:cjs && yarn build:es && yarn build:umd",

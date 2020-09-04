@@ -11,16 +11,14 @@ export default {
 		file: 'dist/index.js',
 	},
 	plugins: [
+		replace({
+			'process.env.NODE_ENV': JSON.stringify( 'production' )
+		}),
 		babel({
 			exclude: 'node_modules/**',
 			babelHelpers: 'bundled',
 		}),
-		resolve({
-			browser: true,
-		}),
-		replace({
-			'process.env.NODE_ENV': JSON.stringify( 'production' )
-		}),
+		resolve(),
 		commonjs(),
 		serve({
 			open: true,
