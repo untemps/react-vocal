@@ -233,6 +233,14 @@ const App = () => {
 
 The process to grant microphone access permissions is automatically managed by the hook (internally used by the `Vocal` component).
 
+## Development
+
+The component can be served for development purpose on `http://localhost:10001/` using:
+
+```
+yarn dev
+```
+
 ## Contributing
 
 Contributions are warmly welcomed:
