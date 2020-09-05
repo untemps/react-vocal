@@ -5,29 +5,25 @@ import ReactDOM from 'react-dom'
 import Vocal from '../../src'
 
 const App = () => {
-	const [isListening, setIsListening] = useState(false)
 	const [result, setResult] = useState('')
+	const [logs, setLogs] = useState('')
 
 	const _onVocalStart = () => {
-		console.log('start')
-		setIsListening(true)
 		setResult('')
+		setLogs((logs) => `${logs}\nstart`)
 	}
 
 	const _onVocalEnd = () => {
-		console.log('end')
-		setIsListening(false)
+		setLogs((logs) => `${logs}\nend`)
 	}
 
 	const _onVocalResult = (result) => {
-		console.log('result')
-		setIsListening(false)
-
 		setResult(result)
+		setLogs((logs) => `${logs}\nresult: "${result}"`)
 	}
 
 	const _onVocalError = (e) => {
-		console.error(e)
+		setLogs((logs) => `${logs}\n${e.message}`)
 	}
 
 	return (
@@ -39,31 +35,50 @@ const App = () => {
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
+				flexDirection: 'column',
 			}}
 		>
-			<span style={{ position: 'relative' }}>
+			<div style={{ position: 'relative' }}>
 				<Vocal
 					onStart={_onVocalStart}
 					onEnd={_onVocalEnd}
 					onResult={_onVocalResult}
 					onError={_onVocalError}
-					style={{ position: 'absolute', right: 6, top: 13 }}
+					style={{ position: 'absolute', right: 6, top: 16 }}
 				/>
 				<input
 					defaultValue={result}
 					style={{
 						width: 300,
-						height: 40,
+						height: 50,
 						paddingLeft: 16,
 						paddingRight: 32,
-						borderWidth: 2,
-						borderStyle: 'solid',
-						borderRadius: 5,
+						backgroundColor: 'white',
+						border: 'none',
 						boxShadow: '10px 10px 5px -6px rgba(0,0,0,0.2)',
-						borderColor: isListening ? 'rgba(30, 116, 255, 1)' : 'rgba(30, 116, 255, 0)',
 					}}
 				/>
-			</span>
+			</div>
+			<div style={{ display: 'flex', flexDirection: 'column', marginTop: 32 }}>
+				<label htmlFor="logsarea">Logs:</label>
+				<textarea
+					id="logsarea"
+					value={logs}
+					rows={12}
+					disabled
+					style={{
+						width: 300,
+						paddingLeft: 16,
+						paddingRight: 32,
+						marginTop: 8,
+						backgroundColor: 'white',
+						border: 'none',
+						boxShadow: '10px 10px 5px -6px rgba(0,0,0,0.2)',
+						resize: 'none',
+						outline: 'none',
+					}}
+				/>
+			</div>
 		</div>
 	)
 }
