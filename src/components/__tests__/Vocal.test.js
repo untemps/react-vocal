@@ -23,10 +23,44 @@ describe('Vocal', () => {
 		expect(queryByTestId('__vocal-root__')).toBeInTheDocument()
 	})
 
-	it('renders custom children', () => {
+	it('renders custom children element', () => {
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
 		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
 		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
+	})
+
+	it('renders custom children function', () => {
+		const { queryByTestId } = render(getInstance(null, () => <div data-testid="__vocal-custom-root__" />))
+		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
+		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
+	})
+
+	it('starts recognition with custom children function', async () => {
+		const onStart = jest.fn()
+		const { queryByTestId } = render(
+			getInstance({ onStart }, (start) => <div data-testid="__vocal-custom-root__" onClick={start} />)
+		)
+		await act(async () => {
+			fireEvent.click(queryByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+	})
+
+	it('stops recognition with custom children function', async () => {
+		const onEnd = jest.fn()
+		const { queryByText } = render(
+			getInstance({ onEnd }, (start, stop) => (
+				<div data-testid="__vocal-custom-root__">
+					<button onClick={start}>start</button>
+					<button onClick={stop}>stop</button>
+				</div>
+			))
+		)
+		await act(async () => {
+			fireEvent.click(queryByText('start'))
+			fireEvent.click(queryByText('stop'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
 	})
 
 	it('renders pointer cursor when idle', () => {

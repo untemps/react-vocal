@@ -3,6 +3,8 @@ import PropTypes from 'prop-types'
 
 import SpeechRecognitionWrapper from '../core/SpeechRecognitionWrapper'
 
+import isFunc from '../utils/isFunc'
+
 import useVocal from '../hooks/useVocal'
 import useTimeout from '../hooks/useTimeout'
 
@@ -123,17 +125,28 @@ const Vocal = ({
 			tabIndex={tabIndex}
 			style={className ? null : { width: 24, height: 24, cursor: !isListening ? 'pointer' : null, ...style }}
 			className={className}
+			onClick={_onClick}
 		>
 			<Icon isActive={isListening} iconColor="#aaa" />
 		</div>
 	)
 
-	return (
-		SpeechRecognitionWrapper.isSupported &&
-		cloneElement(isValidElement(children) ? children : _renderDefault(), {
-			...(!isListening && { onClick: _onClick }),
-		})
-	)
+	const _renderChildren = (children) => {
+		if (SpeechRecognitionWrapper.isSupported) {
+			if (isFunc(children)) {
+				return children(startRecognition, stopRecognition)
+			} else if (isValidElement(children)) {
+				return cloneElement(children, {
+					...(!isListening && { onClick: _onClick }),
+				})
+			} else {
+				return _renderDefault()
+			}
+		}
+		return null
+	}
+
+	return _renderChildren(children)
 }
 
 Vocal.propTypes = {
