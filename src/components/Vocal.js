@@ -36,6 +36,14 @@ const Vocal = ({
 		stopTimer()
 		stopRecognition()
 
+		unsubscribe('start', _onStart)
+		unsubscribe('end', _onEnd)
+		unsubscribe('speechstart', _onSpeechStart)
+		unsubscribe('speechend', _onSpeechEnd)
+		unsubscribe('result', _onResult)
+		unsubscribe('error', _onError)
+		unsubscribe('nomatch', _onNoMatch)
+
 		!!onEnd && onEnd(e)
 	}
 
@@ -52,6 +60,7 @@ const Vocal = ({
 			subscribe('result', _onResult)
 			subscribe('error', _onError)
 			subscribe('nomatch', _onNoMatch)
+
 			start()
 		} catch (error) {
 			_onError(error)
@@ -62,13 +71,6 @@ const Vocal = ({
 		try {
 			setIsListening(false)
 
-			unsubscribe('start', _onStart)
-			unsubscribe('end', _onEnd)
-			unsubscribe('speechstart', _onSpeechStart)
-			unsubscribe('speechend', _onSpeechEnd)
-			unsubscribe('result', _onResult)
-			unsubscribe('error', _onError)
-			unsubscribe('nomatch', _onNoMatch)
 			stop()
 		} catch (error) {
 			!!onError && onError(error)
