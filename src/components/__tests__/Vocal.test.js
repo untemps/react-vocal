@@ -71,7 +71,19 @@ describe('Vocal', () => {
 	it('renders default cursor when listening', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.click(getByTestId('__vocal-root__'))
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: null })
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' })
+	})
+
+	it('renders outline when focused', () => {
+		const { getByTestId } = render(getInstance())
+		fireEvent.focus(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: '2px solid' })
+	})
+
+	it('remove outline when blurred', () => {
+		const { getByTestId } = render(getInstance())
+		fireEvent.blur(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: 'none' })
 	})
 
 	it('not uses style when className is set', () => {

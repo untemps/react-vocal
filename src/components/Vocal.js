@@ -1,4 +1,4 @@
-import React, { cloneElement, isValidElement, useState } from 'react'
+import React, { cloneElement, isValidElement, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import SpeechRecognitionWrapper from '../core/SpeechRecognitionWrapper'
@@ -28,6 +28,7 @@ const Vocal = ({
 	onNoMatch,
 	__rsInstance,
 }) => {
+	const buttonRef = useRef(null)
 	const [isListening, setIsListening] = useState(false)
 
 	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
@@ -81,6 +82,14 @@ const Vocal = ({
 		startRecognition()
 	}
 
+	const _onFocus = () => {
+		buttonRef.current.style.outline = '2px solid'
+	}
+
+	const _onBlur = () => {
+		buttonRef.current.style.outline = 'none'
+	}
+
 	const _onStart = (e) => {
 		startTimer()
 
@@ -120,17 +129,32 @@ const Vocal = ({
 	}
 
 	const _renderDefault = () => (
-		<div
+		<button
 			data-testid="__vocal-root__"
+			ref={buttonRef}
 			role="button"
 			aria-label={ariaLabel}
 			tabIndex={tabIndex}
-			style={className ? null : { width: 24, height: 24, cursor: !isListening ? 'pointer' : null, ...style }}
+			style={
+				className
+					? null
+					: {
+							width: 24,
+							height: 24,
+							background: 'none',
+							border: 'none',
+							padding: 0,
+							cursor: !isListening ? 'pointer' : 'default',
+							...style,
+					  }
+			}
 			className={className}
+			onFocus={_onFocus}
+			onBlur={_onBlur}
 			onClick={_onClick}
 		>
 			<Icon isActive={isListening} iconColor="#aaa" />
-		</div>
+		</button>
 	)
 
 	const _renderChildren = (children) => {
@@ -186,8 +210,8 @@ Vocal.defaultProps = {
 	lang: 'en-US',
 	grammars: null,
 	timeout: 3000,
-	ariaLabel: 'speech',
-	tabIndex: -1,
+	ariaLabel: 'microphone icon',
+	tabIndex: 0,
 	style: null,
 	className: null,
 	onStart: null,
