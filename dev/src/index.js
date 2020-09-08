@@ -27,12 +27,7 @@ const App = () => {
 
 	return (
 		<>
-			<Vocal
-				onStart={_onVocalStart}
-				onEnd={_onVocalEnd}
-				onResult={_onVocalResult}
-				onError={_onVocalError}
-			></Vocal>
+			<Vocal onStart={_onVocalStart} onEnd={_onVocalEnd} onResult={_onVocalResult} onError={_onVocalError} />
 			<textarea value={logs} rows={30} disabled style={{ width: '100%', marginTop: 16 }} />
 		</>
 	)
