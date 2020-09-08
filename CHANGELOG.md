@@ -1,3 +1,10 @@
+## [1.3.4](https://github.com/untemps/react-vocal/compare/v1.3.3...v1.3.4) (2020-09-07)
+
+
+### Bug Fixes
+
+* Bump vulnerable dependencies version ([#23](https://github.com/untemps/react-vocal/issues/23)) ([bb496f3](https://github.com/untemps/react-vocal/commit/bb496f31a1f72b5866f87733c94c4a105e1e901b))
+
 ## [1.3.3](https://github.com/untemps/react-vocal/compare/v1.3.2...v1.3.3) (2020-09-05)
 
 ## [1.3.2](https://github.com/untemps/react-vocal/compare/v1.3.1...v1.3.2) (2020-08-12)
