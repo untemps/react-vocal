@@ -19,6 +19,10 @@
 
 The [Web Speech API](https://developer.mozilla.org/fr/docs/Web/API/Web_Speech_API) is only supported by few browsers so far (see [caniuse](https://caniuse.com/#search=SpeechRecognition)). If the API is not available, the `Vocal` component won't display anything.
 
+This component intends to catch a speech result as soon as possible. This can be a good fit for vocal commands or search field filling. For now on it does not support continuous speech (see [Roadmap](#roadmap) below).  
+That means either a result is caught and returned or timeout is reached and the recognition is discarded.  
+The `stop` function returned by children-as-function mechanism allows to prematurely discard the recognition before timeout elapses.
+
 ## Installation
 
 ```bash
@@ -261,3 +265,4 @@ Contributions are warmly welcomed:
 ## Roadmap
 
 - Add a connector management to plug external speech-to-text services in
+- Support continuous speech
