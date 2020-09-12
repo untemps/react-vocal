@@ -16,7 +16,6 @@ const Vocal = ({
 	grammars,
 	timeout,
 	ariaLabel,
-	tabIndex,
 	style,
 	className,
 	outlineStyle,
@@ -139,7 +138,6 @@ const Vocal = ({
 			ref={buttonRef}
 			role="button"
 			aria-label={ariaLabel}
-			tabIndex={tabIndex}
 			style={
 				className
 					? null
@@ -189,8 +187,6 @@ Vocal.propTypes = {
 	timeout: PropTypes.number,
 	/** Defines the a11y label for the default button */
 	ariaLabel: PropTypes.string,
-	/** Defines the a11y tab index for the default button */
-	tabIndex: PropTypes.number,
 	/** Defines the styles of the default element if className is not specified */
 	style: PropTypes.object,
 	/** Defines the class of the default element */
@@ -218,7 +214,6 @@ Vocal.defaultProps = {
 	grammars: null,
 	timeout: 3000,
 	ariaLabel: 'start recognition',
-	tabIndex: 0,
 	style: null,
 	className: null,
 	outlineStyle: '2px solid',
