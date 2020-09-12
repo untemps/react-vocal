@@ -210,7 +210,7 @@ Vocal.defaultProps = {
 	lang: 'en-US',
 	grammars: null,
 	timeout: 3000,
-	ariaLabel: 'microphone icon',
+	ariaLabel: 'start recognition',
 	tabIndex: 0,
 	style: null,
 	className: null,
