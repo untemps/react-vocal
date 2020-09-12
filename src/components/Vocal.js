@@ -19,6 +19,7 @@ const Vocal = ({
 	tabIndex,
 	style,
 	className,
+	outlineStyle,
 	onStart,
 	onEnd,
 	onSpeechStart,
@@ -83,11 +84,15 @@ const Vocal = ({
 	}
 
 	const _onFocus = () => {
-		buttonRef.current.style.outline = '2px solid'
+		if (!className && outlineStyle) {
+			buttonRef.current.style.outline = outlineStyle
+		}
 	}
 
 	const _onBlur = () => {
-		buttonRef.current.style.outline = 'none'
+		if (!className && outlineStyle) {
+			buttonRef.current.style.outline = 'none'
+		}
 	}
 
 	const _onStart = (e) => {
@@ -190,6 +195,8 @@ Vocal.propTypes = {
 	style: PropTypes.object,
 	/** Defines the class of the default element */
 	className: PropTypes.string,
+	/** Defines the default style of the focus outline. if null the default behaviour is used */
+	outlineStyle: PropTypes.string,
 	/** Defines the handler called when the recognition starts */
 	onStart: PropTypes.func,
 	/** Defines the handler called when the recognition ends */
@@ -214,6 +221,7 @@ Vocal.defaultProps = {
 	tabIndex: 0,
 	style: null,
 	className: null,
+	outlineStyle: '2px solid',
 	onStart: null,
 	onEnd: null,
 	onSpeechStart: null,
