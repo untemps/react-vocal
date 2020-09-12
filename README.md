@@ -87,7 +87,8 @@ const App = () => {
    )
 }
 ```
-In this case, a `onClick` handler is automatically attached to the component to start a recognition session.
+In this case, a `onClick` handler is automatically attached to the component to start a recognition session.  
+Only the first direct descendant of Vocal will receive the `onClick` handler. If you want to use a more complex hierarchy, use the function syntax below.
 
 - With a function that returns a React element:
 
