@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/untemps/react-vocal/compare/v1.3.5...v1.4.0) (2020-09-13)
+
+
+### Features
+
+* Add support for function as children ([#24](https://github.com/untemps/react-vocal/issues/24)) ([153be96](https://github.com/untemps/react-vocal/commit/153be96cc610bd6025f5edaff522987d8194c449))
+
 ## [1.3.5](https://github.com/untemps/react-vocal/compare/v1.3.4...v1.3.5) (2020-09-13)
 
 ## [1.3.4](https://github.com/untemps/react-vocal/compare/v1.3.3...v1.3.4) (2020-09-07)
