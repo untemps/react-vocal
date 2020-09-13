@@ -13,11 +13,15 @@
 
 ## Links
 
-:red_circle: <big><a href="https://untemps.github.io/react-vocal" target="_blank" rel="noopener">LIVE DEMO</a></big> :red_circle:
+:red_circle:&nbsp;&nbsp;<big><a href="https://untemps.github.io/react-vocal" target="_blank" rel="noopener">LIVE DEMO</a></big>&nbsp;:red_circle:
 
 ## Disclaimer
 
 The [Web Speech API](https://developer.mozilla.org/fr/docs/Web/API/Web_Speech_API) is only supported by few browsers so far (see [caniuse](https://caniuse.com/#search=SpeechRecognition)). If the API is not available, the `Vocal` component won't display anything.
+
+This component intends to catch a speech result as soon as possible. This can be a good fit for vocal commands or search field filling. For now on it does not support continuous speech (see [Roadmap](#roadmap) below).  
+That means either a result is caught and returned or timeout is reached and the recognition is discarded.  
+The `stop` function returned by children-as-function mechanism allows to prematurely discard the recognition before timeout elapses.
 
 ## Installation
 
@@ -35,66 +39,75 @@ yarn add @untemps/react-vocal
 import Vocal from '@untemps/react-vocal'
 
 const App = () => {
-	const [result, setResult] = useState('')
-
-	const _onVocalStart = () => {
-		setResult('')
-	}
-
-	const _onVocalResult = (result) => {
-		setResult(result)
-	}
-
-	return (
-		<div className="App">
-			<span style={{ position: 'relative' }}>
-				<Vocal
-					onStart={_onVocalStart}
-					onResult={_onVocalResult}
-					style={{ width: 16, position: 'absolute', right: 10, top: -2 }}
-				/>
-				<input defaultValue={result} style={{ width: 300, height: 40 }} />
-			</span>
-		</div>
-	)
+   const [result, setResult] = useState('')
+   
+   const _onVocalStart = () => {
+      setResult('')
+   }
+   
+   const _onVocalResult = (result) => {
+      setResult(result)
+   }
+   
+   return (
+      <div className="App">
+         <span style={{ position: 'relative' }}>
+            <Vocal
+               onStart={_onVocalStart}
+               onResult={_onVocalResult}
+               style={{ width: 16, position: 'absolute', right: 10, top: -2 }}
+            />
+            <input defaultValue={result} style={{ width: 300, height: 40 }} />
+         </span>
+      </div>
+   )
 }
 ```
 
 #### Custom component
 
-By default, `Vocal` displays an icon with two states (idle/listening):
+By default, `Vocal` displays an icon with two states:
 
-![Idle icon](assets/icon-idle.png)
-![Listening icon](assets/icon-listening.png)
+- Idle  
+![Idle state](assets/icon-idle.png)
+- Listening  
+![Listening state](assets/icon-listening.png)
 
-But you can provide your own component:
+But you can provide your own component.  
+- With a simple React element:
 
 ```javascript
 import Vocal from '@untemps/react-vocal'
 
 const App = () => {
-	const [isListening, setIsListening] = useState('')
+   return (
+      <Vocal>
+         <button>Start</button>
+      </Vocal>
+   )
+}
+```
+In this case, a `onClick` handler is automatically attached to the component to start a recognition session.  
+Only the first direct descendant of Vocal will receive the `onClick` handler. If you want to use a more complex hierarchy, use the function syntax below.
 
-	const _onSpeechStart = () => {
-		setIsListening(true)
-	}
+- With a function that returns a React element:
 
-	const _onSpeechEnd = () => {
-		setIsListening(false)
-	}
+```javascript
+import Vocal from '@untemps/react-vocal'
 
-	return (
-		<Vocal onSpeechStart={_onSpeechStart} onSpeechEnd={_onSpeechEnd}>
-			{isListening ? 'Waiting for vocal' : <button>Click to speech</button>}
-		</Vocal>
-	)
+const App = () => {
+   return (
+      <Vocal>{(start, stop) => (
+         <div>
+            <button onClick={start}>Start</button>
+            <button onClick={stop}>Stop</button>
+         </div>
+      )}</Vocal>
+   )
 }
 ```
 
-The component passed as children must respect the following constraints:
-
--   Be a single valid element. Neither array of elements nor string.
--   Accept a `onClick` handler used to trigger the recognition session. If the component provides its own `onClick` callback, it will be overridden by the Vocal component implementation.
+`start` allows to start a recognition session. `stop` stops it.
 
 #### API
 
@@ -123,50 +136,50 @@ import { useVocal } from '@untemps/react-vocal'
 import Icon from './Icon'
 
 const App = () => {
-	const [isListening, setIsListening] = useState(false)
-	const [result, setResult] = useState('')
+   const [isListening, setIsListening] = useState(false)
+   const [result, setResult] = useState('')
+   
+   const [, {start, subscribe}] = useVocal('fr_FR')
+   
+   const _onButtonClick = () => {
+      setIsListening(true)
+      
+      subscribe('speechstart', _onVocalStart)
+      subscribe('result', _onVocalResult)
+      subscribe('error', _onVocalError)
+      start()
+   }
+   
+   const _onVocalStart = () => {
+      setResult('')
+   }
 
-	const [, {start, subscribe}] = useVocal('fr_FR')
+   const _onVocalResult = (result) => {
+      setIsListening(false)
+      
+      setResult(result)
+   }
 
-	const _onButtonClick = () => {
-		setIsListening(true)
+   const _onVocalError = (e) => {
+      console.error(e)
+   }
 
-		subscribe('speechstart', _onVocalStart)
-		subscribe('result', _onVocalResult)
-		subscribe('error', _onVocalError)
-		start()
-	}
-
-	const _onVocalStart = () => {
-		setResult('')
-	}
-
-	const _onVocalResult = (result) => {
-		setIsListening(false)
-
-		setResult(result)
-	}
-
-	const _onVocalError = (e) => {
-		console.error(e)
-	}
-
-	return (
-		<div>
-			<span style={{ position: 'relative' }}>
-				<div
-					role="button"
-					aria-label="Vocal"
-					tabIndex={0}
-					style={{ width: 16, position: 'absolute', right: 10, top: 2 }}
-					onClick={_onButtonClick}
-				>
-					<Icon color={isListening ? 'red': 'blue'} />
-				</div>
-				<input defaultValue={result} style={{ width: 300, height: 40 }} />
-			</span>
-		</div>
-	)
+   return (
+      <div>
+         <span style={{ position: 'relative' }}>
+            <div
+               role="button"
+               aria-label="Vocal"
+               tabIndex={0}
+               style={{ width: 16, position: 'absolute', right: 10, top: 2 }}
+               onClick={_onButtonClick}
+            >
+               <Icon color={isListening ? 'red': 'blue'} />
+            </div>
+            <input defaultValue={result} style={{ width: 300, height: 40 }} />
+         </span>
+      </div>
+   )
 }
 ```
 
@@ -205,11 +218,11 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
 import Vocal, {isSupported} from '@untemps/react-vocal'
 
 const App = () => {
-	return isSupported ? (
-		<Vocal />
-    ) : (
-        <p>Your browser does not support Web Speech API</p>
-    )
+   return isSupported ? (
+      <Vocal />
+   ) : (
+      <p>Your browser does not support Web Speech API</p>
+   )
 }
 ```
 
@@ -253,4 +266,4 @@ Contributions are warmly welcomed:
 ## Roadmap
 
 - Add a connector management to plug external speech-to-text services in
-- Accept more ways to customize children
+- Support continuous speech
