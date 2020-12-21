@@ -163,7 +163,7 @@ const Vocal = ({
 	const _renderChildren = (children) => {
 		if (SpeechRecognitionWrapper.isSupported) {
 			if (isFunc(children)) {
-				return children(startRecognition, stopRecognition)
+				return children(startRecognition, stopRecognition, isListening)
 			} else if (isValidElement(children)) {
 				return cloneElement(children, {
 					...(!isListening && { onClick: _onClick }),
