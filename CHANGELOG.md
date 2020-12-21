@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/untemps/react-vocal/compare/v1.4.1...v1.5.0) (2020-12-21)
+
+
+### Features
+
+* Expose the isListening flag in the function as children ([#30](https://github.com/untemps/react-vocal/issues/30)) ([436df67](https://github.com/untemps/react-vocal/commit/436df67a5e516fa08c6edf3c2cf425f9eb3621e1))
+
 ## [1.4.1](https://github.com/untemps/react-vocal/compare/v1.4.0...v1.4.1) (2020-10-22)
 
 # [1.4.0](https://github.com/untemps/react-vocal/compare/v1.3.5...v1.4.0) (2020-09-13)
