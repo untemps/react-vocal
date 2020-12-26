@@ -29,6 +29,14 @@ describe('Vocal', () => {
 		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
 	})
 
+	it('renders no children element if SpeechRecognition is not supported', () => {
+		jest.spyOn(SpeechRecognitionWrapper, 'isSupported', 'get').mockReturnValueOnce(false)
+		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
+		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
+		expect(queryByTestId('__vocal-custom-root__')).not.toBeInTheDocument()
+		jest.clearAllMocks()
+	})
+
 	it('renders custom children function', () => {
 		const { queryByTestId } = render(getInstance(null, () => <div data-testid="__vocal-custom-root__" />))
 		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
