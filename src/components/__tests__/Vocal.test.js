@@ -63,6 +63,29 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('gets recognition status with custom children function', async () => {
+		const onEnd = jest.fn()
+		const { queryByText } = render(
+			getInstance({ onEnd }, (start, stop, isStarted) => (
+				<div data-testid="__vocal-custom-root__">
+					<div>{isStarted ? 'Started' : 'Stopped'}</div>
+					<button onClick={start}>start</button>
+					<button onClick={stop}>stop</button>
+				</div>
+			))
+		)
+		await act(async () => {
+			fireEvent.click(queryByText('start'))
+			await waitFor(() => {
+				expect(queryByText('Started')).toBeInTheDocument()
+			})
+			fireEvent.click(queryByText('stop'))
+			await waitFor(() => {
+				expect(queryByText('Stopped')).toBeInTheDocument()
+			})
+		})
+	})
+
 	it('renders pointer cursor when idle', () => {
 		const { getByTestId } = render(getInstance())
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
