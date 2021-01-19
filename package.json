@@ -63,6 +63,9 @@
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1"
 	},
+	"dependencies": {
+		"audio-recorder-polyfill": "^0.4.1"
+	},
 	"jest": {
 		"coverageDirectory": "./coverage/",
 		"collectCoverage": true,

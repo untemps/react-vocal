@@ -2504,6 +2504,11 @@ atob@^2.1.2:
   resolved "https://registry.yarnpkg.com/atob/-/atob-2.1.2.tgz#6d9517eb9e030d2436666651e86bd9f6f13533c9"
   integrity sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==
 
+audio-recorder-polyfill@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/audio-recorder-polyfill/-/audio-recorder-polyfill-0.4.1.tgz#4290eca3d8edf49eb6daba59592aacf357b6e5b7"
+  integrity sha512-SS4qVOzuVwlS/tjQdd0uR+9cCKBTkx4jsAdjM+rMNqoTEWf6bMnBSTfv+FO4Zn9ngxviJOxhkgRWWXsAMqM96Q==
+
 aws-sign2@~0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/aws-sign2/-/aws-sign2-0.7.0.tgz#b46e890934a9591f2d2f6f86d7e6a9f1b3fe76a8"
@@ -8134,8 +8139,6 @@ rollup@^2.35.1:
   version "2.35.1"
   resolved "https://registry.yarnpkg.com/rollup/-/rollup-2.35.1.tgz#e6bc8d10893556a638066f89e8c97f422d03968c"
   integrity sha512-q5KxEyWpprAIcainhVy6HfRttD9kutQpHbeqDTWnqAFNJotiojetK6uqmcydNMymBEtC4I8bCYR+J3mTMqeaUA==
-  dependencies:
-    fsevents "~2.1.2"
   optionalDependencies:
     fsevents "~2.1.2"
 
