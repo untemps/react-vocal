@@ -112,7 +112,7 @@ const Vocal = ({
 		!!onSpeechEnd && onSpeechEnd(e)
 	}
 
-	const _onResult = (result, event) => {
+	const _onResult = (event, result) => {
 		stopTimer()
 		stopRecognition()
 
