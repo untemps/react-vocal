@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/untemps/react-vocal/compare/v1.5.4...v1.6.0) (2021-05-19)
+
+
+### Features
+
+* Make the SpeechRecognitionWrapper event API more predictable ([#36](https://github.com/untemps/react-vocal/issues/36)) ([f81bab6](https://github.com/untemps/react-vocal/commit/f81bab6b80454882d85b50ccfddab41e068b289d))
+
 ## [1.5.4](https://github.com/untemps/react-vocal/compare/v1.5.3...v1.5.4) (2021-04-27)
 
 ## [1.5.3](https://github.com/untemps/react-vocal/compare/v1.5.2...v1.5.3) (2020-12-26)
