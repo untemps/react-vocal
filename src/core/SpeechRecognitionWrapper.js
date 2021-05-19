@@ -105,7 +105,21 @@ class SpeechRecognitionWrapper {
 				let additionalArgs = []
 				if (eventType === SpeechRecognitionWrapper.eventTypes.RESULT) {
 					if (!!event.results && event.results.length > 0) {
-						additionalArgs.push(event.results[0][0].transcript)
+						const transcripts = []
+						for (let i = 0; i < event.results.length; ++i) {
+							let mostConfident = { confidence: 0, transcript: '' }
+							for (let j = 0; j < event.results[i].length; ++j) {
+								if (
+									event.results[i][j].confidence > mostConfident.confidence ||
+									// Programmatic use (instance.say(...)) returns no confidence.
+									event.results[i][j].confidence === undefined
+								) {
+									mostConfident = event.results[i][j]
+								}
+							}
+							transcripts.push(mostConfident.transcript)
+						}
+						additionalArgs.push(transcripts.join(''))
 					}
 				}
 
