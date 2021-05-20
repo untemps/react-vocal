@@ -63,6 +63,9 @@
 		"react": "^16.13.1",
 		"react-dom": "^16.13.1"
 	},
+	"dependencies": {
+		"@untemps/vocal": "^1.1.0"
+	},
 	"jest": {
 		"coverageDirectory": "./coverage/",
 		"collectCoverage": true,
@@ -127,8 +130,5 @@
 		"build:es": "cross-env NODE_ENV=production BABEL_ENV=es rollup -c",
 		"build:umd": "cross-env NODE_ENV=production BABEL_ENV=umd rollup -c",
 		"prettier": "prettier \"*/**/*.js\" --ignore-path ./.prettierignore --write && git add . && git status"
-	},
-	"dependencies": {
-		"@untemps/vocal": "^1.1.0"
 	}
 }
