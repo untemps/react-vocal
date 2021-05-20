@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from 'react'
-
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 
 const useVocal = (lang = 'en-US', grammars = null, __rsInstance = null) => {
