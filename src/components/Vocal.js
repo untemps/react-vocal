@@ -1,7 +1,7 @@
 import React, { cloneElement, isValidElement, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
-import SpeechRecognitionWrapper from '../core/SpeechRecognitionWrapper'
+import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 
 import isFunc from '../utils/isFunc'
 

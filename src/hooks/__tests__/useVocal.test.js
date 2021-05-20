@@ -1,9 +1,9 @@
 import { renderHook } from '@testing-library/react-hooks'
+import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 
-import SpeechRecognitionWrapper from '../../core/SpeechRecognitionWrapper'
 import useVocal from '../useVocal'
 
-jest.mock('../../core/SpeechRecognitionWrapper')
+jest.mock('@untemps/vocal')
 
 describe('useVocal', () => {
 	const mockStart = jest.fn()
