@@ -1,8 +1,8 @@
 import React from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
+import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 
-import SpeechRecognitionWrapper from '../../core/SpeechRecognitionWrapper'
 import Vocal from '../Vocal'
 
 const defaultProps = {}
