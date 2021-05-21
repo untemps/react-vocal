@@ -2201,10 +2201,10 @@
   resolved "https://registry.yarnpkg.com/@untemps/user-permissions-utils/-/user-permissions-utils-1.0.1.tgz#1ad1d7fd9b9d30d3a0dfbd5f5b4c39c7d3bcff26"
   integrity sha512-23/VLI5T6Wckkl2dn28Xv8KDRkO0TNf/yKJRmPvyul7XdidYuvK88pHwcsf5ATQFBOH9bchn6OjcDDUnKGXnkA==
 
-"@untemps/vocal@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@untemps/vocal/-/vocal-1.1.0.tgz#c2f4c0ead82ac9b621b96874a21757e37105bffa"
-  integrity sha512-0+jAw2HGw4VrirA7w0mkh9lfSsUDq3dmprx9kVQ1DwcVTwn7mVBloO1FdhOgK6KWLV3SrMyuztqhw1VWHyc+xw==
+"@untemps/vocal@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@untemps/vocal/-/vocal-1.1.1.tgz#557e359c7e013f740487fe5e69d318bf63300660"
+  integrity sha512-ifXb/28lH1sgHWqX7LkaHOkC5H8aFmGWFcmUn6Ut17mpzO4zBVYYF1FtwvSDpSqi5CJOmC7+xbiex+3AuXRfbg==
   dependencies:
     "@untemps/user-permissions-utils" "^1.0.1"
 
