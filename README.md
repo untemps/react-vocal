@@ -28,6 +28,13 @@ That means either a result is caught and returned or timeout is reached and the 
 The `stop` function returned by children-as-function mechanism allows to prematurely discard the recognition before
 timeout elapses.
 
+### Special cases
+
+Some browsers supports the `SpeechRecognition` API but not all the related APIs.  
+For example, browsers on iOS 14.5, the `SpeechGrammar` and `SpeechGrammarList` and `Permissions` APIs are not supported.
+
+Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlaying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
+
 ## Installation
 
 ```bash
