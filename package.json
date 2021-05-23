@@ -58,9 +58,7 @@
     "semantic-release": "^17.0.7"
   },
   "dependencies": {
-    "@untemps/event-dispatcher": "^1.1.0",
-    "@untemps/react-vocal": "^1.4.0",
-    "@untemps/user-permissions-utils": "^1.0.1",
+    "@untemps/react-vocal": "^1.6.5",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "tailwindcss": "^1.5.1"
