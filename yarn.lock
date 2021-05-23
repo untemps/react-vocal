@@ -2191,17 +2191,17 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@untemps/user-permissions-utils@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@untemps/user-permissions-utils/-/user-permissions-utils-1.0.1.tgz#1ad1d7fd9b9d30d3a0dfbd5f5b4c39c7d3bcff26"
-  integrity sha512-23/VLI5T6Wckkl2dn28Xv8KDRkO0TNf/yKJRmPvyul7XdidYuvK88pHwcsf5ATQFBOH9bchn6OjcDDUnKGXnkA==
+"@untemps/user-permissions-utils@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@untemps/user-permissions-utils/-/user-permissions-utils-1.0.3.tgz#d26b69e190571788a8d897976000a53d25dc73a4"
+  integrity sha512-VmIJrihk4iUqKCUr6r/yMa+0kVVXFKOpINFjUgOWb8Ou0Y03/NnvFfRfXpBCPx8Iu8GhNaCPA/0zkZNQs+RF1Q==
 
-"@untemps/vocal@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@untemps/vocal/-/vocal-1.1.1.tgz#557e359c7e013f740487fe5e69d318bf63300660"
-  integrity sha512-ifXb/28lH1sgHWqX7LkaHOkC5H8aFmGWFcmUn6Ut17mpzO4zBVYYF1FtwvSDpSqi5CJOmC7+xbiex+3AuXRfbg==
+"@untemps/vocal@^1.2.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@untemps/vocal/-/vocal-1.2.1.tgz#7a0dd83534e7a2760c7d33e80536336318453a04"
+  integrity sha512-OAjrBATNEodo0Yy33F2INUSEIO2awP5K8LSeqJZuFqSMFtRkJCM49oCnK2xj8kipfifln39kGEk4G0DoRv5ZKg==
   dependencies:
-    "@untemps/user-permissions-utils" "^1.0.1"
+    "@untemps/user-permissions-utils" "^1.0.3"
 
 JSONStream@^1.0.4, JSONStream@^1.3.4, JSONStream@^1.3.5:
   version "1.3.5"
