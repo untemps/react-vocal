@@ -2191,11 +2191,6 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@untemps/event-dispatcher@^1.1.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@untemps/event-dispatcher/-/event-dispatcher-1.2.0.tgz#8ab637c84f519bc7c4341de67a023984307370e5"
-  integrity sha512-9rpbaClpMoCZXErsC6QHYdPEJ5LTZYkNZp6NdcgJMsrgBMesh1DsEOECE0jk6zSlOvVnIYaDI/kIXK0W38XeXQ==
-
 "@untemps/user-permissions-utils@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@untemps/user-permissions-utils/-/user-permissions-utils-1.0.1.tgz#1ad1d7fd9b9d30d3a0dfbd5f5b4c39c7d3bcff26"
