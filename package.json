@@ -62,7 +62,7 @@
 		"react-dom": "^16.13.1"
 	},
 	"dependencies": {
-		"@untemps/vocal": "^1.2.1"
+		"@untemps/vocal": "^1.3.0"
 	},
 	"jest": {
 		"coverageDirectory": "./coverage/",
