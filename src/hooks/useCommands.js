@@ -1,6 +1,6 @@
 import Fuse from 'fuse.js'
 
-const useCommand = (commands) => {
+const useCommands = (commands) => {
 	commands = Object.entries(commands).reduce((acc, [key, value]) => ({ [key.toLocaleLowerCase()]: value }), {})
 
 	const triggerCommand = (command) => {
@@ -16,4 +16,4 @@ const useCommand = (commands) => {
 	return triggerCommand
 }
 
-export default useCommand
+export default useCommands

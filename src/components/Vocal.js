@@ -6,9 +6,9 @@ import isFunc from '../utils/isFunc'
 
 import useVocal from '../hooks/useVocal'
 import useTimeout from '../hooks/useTimeout'
+import useCommands from '../hooks/useCommands'
 
 import Icon from './Icon'
-import useCommand from '../hooks/useCommand'
 
 const Vocal = ({
 	children,
@@ -33,7 +33,7 @@ const Vocal = ({
 	const [isListening, setIsListening] = useState(false)
 
 	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
-	const triggerCommand = useCommand(commands)
+	const triggerCommand = useCommands(commands)
 
 	const _onEnd = (e) => {
 		stopTimer()
