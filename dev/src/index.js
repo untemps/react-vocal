@@ -31,10 +31,7 @@ const App = () => {
 			<Vocal
 				lang="fr"
 				commands={{
-					'Change la bordure en rouge': (command) => {
-						console.log('command', command)
-						setBorderColor('red')
-					},
+					'Change la bordure en rouge': (command) => setBorderColor('red'),
 				}}
 				onStart={_onVocalStart}
 				onEnd={_onVocalEnd}

@@ -10,7 +10,7 @@ const useCommands = (commands, precision = 0.4) => {
 		const result = fuse.search(input).filter((r) => r.score < precision)
 		if (!!result?.length) {
 			const key = result[0].item.toLocaleLowerCase()
-			return commands[key]?.(result)
+			return commands[key]?.(input)
 		}
 		return null
 	}

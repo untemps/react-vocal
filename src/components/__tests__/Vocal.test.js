@@ -127,6 +127,27 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ backgroundColor: 'blue' })
 	})
 
+	it('responds to command', async () => {
+		const callback = jest.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { foo: callback }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
+
+		let flag = false
+		recognition.addEventListener('start', async () => {
+			flag = true
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+
+			await waitFor(() => flag)
+
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('Foo'))
+		})
+	})
+
 	it('triggers onStart handler', async () => {
 		const onStart = jest.fn()
 		const { queryByTestId } = render(getInstance({ onStart }))

@@ -18,6 +18,16 @@ describe('useCommands', () => {
 		expect(triggerCommand('foo')).toBe('bar')
 	})
 
+	it('passes input as callback argument', () => {
+		const commands = {
+			foo: (input) => input,
+		}
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommands(commands))
+		expect(triggerCommand('foo')).toBe('foo')
+	})
+
 	describe('Approximate inputs', () => {
 		const value = 'foo'
 		it.each([
