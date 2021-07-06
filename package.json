@@ -62,7 +62,8 @@
 		"react-dom": "^16.13.1"
 	},
 	"dependencies": {
-		"@untemps/vocal": "^1.3.0"
+		"@untemps/vocal": "^1.3.0",
+		"fuse.js": "^6.4.6"
 	},
 	"jest": {
 		"coverageDirectory": "./coverage/",

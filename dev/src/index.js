@@ -6,6 +6,7 @@ import Vocal from '../../src'
 
 const App = () => {
 	const [logs, setLogs] = useState('')
+	const [borderColor, setBorderColor] = useState()
 
 	const _log = (value) => setLogs((logs) => `${logs}${logs.length > 0 ? '\n' : ''} ----- ${value}`)
 
@@ -27,8 +28,17 @@ const App = () => {
 
 	return (
 		<>
-			<Vocal onStart={_onVocalStart} onEnd={_onVocalEnd} onResult={_onVocalResult} onError={_onVocalError} />
-			<textarea value={logs} rows={30} disabled style={{ width: '100%', marginTop: 16 }} />
+			<Vocal
+				lang="fr"
+				commands={{
+					'Change la bordure en rouge': () => setBorderColor('red'),
+				}}
+				onStart={_onVocalStart}
+				onEnd={_onVocalEnd}
+				onResult={_onVocalResult}
+				onError={_onVocalError}
+			/>
+			<textarea value={logs} rows={30} disabled style={{ width: '100%', marginTop: 16, borderColor }} />
 		</>
 	)
 }
