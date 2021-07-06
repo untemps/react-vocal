@@ -51,53 +51,55 @@ yarn add @untemps/react-vocal
 import Vocal from '@untemps/react-vocal'
 
 const App = () => {
-    const [result, setResult] = useState('')
+	const [result, setResult] = useState('')
 
-    const _onVocalStart = () => {
-        setResult('')
-    }
+	const _onVocalStart = () => {
+		setResult('')
+	}
 
-    const _onVocalResult = (result) => {
-        setResult(result)
-    }
+	const _onVocalResult = (result) => {
+		setResult(result)
+	}
 
-    return (
-        <div className="App">
-            <span style={{position: 'relative'}}>
-                <Vocal
-                    onStart={_onVocalStart}
-                    onResult={_onVocalResult}
-                    style={{width: 16, position: 'absolute', right: 10, top: -2}}
-                />
-                <input defaultValue={result} style={{width: 300, height: 40}}/>
-            </span>
-        </div>
-    )
+	return (
+		<div className="App">
+			<span style={{ position: 'relative' }}>
+				<Vocal
+					onStart={_onVocalStart}
+					onResult={_onVocalResult}
+					style={{ width: 16, position: 'absolute', right: 10, top: -2 }}
+				/>
+				<input defaultValue={result} style={{ width: 300, height: 40 }} />
+			</span>
+		</div>
+	)
 }
 ```
+
+---
 
 #### Custom component
 
 By default, `Vocal` displays an icon with two states:
 
-- Idle  
-  ![Idle state](assets/icon-idle.png)
-- Listening  
-  ![Listening state](assets/icon-listening.png)
+-   Idle  
+    ![Idle state](assets/icon-idle.png)
+-   Listening  
+    ![Listening state](assets/icon-listening.png)
 
 But you can provide your own component.
 
-- With a simple React element:
+-   With a simple React element:
 
 ```javascript
 import Vocal from '@untemps/react-vocal'
 
 const App = () => {
-    return (
-        <Vocal>
-            <button>Start</button>
-        </Vocal>
-    )
+	return (
+		<Vocal>
+			<button>Start</button>
+		</Vocal>
+	)
 }
 ```
 
@@ -105,118 +107,174 @@ In this case, a `onClick` handler is automatically attached to the component to 
 Only the first direct descendant of Vocal will receive the `onClick` handler. If you want to use a more complex
 hierarchy, use the function syntax below.
 
-- With a function that returns a React element:
+-   With a function that returns a React element:
 
 ```javascript
 import Vocal from '@untemps/react-vocal'
 
-const Play = () => <div style={{
-    width: 0,
-    height: 0,
-    marginLeft: 1,
-    borderStyle: 'solid',
-    borderWidth: '4px 0 4px 8px',
-    borderColor: 'transparent transparent transparent black'
-}}/>
+const Play = () => (
+	<div
+		style={{
+			width: 0,
+			height: 0,
+			marginLeft: 1,
+			borderStyle: 'solid',
+			borderWidth: '4px 0 4px 8px',
+			borderColor: 'transparent transparent transparent black',
+		}}
+	/>
+)
 
-const Stop = () => <div style={{
-    width: 8,
-    height: 8,
-    backgroundColor: 'black'
-}}/>
+const Stop = () => (
+	<div
+		style={{
+			width: 8,
+			height: 8,
+			backgroundColor: 'black',
+		}}
+	/>
+)
 
 const App = () => {
-    return (
-        <Vocal>{(start, stop, isStarted) => (
-            <button style={{padding: 5}} onClick={isStarted ? stop : start}>
-                {isStarted ? <Stop/> : <Play/>}
-            </button>
-        )}</Vocal>
-    )
+	return (
+		<Vocal>
+			{(start, stop, isStarted) => (
+				<button style={{ padding: 5 }} onClick={isStarted ? stop : start}>
+					{isStarted ? <Stop /> : <Play />}
+				</button>
+			)}
+		</Vocal>
+	)
 }
 ```
 
 The following parameters are passed to the function:
 
-| Arguments     | Type              | Description                                                                                                  |
-| ------------- | ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| start         | func              | The function used to start the recognition                                                                   |
-| stop          | func              | The function used to stop the recognition                                                                    |
-| isStarted     | bool              | A flag that indicates whether the recognition is started or not                                              |
+| Arguments | Type | Description                                                     |
+| --------- | ---- | --------------------------------------------------------------- |
+| start     | func | The function used to start the recognition                      |
+| stop      | func | The function used to stop the recognition                       |
+| isStarted | bool | A flag that indicates whether the recognition is started or not |
 
-#### API
+---
 
-| Props         | Type              | Default | Description                                                                                        |
-| ------------- | ----------------- | ------- | -------------------------------------------------------------------------------------------------- |
-| lang          | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47)    |
-| grammars      | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)       |
-| timeout       | number            | 3000    | Time in ms to wait before discarding the recognition                                               |
-| style         | object            | null    | Styles of the root element if className is not specified                                           |
+#### Commands
+
+The `Vocal` component accepts a `commands` prop to map special recognition results to callbacks.  
+That means you can define vocal commands to trigger specific functions.
+
+```javascript
+const App = () => {
+  return (
+    <Vocal commands={{
+      'switch border color': () => setBorderColor('red'),
+    }}/>
+  )
+}
+```
+
+`commands` object is a key/pair model where the `key` is the command to be caught by the recognition and the `value` is the callback triggered when the command is detected.  
+
+`key` is not case sensitive.
+
+```javascript
+const commands = {
+    submit: () => submitForm(),
+    'Change the background color': () => setBackgroundColor('red'), 
+    'PLAY MUSIC': play
+}
+```
+
+The component utilizes a special hook called `useCommands` to respond to the commands.  
+The hook performs a fuzzy search to match approximate commands if needed. This allows to fix accidental typos or approximate recognition results.  
+To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorithm to find strings that are approximately equal to a given input. The score precision that distinguishes acceptable command-to-callback mapping from negative matching can be customized in the hook instantiantion.
+
+```javascript
+useCommands(commands, threshold) // threshold is the limit not to exceed to be considered a match
+```
+
+See [fuze.js scoring theory](https://fusejs.io/concepts/scoring-theory.html) for more details.
+
+> :warning: **The `Vocal` component doesn't expose that score yet.** For now on you have to deal with the default value (*0.4*)
+
+---
+
+#### `Vocal` component API
+
+| Props         | Type              | Default | Description                                                                                     |
+| ------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------- |
+| commands      | object            | null    | Callbacks to be triggered when specified commands are detected by the recognition               |
+| lang          | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
+| grammars      | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
+| timeout       | number            | 3000    | Time in ms to wait before discarding the recognition                                            |
+| style         | object            | null    | Styles of the root element if className is not specified                                        |
 | className     | string            | null    | Class of the root element                                                                       |
-| onStart       | func              | null    | Handler called when the recognition starts                                                         |
-| onEnd         | func              | null    | Handler called when the recognition ends                                                           |
-| onSpeechStart | func              | null    | Handler called when the speech starts                                                              |
-| onSpeechEnd   | func              | null    | Handler called when the speech ends                                                                |
-| onResult      | func              | null    | Handler called when a result is recognized                                                         |
-| onError       | func              | null    | Handler called when an error occurs                                                                |
-| onNoMatch     | func              | null    | Handler called when no result can be recognized                                                    |
+| onStart       | func              | null    | Handler called when the recognition starts                                                      |
+| onEnd         | func              | null    | Handler called when the recognition ends                                                        |
+| onSpeechStart | func              | null    | Handler called when the speech starts                                                           |
+| onSpeechEnd   | func              | null    | Handler called when the speech ends                                                             |
+| onResult      | func              | null    | Handler called when a result is recognized                                                      |
+| onError       | func              | null    | Handler called when an error occurs                                                             |
+| onNoMatch     | func              | null    | Handler called when no result can be recognized                                                 |
 
 ### `useVocal` hook
 
 #### Basic usage
 
 ```javascript
-import React, {useState} from 'react'
-import {useVocal} from '@untemps/react-vocal'
+import React, { useState } from 'react'
+import { useVocal } from '@untemps/react-vocal'
 import Icon from './Icon'
 
 const App = () => {
-    const [isListening, setIsListening] = useState(false)
-    const [result, setResult] = useState('')
+	const [isListening, setIsListening] = useState(false)
+	const [result, setResult] = useState('')
 
-    const [, {start, subscribe}] = useVocal('fr_FR')
+	const [, { start, subscribe }] = useVocal('fr_FR')
 
-    const _onButtonClick = () => {
-        setIsListening(true)
+	const _onButtonClick = () => {
+		setIsListening(true)
 
-        subscribe('speechstart', _onVocalStart)
-        subscribe('result', _onVocalResult)
-        subscribe('error', _onVocalError)
-        start()
-    }
+		subscribe('speechstart', _onVocalStart)
+		subscribe('result', _onVocalResult)
+		subscribe('error', _onVocalError)
+		start()
+	}
 
-    const _onVocalStart = () => {
-        setResult('')
-    }
+	const _onVocalStart = () => {
+		setResult('')
+	}
 
-    const _onVocalResult = (result) => {
-        setIsListening(false)
+	const _onVocalResult = (result) => {
+		setIsListening(false)
 
-        setResult(result)
-    }
+		setResult(result)
+	}
 
-    const _onVocalError = (e) => {
-        console.error(e)
-    }
+	const _onVocalError = (e) => {
+		console.error(e)
+	}
 
-    return (
-        <div>
-            <span style={{position: 'relative'}}>
-                <div
-                    role="button"
-                    aria-label="Vocal"
-                    tabIndex={0}
-                    style={{width: 16, position: 'absolute', right: 10, top: 2}}
-                    onClick={_onButtonClick}
-                >
-                    <Icon color={isListening ? 'red' : 'blue'}/>
-                </div>
-                <input defaultValue={result} style={{width: 300, height: 40}}/>
-            </span>
-        </div>
-    )
+	return (
+		<div>
+			<span style={{ position: 'relative' }}>
+				<div
+					role="button"
+					aria-label="Vocal"
+					tabIndex={0}
+					style={{ width: 16, position: 'absolute', right: 10, top: 2 }}
+					onClick={_onButtonClick}
+				>
+					<Icon color={isListening ? 'red' : 'blue'} />
+				</div>
+				<input defaultValue={result} style={{ width: 300, height: 40 }} />
+			</span>
+		</div>
+	)
 }
 ```
+
+---
 
 #### Signature
 
@@ -224,10 +282,12 @@ const App = () => {
 useVocal(lang, grammars)
 ```
 
-| Args          | Type              | Default | Description                                                                                          |
-| ------------- | ----------------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| lang          | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47)      |
-| grammars      | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)         |
+| Args     | Type              | Default | Description                                                                                     |
+| -------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------- |
+| lang     | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
+| grammars | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
+
+---
 
 #### Return value
 
@@ -235,47 +295,43 @@ useVocal(lang, grammars)
 const [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
 ```
 
-| Args          | Type              | Description                                                 |
-| ------------- | ----------------- | ----------------------------------------------------------- |
-| ref           | Ref               | React ref to the SpeechRecognitionWrapper instance          |
-| start         | func              | Function to start the recognition                           |
-| stop          | func              | Function to stop the recognition                            |
-| abort         | func              | Function to abort the recognition                           |
-| subscribe     | func              | Function to subscribe to recognition events                 |
-| unsubscribe   | func              | Function to unsubscribe to recognition events               |
-| clean         | func              | Function to clean subscription to recognition events        |
+| Args        | Type | Description                                          |
+| ----------- | ---- | ---------------------------------------------------- |
+| ref         | Ref  | React ref to the SpeechRecognitionWrapper instance   |
+| start       | func | Function to start the recognition                    |
+| stop        | func | Function to stop the recognition                     |
+| abort       | func | Function to abort the recognition                    |
+| subscribe   | func | Function to subscribe to recognition events          |
+| unsubscribe | func | Function to unsubscribe to recognition events        |
+| clean       | func | Function to clean subscription to recognition events |
 
 ### Browser support flag
 
 #### Basic usage
 
 ```javascript
-import Vocal, {isSupported} from '@untemps/react-vocal'
+import Vocal, { isSupported } from '@untemps/react-vocal'
 
 const App = () => {
-    return isSupported ? (
-        <Vocal/>
-    ) : (
-        <p>Your browser does not support Web Speech API</p>
-    )
+	return isSupported ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
 }
 ```
 
 ### Events
 
-| Events        | Description                                                                                         |
-| ------------- | --------------------------------------------------------------------------------------------------- |
-| audioend      | Fired when the user agent has finished capturing audio for recognition                              |
-| audiostart    | Fired when the user agent has started to capture audio for recognition                              |
-| end           | Fired when the recognition service has disconnected                                                 |
-| error         | Fired when a recognition error occurs                                                               |
-| nomatch       | Fired when the recognition service returns a final result with no significant recognition           |
-| result        | Fired when the recognition service returns a result                                                 |
-| soundend      | Fired when any sound — recognisable or not — has stopped being detected                             |
-| soundstart    | Fired when any sound — recognisable or not — has been detected                                      |
-| speechend     | Fired when speech recognized by the recognition service has stopped being detected                  |
-| speechstart   | Fired when sound recognized by the recognition service as speech has been detected                  |
-| start         | fired when the recognition service has begun listening to incoming audio                            |
+| Events      | Description                                                                               |
+| ----------- | ----------------------------------------------------------------------------------------- |
+| audioend    | Fired when the user agent has finished capturing audio for recognition                    |
+| audiostart  | Fired when the user agent has started to capture audio for recognition                    |
+| end         | Fired when the recognition service has disconnected                                       |
+| error       | Fired when a recognition error occurs                                                     |
+| nomatch     | Fired when the recognition service returns a final result with no significant recognition |
+| result      | Fired when the recognition service returns a result                                       |
+| soundend    | Fired when any sound — recognisable or not — has stopped being detected                   |
+| soundstart  | Fired when any sound — recognisable or not — has been detected                            |
+| speechend   | Fired when speech recognized by the recognition service has stopped being detected        |
+| speechstart | Fired when sound recognized by the recognition service as speech has been detected        |
+| start       | fired when the recognition service has begun listening to incoming audio                  |
 
 ### Notes
 
@@ -294,14 +350,14 @@ yarn dev
 
 Contributions are warmly welcomed:
 
-- Fork the repository
-- Create a feature branch (preferred name convention: `[feature type]_[imperative verb]-[description of the feature]`)
-- Develop the feature AND write the tests (or write the tests AND develop the feature)
-- Commit your changes
-  using [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
-- Submit a Pull Request
+-   Fork the repository
+-   Create a feature branch (preferred name convention: `[feature type]_[imperative verb]-[description of the feature]`)
+-   Develop the feature AND write the tests (or write the tests AND develop the feature)
+-   Commit your changes
+    using [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
+-   Submit a Pull Request
 
 ## Roadmap
 
-- Add a connector management to plug external speech-to-text services in
-- Support continuous speech
+-   Add a connector management to plug external speech-to-text services in
+-   Support continuous speech
