@@ -183,8 +183,8 @@ const Vocal = ({
 }
 
 Vocal.propTypes = {
-	/** Defines callbacks to be triggered when specified commands are detected by the recognition */
-	commands: PropTypes.object,
+	/** Defines callbacks to be triggered when keys are detected by the recognition */
+	commands: PropTypes.objectOf(PropTypes.func),
 	/** Defines the language understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/lang) */
 	lang: PropTypes.string,
 	/** Defines the grammars understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/grammars) */
