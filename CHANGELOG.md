@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/untemps/react-vocal/compare/v1.6.8...v1.7.0) (2021-07-16)
+
+
+### Features
+
+* Add commands support ([#58](https://github.com/untemps/react-vocal/issues/58)) ([12e086d](https://github.com/untemps/react-vocal/commit/12e086d2308fff738de8a0b370108432f0df3265)), closes [#60](https://github.com/untemps/react-vocal/issues/60)
+
 ## [1.6.8](https://github.com/untemps/react-vocal/compare/v1.6.7...v1.6.8) (2021-07-03)
 
 ## [1.6.7](https://github.com/untemps/react-vocal/compare/v1.6.6...v1.6.7) (2021-06-12)
