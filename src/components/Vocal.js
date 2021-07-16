@@ -6,11 +6,13 @@ import isFunc from '../utils/isFunc'
 
 import useVocal from '../hooks/useVocal'
 import useTimeout from '../hooks/useTimeout'
+import useCommands from '../hooks/useCommands'
 
 import Icon from './Icon'
 
 const Vocal = ({
 	children,
+	commands,
 	lang,
 	grammars,
 	timeout,
@@ -31,6 +33,7 @@ const Vocal = ({
 	const [isListening, setIsListening] = useState(false)
 
 	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
+	const triggerCommand = useCommands(commands)
 
 	const _onEnd = (e) => {
 		stopTimer()
@@ -115,6 +118,8 @@ const Vocal = ({
 		stopTimer()
 		stopRecognition()
 
+		triggerCommand(result)
+
 		!!onResult && onResult(result, event)
 	}
 
@@ -178,6 +183,8 @@ const Vocal = ({
 }
 
 Vocal.propTypes = {
+	/** Defines callbacks to be triggered when keys are detected by the recognition */
+	commands: PropTypes.objectOf(PropTypes.func),
 	/** Defines the language understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/lang) */
 	lang: PropTypes.string,
 	/** Defines the grammars understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/grammars) */
@@ -209,6 +216,7 @@ Vocal.propTypes = {
 }
 
 Vocal.defaultProps = {
+	commands: null,
 	lang: 'en-US',
 	grammars: null,
 	timeout: 3000,
