@@ -22,6 +22,9 @@
 	},
 	"main": "dist/index.js",
 	"module": "dist/index.es.js",
+	"engines": {
+		"node": ">=14"
+	},
 	"devDependencies": {
 		"@babel/cli": "^7.12.10",
 		"@babel/core": "^7.12.10",
@@ -70,9 +73,7 @@
 	"jest": {
 		"coverageDirectory": "./coverage/",
 		"collectCoverage": true,
-		"setupFilesAfterEnv": [
-			"<rootDir>/jest/jest.setup.js"
-		],
+		"setupFilesAfterEnv": ["<rootDir>/jest/jest.setup.js"],
 		"restoreMocks": true
 	},
 	"husky": {
@@ -82,9 +83,7 @@
 		}
 	},
 	"release": {
-		"branches": [
-			"main"
-		],
+		"branches": ["main"],
 		"plugins": [
 			[
 				"@semantic-release/commit-analyzer",
