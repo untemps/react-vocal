@@ -1,6 +1,6 @@
 {
 	"name": "@untemps/react-vocal",
-	"version": "1.7.8",
+	"version": "1.7.9",
 	"author": "Vincent Le Badezet <v.lebadezet@untemps.net>",
 	"repository": "git@github.com:untemps/react-vocal.git",
 	"license": "MIT",
@@ -73,7 +73,9 @@
 	"jest": {
 		"coverageDirectory": "./coverage/",
 		"collectCoverage": true,
-		"setupFilesAfterEnv": ["<rootDir>/jest/jest.setup.js"],
+		"setupFilesAfterEnv": [
+			"<rootDir>/jest/jest.setup.js"
+		],
 		"restoreMocks": true
 	},
 	"husky": {
@@ -83,7 +85,9 @@
 		}
 	},
 	"release": {
-		"branches": ["main"],
+		"branches": [
+			"main"
+		],
 		"plugins": [
 			[
 				"@semantic-release/commit-analyzer",
