@@ -1,7 +1,11 @@
-const { toBeInTheDocument, toHaveAttribute, toHaveStyle } = require('@testing-library/jest-dom/matchers')
+import '@testing-library/jest-dom/extend-expect'
+import { toBeInTheDocument, toHaveAttribute, toHaveStyle } from '@testing-library/jest-dom/matchers'
 
 expect.extend({ toBeInTheDocument, toHaveAttribute, toHaveStyle })
 
+global.navigator = {
+	userAgent: 'node.js',
+}
 global.PermissionStatus = jest.fn(() => ({
 	state: 'granted',
 	addEventListener: jest.fn(),
