@@ -1,7 +1,7 @@
 import React, { cloneElement, isValidElement, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
-import isFunction from '@untemps/utils/function/isFunction'
+import { isFunction } from '@untemps/utils/function/isFunction'
 
 import useVocal from '../hooks/useVocal'
 import useTimeout from '../hooks/useTimeout'
