@@ -3,9 +3,11 @@ import { toBeInTheDocument, toHaveAttribute, toHaveStyle } from '@testing-librar
 
 expect.extend({ toBeInTheDocument, toHaveAttribute, toHaveStyle })
 
-global.navigator = {
-	userAgent: 'node.js',
-}
+Object.defineProperty(global, 'navigator', {
+	value: { userAgent: 'node.js' },
+	writable: true,
+	configurable: true,
+})
 global.PermissionStatus = jest.fn(() => ({
 	state: 'granted',
 	addEventListener: jest.fn(),
@@ -14,11 +16,19 @@ const status = new PermissionStatus()
 global.Permissions = jest.fn(() => ({
 	query: jest.fn().mockResolvedValue(status),
 }))
-global.navigator.permissions = new Permissions()
+Object.defineProperty(global.navigator, 'permissions', {
+	value: new Permissions(),
+	writable: true,
+	configurable: true,
+})
 global.MediaDevices = jest.fn(() => ({
 	getUserMedia: jest.fn().mockResolvedValue('foo'),
 }))
-global.navigator.mediaDevices = new MediaDevices()
+Object.defineProperty(global.navigator, 'mediaDevices', {
+	value: new MediaDevices(),
+	writable: true,
+	configurable: true,
+})
 global.SpeechGrammarList = jest.fn(() => ({
 	length: 0,
 }))

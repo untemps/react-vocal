@@ -3,21 +3,27 @@ on:
   push:
     branches:
       - main
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+  issues: write
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
         with:
-          node-version: '14'
-      - run: yarn install
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: yarn install --frozen-lockfile
       - run: yarn test:ci
       - run: yarn build
       - run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v5
         with:
-          file: coverage/lcov.info
+          files: coverage/lcov.info
