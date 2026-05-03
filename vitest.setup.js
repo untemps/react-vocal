@@ -47,26 +47,26 @@ global.SpeechRecognition = vi.fn(function () {
 		removeEventListener: vi.fn(),
 		dispatchEvent: vi.fn(),
 		start: vi.fn(function () {
-			!!handlers.start && handlers.start()
+			handlers.start?.()
 		}),
 		stop: vi.fn(function () {
-			!!handlers.end && handlers.end()
+			handlers.end?.()
 		}),
 		abort: vi.fn(function () {
-			!!handlers.end && handlers.end()
+			handlers.end?.()
 		}),
 		say: vi.fn(function (sentence) {
-			!!handlers.speechstart && handlers.speechstart()
+			handlers.speechstart?.()
 
 			const resultEvent = new Event('result')
 			resultEvent.resultIndex = 0
 			resultEvent.results = [[{ transcript: sentence }]]
 			if (sentence) {
-				!!handlers.result && handlers.result(resultEvent)
+				handlers.result?.(resultEvent)
 			} else {
-				!!handlers.nomatch && handlers.nomatch()
+				handlers.nomatch?.()
 			}
-			!!handlers.speechend && handlers.speechend()
+			handlers.speechend?.()
 		}),
 	}
 })
