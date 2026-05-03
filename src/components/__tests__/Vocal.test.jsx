@@ -124,6 +124,7 @@ describe('Vocal', () => {
 
 	it('uses custom styles', () => {
 		const { getByTestId } = render(getInstance({ style: { backgroundColor: 'blue' } }))
+		// jest-dom v6 + jsdom 29: `div.style.color = 'blue'` reads back as 'blue' but getComputedStyle returns RGB; normalisation no longer bridges the gap
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ backgroundColor: 'rgb(0, 0, 255)' })
 	})
 
