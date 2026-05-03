@@ -8,11 +8,7 @@ export default defineConfig({
 			entry: 'src/index.js',
 			name: 'ReactVocal',
 			formats: ['es', 'cjs', 'umd'],
-			fileName: (format) => {
-				if (format === 'es') return 'index.es.js'
-				if (format === 'umd') return 'index.umd.js'
-				return 'index.js'
-			},
+			fileName: (format) => ({ es: 'index.es.js', umd: 'index.umd.js', cjs: 'index.js' })[format],
 		},
 		rollupOptions: {
 			external: ['react', 'react-dom', 'prop-types'],
