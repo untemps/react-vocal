@@ -12,10 +12,9 @@ global.PermissionStatus = vi.fn(function () {
 		addEventListener: vi.fn(),
 	}
 })
-const status = new PermissionStatus()
 global.Permissions = vi.fn(function () {
 	return {
-		query: vi.fn().mockResolvedValue(status),
+		query: vi.fn().mockResolvedValue(new PermissionStatus()),
 	}
 })
 Object.defineProperty(global.navigator, 'permissions', {
