@@ -147,7 +147,7 @@ const Vocal = ({
 					: {
 							width: 24,
 							height: 24,
-							backgroundColor: 'transparent',
+							backgroundColor: 'transparent', // `background: none` shorthand conflicts with user-provided backgroundImage; longhand avoids that
 							border: 'none',
 							padding: 0,
 							cursor: !isListening ? 'pointer' : 'default',

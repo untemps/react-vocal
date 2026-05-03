@@ -106,6 +106,6 @@
 		"test:ci": "vitest run --coverage",
 		"build": "vite build",
 		"prepare": "husky",
-		"prettier": "prettier \"*/**/*.js\" --ignore-path ./.prettierignore --write && git add . && git status"
+		"prettier": "prettier \"*/**/*.js\" --ignore-path ./.prettierignore --write && git add -u && git status"
 	}
 }
