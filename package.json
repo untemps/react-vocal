@@ -23,7 +23,7 @@
 	"main": "dist/index.js",
 	"module": "dist/index.es.js",
 	"engines": {
-		"node": ">=14"
+		"node": ">=22.14.0"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.12.10",
@@ -87,7 +87,11 @@
 	},
 	"release": {
 		"branches": [
-			"main"
+			"main",
+			{
+				"name": "beta",
+				"prerelease": true
+			}
 		],
 		"plugins": [
 			[
