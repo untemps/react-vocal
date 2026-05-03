@@ -1,66 +1,66 @@
-import '@testing-library/jest-dom/extend-expect'
-import { toBeInTheDocument, toHaveAttribute, toHaveStyle } from '@testing-library/jest-dom/matchers'
-
-expect.extend({ toBeInTheDocument, toHaveAttribute, toHaveStyle })
+import { vi } from 'vitest'
+import '@testing-library/jest-dom/vitest'
 
 Object.defineProperty(global, 'navigator', {
 	value: { userAgent: 'node.js' },
 	writable: true,
 	configurable: true,
 })
-global.PermissionStatus = jest.fn(() => ({
-	state: 'granted',
-	addEventListener: jest.fn(),
-}))
+global.PermissionStatus = vi.fn(function () {
+	return {
+		state: 'granted',
+		addEventListener: vi.fn(),
+	}
+})
 const status = new PermissionStatus()
-global.Permissions = jest.fn(() => ({
-	query: jest.fn().mockResolvedValue(status),
-}))
+global.Permissions = vi.fn(function () {
+	return {
+		query: vi.fn().mockResolvedValue(status),
+	}
+})
 Object.defineProperty(global.navigator, 'permissions', {
 	value: new Permissions(),
 	writable: true,
 	configurable: true,
 })
-global.MediaDevices = jest.fn(() => ({
-	getUserMedia: jest.fn().mockResolvedValue('foo'),
-}))
+global.MediaDevices = vi.fn(function () {
+	return {
+		getUserMedia: vi.fn().mockResolvedValue('foo'),
+	}
+})
 Object.defineProperty(global.navigator, 'mediaDevices', {
 	value: new MediaDevices(),
 	writable: true,
 	configurable: true,
 })
-global.SpeechGrammarList = jest.fn(() => ({
-	length: 0,
-}))
-global.SpeechRecognition = jest.fn(() => {
+global.SpeechGrammarList = vi.fn(function () {
+	return {
+		length: 0,
+	}
+})
+global.SpeechRecognition = vi.fn(function () {
 	const handlers = {}
 	return {
-		addEventListener: jest.fn((type, callback) => {
+		addEventListener: vi.fn(function (type, callback) {
 			handlers[type] = callback
 		}),
-		removeEventListener: jest.fn(),
-		dispatchEvent: jest.fn(),
-		start: jest.fn(() => {
+		removeEventListener: vi.fn(),
+		dispatchEvent: vi.fn(),
+		start: vi.fn(function () {
 			!!handlers.start && handlers.start()
 		}),
-		stop: jest.fn(() => {
+		stop: vi.fn(function () {
 			!!handlers.end && handlers.end()
 		}),
-		abort: jest.fn(() => {
+		abort: vi.fn(function () {
 			!!handlers.end && handlers.end()
 		}),
-		say: jest.fn((sentence) => {
+		say: vi.fn(function (sentence) {
 			!!handlers.speechstart && handlers.speechstart()
 
 			const resultEvent = new Event('result')
 			resultEvent.resultIndex = 0
-			resultEvent.results = [
-				[
-					{
-						transcript: sentence,
-					},
-				],
-			]
+			resultEvent.results = [[{ transcript: sentence }]]
 			if (sentence) {
 				!!handlers.result && handlers.result(resultEvent)
 			} else {

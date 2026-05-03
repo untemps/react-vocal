@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 
 import useTimeout from '../useTimeout'
 
@@ -10,13 +10,13 @@ const wait = (delay) => {
 
 describe('useTimeout', () => {
 	it('not triggers handler before calling start', () => {
-		const handler = jest.fn()
+		const handler = vi.fn()
 		renderHook(() => useTimeout(handler))
 		expect(handler).not.toHaveBeenCalled()
 	})
 
 	it('not triggers handler before timeout', async () => {
-		const handler = jest.fn()
+		const handler = vi.fn()
 		const timeout = 500
 		const {
 			result: {
@@ -29,7 +29,7 @@ describe('useTimeout', () => {
 	})
 
 	it('triggers handler immediately', async () => {
-		const handler = jest.fn()
+		const handler = vi.fn()
 		const {
 			result: {
 				current: [start],
@@ -41,7 +41,7 @@ describe('useTimeout', () => {
 	})
 
 	it('triggers handler after delay', async () => {
-		const handler = jest.fn()
+		const handler = vi.fn()
 		const timeout = 500
 		const {
 			result: {
@@ -54,7 +54,7 @@ describe('useTimeout', () => {
 	})
 
 	it('not triggers handler if stop is called before timeout', async () => {
-		const handler = jest.fn()
+		const handler = vi.fn()
 		const timeout = 500
 		const {
 			result: {
