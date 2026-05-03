@@ -1,22 +1,20 @@
-/**
- * @jest-environment jsdom
- */
-
 import React from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 
 import Vocal from '../Vocal'
 
-jest.mock('../../hooks/useVocal', () => {
-	return () => [
-		null,
-		{
-			subscribe: () => {
-				throw new Error('Foo')
+vi.mock('../../hooks/useVocal', () => {
+	return {
+		default: () => [
+			null,
+			{
+				subscribe: () => {
+					throw new Error('Foo')
+				},
 			},
-		},
-	]
+		],
+	}
 })
 
 const defaultProps = {}
@@ -28,7 +26,7 @@ const getInstance = (props = {}, children = null) => (
 
 describe('Vocal', () => {
 	it('triggers onError handler', async () => {
-		const onError = jest.fn()
+		const onError = vi.fn()
 		const { queryByTestId } = render(getInstance({ onError }))
 		await act(async () => {
 			fireEvent.click(queryByTestId('__vocal-root__'))

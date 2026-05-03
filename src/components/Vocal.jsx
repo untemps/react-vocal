@@ -11,21 +11,21 @@ import Icon from './Icon'
 
 const Vocal = ({
 	children,
-	commands,
-	lang,
-	grammars,
-	timeout,
-	ariaLabel,
-	style,
-	className,
-	outlineStyle,
-	onStart,
-	onEnd,
-	onSpeechStart,
-	onSpeechEnd,
-	onResult,
-	onError,
-	onNoMatch,
+	commands = null,
+	lang = 'en-US',
+	grammars = null,
+	timeout = 3000,
+	ariaLabel = 'start recognition',
+	style = null,
+	className = null,
+	outlineStyle = '2px solid',
+	onStart = null,
+	onEnd = null,
+	onSpeechStart = null,
+	onSpeechEnd = null,
+	onResult = null,
+	onError = null,
+	onNoMatch = null,
 	__rsInstance,
 }) => {
 	const buttonRef = useRef(null)
@@ -147,7 +147,7 @@ const Vocal = ({
 					: {
 							width: 24,
 							height: 24,
-							background: 'none',
+							backgroundColor: 'transparent',
 							border: 'none',
 							padding: 0,
 							cursor: !isListening ? 'pointer' : 'default',
@@ -214,22 +214,5 @@ Vocal.propTypes = {
 	onNoMatch: PropTypes.func,
 }
 
-Vocal.defaultProps = {
-	commands: null,
-	lang: 'en-US',
-	grammars: null,
-	timeout: 3000,
-	ariaLabel: 'start recognition',
-	style: null,
-	className: null,
-	outlineStyle: '2px solid',
-	onStart: null,
-	onEnd: null,
-	onSpeechStart: null,
-	onSpeechEnd: null,
-	onResult: null,
-	onError: null,
-	onNoMatch: null,
-}
 
 export default Vocal
