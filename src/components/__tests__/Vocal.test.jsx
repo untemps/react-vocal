@@ -1,7 +1,3 @@
-/**
- * @jest-environment jsdom
- */
-
 import React from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
@@ -34,11 +30,11 @@ describe('Vocal', () => {
 	})
 
 	it('renders no children element if SpeechRecognition is not supported', () => {
-		jest.spyOn(SpeechRecognitionWrapper, 'isSupported', 'get').mockReturnValueOnce(false)
+		vi.spyOn(SpeechRecognitionWrapper, 'isSupported', 'get').mockReturnValueOnce(false)
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
 		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
 		expect(queryByTestId('__vocal-custom-root__')).not.toBeInTheDocument()
-		jest.clearAllMocks()
+		vi.clearAllMocks()
 	})
 
 	it('renders custom children function', () => {
@@ -48,7 +44,7 @@ describe('Vocal', () => {
 	})
 
 	it('starts recognition with custom children function', async () => {
-		const onStart = jest.fn()
+		const onStart = vi.fn()
 		const { queryByTestId } = render(
 			getInstance({ onStart }, (start) => <div data-testid="__vocal-custom-root__" onClick={start} />)
 		)
@@ -59,7 +55,7 @@ describe('Vocal', () => {
 	})
 
 	it('stops recognition with custom children function', async () => {
-		const onEnd = jest.fn()
+		const onEnd = vi.fn()
 		const { queryByText } = render(
 			getInstance({ onEnd }, (start, stop) => (
 				<div data-testid="__vocal-custom-root__">
@@ -76,7 +72,7 @@ describe('Vocal', () => {
 	})
 
 	it('gets recognition status with custom children function', async () => {
-		const onEnd = jest.fn()
+		const onEnd = vi.fn()
 		const { queryByText } = render(
 			getInstance({ onEnd }, (start, stop, isStarted) => (
 				<div data-testid="__vocal-custom-root__">
@@ -128,11 +124,11 @@ describe('Vocal', () => {
 
 	it('uses custom styles', () => {
 		const { getByTestId } = render(getInstance({ style: { backgroundColor: 'blue' } }))
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ backgroundColor: 'blue' })
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ backgroundColor: 'rgb(0, 0, 255)' })
 	})
 
 	it('responds to command', async () => {
-		const callback = jest.fn()
+		const callback = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const commands = { foo: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
@@ -153,7 +149,7 @@ describe('Vocal', () => {
 	})
 
 	it('triggers onStart handler', async () => {
-		const onStart = jest.fn()
+		const onStart = vi.fn()
 		const { queryByTestId } = render(getInstance({ onStart }))
 		await act(async () => {
 			fireEvent.click(queryByTestId('__vocal-root__'))
@@ -162,7 +158,7 @@ describe('Vocal', () => {
 	})
 
 	it('triggers onResult handler', async () => {
-		const onResult = jest.fn()
+		const onResult = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
 
@@ -182,7 +178,7 @@ describe('Vocal', () => {
 	})
 
 	it('triggers onNoMatch handler', async () => {
-		const onNoMatch = jest.fn()
+		const onNoMatch = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onNoMatch }))
 
@@ -202,7 +198,7 @@ describe('Vocal', () => {
 	})
 
 	it('triggers onSpeechStart handler', async () => {
-		const onSpeechStart = jest.fn()
+		const onSpeechStart = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechStart }))
 
@@ -222,7 +218,7 @@ describe('Vocal', () => {
 	})
 
 	it('triggers onSpeechEnd handler', async () => {
-		const onSpeechEnd = jest.fn()
+		const onSpeechEnd = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechEnd }))
 
@@ -243,7 +239,7 @@ describe('Vocal', () => {
 
 	it('triggers onEnd handler after timeout', async () => {
 		const timeout = 100
-		const onEnd = jest.fn()
+		const onEnd = vi.fn()
 		const { getByTestId } = render(getInstance({ timeout, onEnd }))
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
@@ -252,7 +248,7 @@ describe('Vocal', () => {
 	})
 
 	it('triggers onEnd handler after speech', async () => {
-		const onEnd = jest.fn()
+		const onEnd = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
