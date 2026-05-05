@@ -20,6 +20,5 @@ package-lock.json
 .idea/
 *.iml
 
-# Jest
+# Test artifacts
 coverage/
-__snapshots__/
