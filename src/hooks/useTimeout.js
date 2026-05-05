@@ -19,5 +19,3 @@ const useTimeout = (handler, timeout = 0) => {
 }
 
 export default useTimeout
-
-// TODO: Return a promise

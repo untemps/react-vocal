@@ -36,16 +36,8 @@ const Vocal = ({
 	const _onEnd = (e) => {
 		stopTimer()
 		stopRecognition()
-
-		unsubscribe('start', _onStart)
-		unsubscribe('end', _onEnd)
-		unsubscribe('speechstart', _onSpeechStart)
-		unsubscribe('speechend', _onSpeechEnd)
-		unsubscribe('result', _onResult)
-		unsubscribe('error', _onError)
-		unsubscribe('nomatch', _onNoMatch)
-
-		!!onEnd && onEnd(e)
+		unsubscribeAll()
+		onEnd?.(e)
 	}
 
 	const [startTimer, stopTimer] = useTimeout(_onEnd, timeout)
@@ -53,15 +45,7 @@ const Vocal = ({
 	const startRecognition = () => {
 		try {
 			setIsListening(true)
-
-			subscribe('start', _onStart)
-			subscribe('end', _onEnd)
-			subscribe('speechstart', _onSpeechStart)
-			subscribe('speechend', _onSpeechEnd)
-			subscribe('result', _onResult)
-			subscribe('error', _onError)
-			subscribe('nomatch', _onNoMatch)
-
+			subscribeAll()
 			start()
 		} catch (error) {
 			_onError(error)
@@ -71,15 +55,10 @@ const Vocal = ({
 	const stopRecognition = () => {
 		try {
 			setIsListening(false)
-
 			stop()
 		} catch (error) {
-			!!onError && onError(error)
+			onError?.(error)
 		}
-	}
-
-	const _onClick = () => {
-		startRecognition()
 	}
 
 	const _onFocus = () => {
@@ -96,43 +75,49 @@ const Vocal = ({
 
 	const _onStart = (e) => {
 		startTimer()
-
-		!!onStart && onStart(e)
+		onStart?.(e)
 	}
 
 	const _onSpeechStart = (e) => {
 		stopTimer()
-
-		!!onSpeechStart && onSpeechStart(e)
+		onSpeechStart?.(e)
 	}
 
 	const _onSpeechEnd = (e) => {
 		startTimer()
-
-		!!onSpeechEnd && onSpeechEnd(e)
+		onSpeechEnd?.(e)
 	}
 
 	const _onResult = (event, result) => {
 		stopTimer()
 		stopRecognition()
-
 		triggerCommand(result)
-
-		!!onResult && onResult(result, event)
+		onResult?.(result, event)
 	}
 
 	const _onError = (error) => {
 		stopRecognition()
-
-		!!onError && onError(error)
+		onError?.(error)
 	}
 
 	const _onNoMatch = (e) => {
 		stopTimer()
 		stopRecognition()
-
-		!!onNoMatch && onNoMatch(e)
+		onNoMatch?.(e)
 	}
+
+	const HANDLERS = {
+		start: _onStart,
+		end: _onEnd,
+		speechstart: _onSpeechStart,
+		speechend: _onSpeechEnd,
+		result: _onResult,
+		error: _onError,
+		nomatch: _onNoMatch,
+	}
+
+	const subscribeAll = () => Object.entries(HANDLERS).forEach(([event, handler]) => subscribe(event, handler))
+	const unsubscribeAll = () => Object.entries(HANDLERS).forEach(([event, handler]) => unsubscribe(event, handler))
 
 	const _renderDefault = () => (
 		<button
@@ -156,19 +141,19 @@ const Vocal = ({
 			className={className}
 			onFocus={_onFocus}
 			onBlur={_onBlur}
-			onClick={_onClick}
+			onClick={startRecognition}
 		>
 			<Icon isActive={isListening} color="#aaa" />
 		</button>
 	)
 
-	const _renderChildren = (children) => {
+	const _renderChildren = () => {
 		if (SpeechRecognitionWrapper.isSupported) {
 			if (isFunction(children)) {
 				return children(startRecognition, stopRecognition, isListening)
 			} else if (isValidElement(children)) {
 				return cloneElement(children, {
-					...(!isListening && { onClick: _onClick }),
+					...(!isListening && { onClick: startRecognition }),
 				})
 			} else {
 				return _renderDefault()
@@ -177,7 +162,7 @@ const Vocal = ({
 		return null
 	}
 
-	return _renderChildren(children)
+	return _renderChildren()
 }
 
 export default Vocal
