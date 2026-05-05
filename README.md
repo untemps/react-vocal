@@ -35,6 +35,11 @@ For example, browsers on iOS 14.5, the `SpeechGrammar` and `SpeechGrammarList` a
 
 Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlaying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
 
+## Requirements
+
+-   React >= 16.13.1
+-   Node >= 20.19.0
+
 ## Installation
 
 ```bash
@@ -201,21 +206,23 @@ See [fuze.js scoring theory](https://fusejs.io/concepts/scoring-theory.html) for
 
 #### `Vocal` component API
 
-| Props         | Type              | Default | Description                                                                                     |
-| ------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------- |
-| commands      | object            | null    | Callbacks to be triggered when specified commands are detected by the recognition               |
-| lang          | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
-| grammars      | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
-| timeout       | number            | 3000    | Time in ms to wait before discarding the recognition                                            |
-| style         | object            | null    | Styles of the root element if className is not specified                                        |
-| className     | string            | null    | Class of the root element                                                                       |
-| onStart       | func              | null    | Handler called when the recognition starts                                                      |
-| onEnd         | func              | null    | Handler called when the recognition ends                                                        |
-| onSpeechStart | func              | null    | Handler called when the speech starts                                                           |
-| onSpeechEnd   | func              | null    | Handler called when the speech ends                                                             |
-| onResult      | func              | null    | Handler called when a result is recognized                                                      |
-| onError       | func              | null    | Handler called when an error occurs                                                             |
-| onNoMatch     | func              | null    | Handler called when no result can be recognized                                                 |
+| Props         | Type              | Default              | Description                                                                                     |
+| ------------- | ----------------- | -------------------- | ----------------------------------------------------------------------------------------------- |
+| commands      | object            | null                 | Callbacks to be triggered when specified commands are detected by the recognition               |
+| lang          | string            | 'en-US'              | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
+| grammars      | SpeechGrammarList | null                 | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
+| timeout       | number            | 3000                 | Time in ms to wait before discarding the recognition                                            |
+| style         | object            | null                 | Styles of the root element if className is not specified                                        |
+| className     | string            | null                 | Class of the root element                                                                       |
+| ariaLabel     | string            | 'start recognition'  | Accessible label for the default button                                                         |
+| outlineStyle  | string            | '2px solid'          | Focus outline style applied to the default button                                               |
+| onStart       | func              | null                 | Handler called when the recognition starts                                                      |
+| onEnd         | func              | null                 | Handler called when the recognition ends                                                        |
+| onSpeechStart | func              | null                 | Handler called when the speech starts                                                           |
+| onSpeechEnd   | func              | null                 | Handler called when the speech ends                                                             |
+| onResult      | func              | null                 | Handler called when a result is recognized                                                      |
+| onError       | func              | null                 | Handler called when an error occurs                                                             |
+| onNoMatch     | func              | null                 | Handler called when no result can be recognized                                                 |
 
 ### `useVocal` hook
 

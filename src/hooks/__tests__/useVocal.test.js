@@ -1,19 +1,19 @@
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 
 import useVocal from '../useVocal'
 
-jest.mock('@untemps/vocal')
+vi.mock('@untemps/vocal')
 
 describe('useVocal', () => {
-	const mockStart = jest.fn()
-	const mockStop = jest.fn()
-	const mockAbort = jest.fn()
-	const mockAddEventListener = jest.fn()
-	const mockRemoveEventListener = jest.fn()
-	const mockCleanup = jest.fn()
+	const mockStart = vi.fn()
+	const mockStop = vi.fn()
+	const mockAbort = vi.fn()
+	const mockAddEventListener = vi.fn()
+	const mockRemoveEventListener = vi.fn()
+	const mockCleanup = vi.fn()
 
-	const mockIsSupported = jest.fn()
+	const mockIsSupported = vi.fn()
 	Object.defineProperty(SpeechRecognitionWrapper, 'isSupported', {
 		get: mockIsSupported,
 	})
@@ -78,7 +78,7 @@ describe('useVocal', () => {
 					current: [, { subscribe }],
 				},
 			} = renderHook(() => useVocal())
-			subscribe('foo', jest.fn())
+			subscribe('foo', vi.fn())
 			expect(mockAddEventListener).not.toHaveBeenCalled()
 		})
 
@@ -88,7 +88,7 @@ describe('useVocal', () => {
 					current: [, { unsubscribe }],
 				},
 			} = renderHook(() => useVocal())
-			unsubscribe('foo', jest.fn())
+			unsubscribe('foo', vi.fn())
 			expect(mockRemoveEventListener).not.toHaveBeenCalled()
 		})
 	})
@@ -99,7 +99,7 @@ describe('useVocal', () => {
 		})
 
 		beforeEach(() => {
-			SpeechRecognitionWrapper.mockImplementation(() => {
+			SpeechRecognitionWrapper.mockImplementation(function () {
 				return {
 					start: mockStart,
 					stop: mockStop,
@@ -180,7 +180,7 @@ describe('useVocal', () => {
 					current: [, { subscribe }],
 				},
 			} = renderHook(() => useVocal())
-			subscribe('foo', jest.fn())
+			subscribe('foo', vi.fn())
 			expect(mockAddEventListener).toHaveBeenCalled()
 		})
 
@@ -190,7 +190,7 @@ describe('useVocal', () => {
 					current: [, { unsubscribe }],
 				},
 			} = renderHook(() => useVocal())
-			unsubscribe('foo', jest.fn())
+			unsubscribe('foo', vi.fn())
 			expect(mockRemoveEventListener).toHaveBeenCalled()
 		})
 	})

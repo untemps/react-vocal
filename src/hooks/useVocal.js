@@ -54,5 +54,3 @@ const useVocal = (lang = 'en-US', grammars = null, __rsInstance = null) => {
 }
 
 export default useVocal
-
-// TODO: Return the instance, not the ref

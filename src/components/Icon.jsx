@@ -1,7 +1,6 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
-const Icon = ({ color, activeColor, isActive }) => {
+const Icon = ({ color = 'black', activeColor = 'red', isActive = false }) => {
 	return (
 		<svg
 			data-testid="__icon-root__"
@@ -20,18 +19,6 @@ const Icon = ({ color, activeColor, isActive }) => {
 			</g>
 		</svg>
 	)
-}
-
-Icon.propTypes = {
-	color: PropTypes.string,
-	activeColor: PropTypes.string,
-	isActive: PropTypes.bool,
-}
-
-Icon.defaultProps = {
-	color: 'black',
-	activeColor: 'red',
-	isActive: false,
 }
 
 export default Icon
