@@ -159,7 +159,7 @@ const Vocal = ({
 			onBlur={_onBlur}
 			onClick={_onClick}
 		>
-			<Icon isActive={isListening} iconColor="#aaa" />
+			<Icon isActive={isListening} color="#aaa" />
 		</button>
 	)
 
