@@ -1,4 +1,4 @@
-import React, { cloneElement, isValidElement, useRef, useState } from 'react'
+import React, { cloneElement, isValidElement, useRef, useState, useCallback, useMemo, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
@@ -32,52 +32,19 @@ const Vocal = ({
 	const [isListening, setIsListening] = useState(false)
 
 	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
+
+	const stopRef = useRef(stop)
+	stopRef.current = stop
+
 	const triggerCommand = useCommands(commands)
+	const triggerCommandRef = useRef(triggerCommand)
+	triggerCommandRef.current = triggerCommand
 
-	const _onEnd = (e) => {
-		stopTimer()
-		stopRecognition()
+	const unsubscribeAllRef = useRef(null)
+	const onEndRef = useRef(null)
 
-		unsubscribe('start', _onStart)
-		unsubscribe('end', _onEnd)
-		unsubscribe('speechstart', _onSpeechStart)
-		unsubscribe('speechend', _onSpeechEnd)
-		unsubscribe('result', _onResult)
-		unsubscribe('error', _onError)
-		unsubscribe('nomatch', _onNoMatch)
-
-		!!onEnd && onEnd(e)
-	}
-
-	const [startTimer, stopTimer] = useTimeout(_onEnd, timeout)
-
-	const startRecognition = () => {
-		try {
-			setIsListening(true)
-
-			subscribe('start', _onStart)
-			subscribe('end', _onEnd)
-			subscribe('speechstart', _onSpeechStart)
-			subscribe('speechend', _onSpeechEnd)
-			subscribe('result', _onResult)
-			subscribe('error', _onError)
-			subscribe('nomatch', _onNoMatch)
-
-			start()
-		} catch (error) {
-			_onError(error)
-		}
-	}
-
-	const stopRecognition = () => {
-		try {
-			setIsListening(false)
-
-			stop()
-		} catch (error) {
-			!!onError && onError(error)
-		}
-	}
+	const propsRef = useRef({})
+	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
 
 	const _onClick = () => {
 		startRecognition()
@@ -95,45 +62,107 @@ const Vocal = ({
 		}
 	}
 
-	const _onStart = (e) => {
-		startTimer()
+	const stopRecognition = useCallback(() => {
+		try {
+			setIsListening(false)
+			stopRef.current()
+			unsubscribeAllRef.current?.()
+		} catch (error) {
+			propsRef.current.onError?.(error)
+		}
+	}, [])
 
-		!!onStart && onStart(e)
-	}
+	const stableTimerCb = useCallback(() => onEndRef.current?.(), [])
+	const [startTimer, stopTimer] = useTimeout(stableTimerCb, timeout)
 
-	const _onSpeechStart = (e) => {
-		stopTimer()
+	const _onStart = useCallback(
+		(e) => {
+			startTimer()
+			propsRef.current.onStart?.(e)
+		},
+		[startTimer]
+	)
 
-		!!onSpeechStart && onSpeechStart(e)
-	}
+	const _onSpeechStart = useCallback(
+		(e) => {
+			stopTimer()
+			propsRef.current.onSpeechStart?.(e)
+		},
+		[stopTimer]
+	)
 
-	const _onSpeechEnd = (e) => {
-		startTimer()
+	const _onSpeechEnd = useCallback(
+		(e) => {
+			startTimer()
+			propsRef.current.onSpeechEnd?.(e)
+		},
+		[startTimer]
+	)
 
-		!!onSpeechEnd && onSpeechEnd(e)
-	}
+	const _onResult = useCallback(
+		(event, result) => {
+			stopTimer()
+			stopRecognition()
+			triggerCommandRef.current(result)
+			propsRef.current.onResult?.(result, event)
+		},
+		[stopTimer, stopRecognition]
+	)
 
-	const _onResult = (event, result) => {
-		stopTimer()
-		stopRecognition()
+	const _onError = useCallback(
+		(error) => {
+			stopRecognition()
+			propsRef.current.onError?.(error)
+		},
+		[stopRecognition]
+	)
 
-		triggerCommand(result)
+	const _onNoMatch = useCallback(
+		(e) => {
+			stopTimer()
+			stopRecognition()
+			propsRef.current.onNoMatch?.(e)
+		},
+		[stopTimer, stopRecognition]
+	)
 
-		!!onResult && onResult(result, event)
-	}
+	const _onEnd = useCallback(
+		(e) => {
+			stopTimer()
+			stopRecognition()
+			propsRef.current.onEnd?.(e)
+		},
+		[stopTimer, stopRecognition]
+	)
 
-	const _onError = (error) => {
-		stopRecognition()
+	onEndRef.current = _onEnd
 
-		!!onError && onError(error)
-	}
+	const HANDLERS = useMemo(
+		() => ({
+			start: _onStart,
+			end: _onEnd,
+			speechstart: _onSpeechStart,
+			speechend: _onSpeechEnd,
+			result: _onResult,
+			error: _onError,
+			nomatch: _onNoMatch,
+		}),
+		[_onStart, _onEnd, _onSpeechStart, _onSpeechEnd, _onResult, _onError, _onNoMatch]
+	)
 
-	const _onNoMatch = (e) => {
-		stopTimer()
-		stopRecognition()
+	useEffect(() => {
+		unsubscribeAllRef.current = () => Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe(event, fn))
+	}, [HANDLERS, unsubscribe])
 
-		!!onNoMatch && onNoMatch(e)
-	}
+	const startRecognition = useCallback(() => {
+		try {
+			setIsListening(true)
+			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
+			start()
+		} catch (error) {
+			_onError(error)
+		}
+	}, [HANDLERS, subscribe, start, _onError])
 
 	const _renderDefault = () => (
 		<button
