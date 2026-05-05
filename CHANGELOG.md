@@ -1,3 +1,25 @@
+# [2.0.0-beta.1](https://github.com/untemps/react-vocal/compare/v1.7.35...v2.0.0-beta.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* Address review feedback on migration PR ([0dba863](https://github.com/untemps/react-vocal/commit/0dba86374736f8a2a3763ef20073cdb5bc3a4ac8))
+* Commit Vitest snapshots and remove __snapshots__ from gitignore ([e120fda](https://github.com/untemps/react-vocal/commit/e120fda321c5ed553d02262399ead46653b4e002))
+* Fix comment accuracy and trailing blank line in Vocal ([0ffbbc9](https://github.com/untemps/react-vocal/commit/0ffbbc97dcda8c4c1008b5d9259cbc70753d6551))
+* Restore Icon colors broken by React 19 defaultProps removal ([3d50a38](https://github.com/untemps/react-vocal/commit/3d50a38996e1cc2589ac238e30c1b164b3677252))
+
+
+### Features
+
+* Migrate to Vite, Vitest and React 19 ([#109](https://github.com/untemps/react-vocal/issues/109)) ([29ecf60](https://github.com/untemps/react-vocal/commit/29ecf607d7e4a0eb2ac802b31e6003a225d7fecc))
+
+
+### BREAKING CHANGES
+
+* Runtime prop validation removed. `Vocal.propTypes` and `Icon.propTypes` have been deleted — React 19 deprecated static propTypes on function components. Consumers relying on development-time prop warnings must migrate to TypeScript or an equivalent static type checker.
+* Node >=20.19.0 required. Vite 8 and jsdom 29 enforce this minimum. Node 18 and 19 are no longer supported for development or CI.
+* `background: none` replaced by `backgroundColor: transparent` on the default button. The shorthand previously reset all background sub-properties (image, gradient…); the longhand only resets the color. Impact is minimal for most users but visible if a custom style prop relied on the implicit background-image reset.
+
 ## [1.7.35](https://github.com/untemps/react-vocal/compare/v1.7.34...v1.7.35) (2026-05-03)
 
 ## [1.7.34](https://github.com/untemps/react-vocal/compare/v1.7.33...v1.7.34) (2026-05-03)
