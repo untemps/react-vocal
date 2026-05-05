@@ -11,12 +11,11 @@ export default defineConfig({
 			fileName: (format) => ({ es: 'index.es.js', umd: 'index.umd.js', cjs: 'index.js' })[format],
 		},
 		rollupOptions: {
-			external: ['react', 'react-dom', 'prop-types'],
+			external: ['react', 'react-dom'],
 			output: {
 				globals: {
 					react: 'React',
 					'react-dom': 'ReactDOM',
-					'prop-types': 'PropTypes',
 				},
 			},
 		},
