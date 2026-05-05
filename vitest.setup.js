@@ -60,12 +60,12 @@ global.SpeechRecognition = vi.fn(function () {
 			const resultEvent = new Event('result')
 			resultEvent.resultIndex = 0
 			resultEvent.results = [[{ transcript: sentence }]]
+			handlers.speechend?.()
 			if (sentence) {
 				handlers.result?.(resultEvent)
 			} else {
 				handlers.nomatch?.()
 			}
-			handlers.speechend?.()
 		}),
 	}
 })
