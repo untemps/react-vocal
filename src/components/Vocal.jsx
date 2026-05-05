@@ -147,7 +147,7 @@ const Vocal = ({
 					: {
 							width: 24,
 							height: 24,
-							backgroundColor: 'transparent', // `background: none` shorthand conflicts with user-provided backgroundImage; longhand avoids that
+							backgroundColor: 'transparent', // `background: none` shorthand resets all sub-properties; jsdom 29 + jest-dom v6 don't reflect that correctly via getComputedStyle
 							border: 'none',
 							padding: 0,
 							cursor: !isListening ? 'pointer' : 'default',
@@ -213,6 +213,5 @@ Vocal.propTypes = {
 	/** Defines the handler called when no result can be recognized */
 	onNoMatch: PropTypes.func,
 }
-
 
 export default Vocal
