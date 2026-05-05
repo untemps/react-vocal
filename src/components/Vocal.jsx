@@ -1,5 +1,4 @@
 import React, { cloneElement, isValidElement, useRef, useState } from 'react'
-import PropTypes from 'prop-types'
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
@@ -179,39 +178,6 @@ const Vocal = ({
 	}
 
 	return _renderChildren(children)
-}
-
-Vocal.propTypes = {
-	/** Defines callbacks to be triggered when keys are detected by the recognition */
-	commands: PropTypes.objectOf(PropTypes.func),
-	/** Defines the language understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/lang) */
-	lang: PropTypes.string,
-	/** Defines the grammars understood by the recognition (https://developer.mozilla.org/en-US/docs/Web/API/SpeechRecognition/grammars) */
-	grammars: PropTypes.object,
-	/** Defines the time in ms to wait before discarding the recognition */
-	timeout: PropTypes.number,
-	/** Defines the a11y label for the default button */
-	ariaLabel: PropTypes.string,
-	/** Defines the styles of the default element if className is not specified */
-	style: PropTypes.object,
-	/** Defines the class of the default element */
-	className: PropTypes.string,
-	/** Defines the default style of the focus outline. if null the default behaviour is used */
-	outlineStyle: PropTypes.string,
-	/** Defines the handler called when the recognition starts */
-	onStart: PropTypes.func,
-	/** Defines the handler called when the recognition ends */
-	onEnd: PropTypes.func,
-	/** Defines the handler called when the speech starts */
-	onSpeechStart: PropTypes.func,
-	/** Defines the handler called when the speech ends */
-	onSpeechEnd: PropTypes.func,
-	/** Defines the handler called when a result is returned from te recognition */
-	onResult: PropTypes.func,
-	/** Defines the handler called when an error occurs */
-	onError: PropTypes.func,
-	/** Defines the handler called when no result can be recognized */
-	onNoMatch: PropTypes.func,
 }
 
 export default Vocal

@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 
 const Icon = ({ color = 'black', activeColor = 'red', isActive = false }) => {
 	return (
@@ -21,12 +20,5 @@ const Icon = ({ color = 'black', activeColor = 'red', isActive = false }) => {
 		</svg>
 	)
 }
-
-Icon.propTypes = {
-	color: PropTypes.string,
-	activeColor: PropTypes.string,
-	isActive: PropTypes.bool,
-}
-
 
 export default Icon
