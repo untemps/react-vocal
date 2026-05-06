@@ -50,9 +50,10 @@ const Vocal = ({
 		try {
 			setIsListening(false)
 			stop()
-			unsubscribeAllRef.current?.()
 		} catch (error) {
 			propsRef.current.onError?.(error)
+		} finally {
+			unsubscribeAllRef.current?.()
 		}
 	}, [stop])
 
@@ -132,7 +133,7 @@ const Vocal = ({
 	)
 
 	// Assigned inline (not in useEffect) so it's ready before any event fires
-	unsubscribeAllRef.current = () => Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe(event, fn))
+	unsubscribeAllRef.current = () => Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe?.(event, fn))
 
 	const startRecognition = useCallback(() => {
 		try {

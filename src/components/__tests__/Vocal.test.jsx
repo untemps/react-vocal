@@ -291,16 +291,48 @@ describe('Vocal', () => {
 		expect(onEndV1).not.toHaveBeenCalled()
 	})
 
-	it('correctly ends recognition after a re-render during an active session', async () => {
+	it('resets to idle after a re-render during an active session', async () => {
 		const onEnd = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
 			rerender(getInstance({ __rsInstance: recognition, onEnd }))
+		})
+
+		await act(async () => {
 			recognition.instance.say('Foo')
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
+
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
+	})
+
+	it('calls the updated onResult prop after a re-render during an active session', async () => {
+		const onResultV1 = vi.fn()
+		const onResultV2 = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onResult: onResultV1 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onResult: onResultV2 }))
+		})
+
+		await act(async () => {
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onResultV2).toHaveBeenCalledWith('Foo', expect.anything()))
+		})
+
+		expect(onResultV1).not.toHaveBeenCalled()
 	})
 })
