@@ -335,4 +335,96 @@ describe('Vocal', () => {
 
 		expect(onResultV1).not.toHaveBeenCalled()
 	})
+
+	it('calls the updated onSpeechStart prop after a re-render during an active session', async () => {
+		const onSpeechStartV1 = vi.fn()
+		const onSpeechStartV2 = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onSpeechStart: onSpeechStartV1 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onSpeechStart: onSpeechStartV2 }))
+		})
+
+		await act(async () => {
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onSpeechStartV2).toHaveBeenCalled())
+		})
+
+		expect(onSpeechStartV1).not.toHaveBeenCalled()
+	})
+
+	it('calls the updated onSpeechEnd prop after a re-render during an active session', async () => {
+		const onSpeechEndV1 = vi.fn()
+		const onSpeechEndV2 = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onSpeechEnd: onSpeechEndV1 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onSpeechEnd: onSpeechEndV2 }))
+		})
+
+		await act(async () => {
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onSpeechEndV2).toHaveBeenCalled())
+		})
+
+		expect(onSpeechEndV1).not.toHaveBeenCalled()
+	})
+
+	it('calls the updated onNoMatch prop after a re-render during an active session', async () => {
+		const onNoMatchV1 = vi.fn()
+		const onNoMatchV2 = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onNoMatch: onNoMatchV1 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onNoMatch: onNoMatchV2 }))
+		})
+
+		await act(async () => {
+			recognition.instance.say(null)
+			await waitFor(() => expect(onNoMatchV2).toHaveBeenCalled())
+		})
+
+		expect(onNoMatchV1).not.toHaveBeenCalled()
+	})
+
+	it('calls the updated onError prop after a re-render during an active session', async () => {
+		const onErrorV1 = vi.fn()
+		const onErrorV2 = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onError: onErrorV1 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onError: onErrorV2 }))
+		})
+
+		await act(async () => {
+			recognition.instance.error(new Error('mic failure'))
+			await waitFor(() => expect(onErrorV2).toHaveBeenCalled())
+		})
+
+		expect(onErrorV1).not.toHaveBeenCalled()
+	})
 })
