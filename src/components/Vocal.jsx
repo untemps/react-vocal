@@ -1,4 +1,4 @@
-import React, { cloneElement, isValidElement, useRef, useState } from 'react'
+import React, { cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react'
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
@@ -33,33 +33,116 @@ const Vocal = ({
 	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
 	const triggerCommand = useCommands(commands)
 
-	const _onEnd = (e) => {
-		stopTimer()
-		stopRecognition()
-		unsubscribeAll()
-		onEnd?.(e)
-	}
+	const propsRef = useRef({})
+	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
 
-	const [startTimer, stopTimer] = useTimeout(_onEnd, timeout)
+	const triggerCommandRef = useRef(triggerCommand)
+	triggerCommandRef.current = triggerCommand
 
-	const startRecognition = () => {
+	const unsubscribeAllRef = useRef(null)
+	const onEndRef = useRef(null)
+
+	// Breaks the circular dep: _onEnd → useTimeout(handler) → startTimer captures _onEnd
+	const stableTimerCb = useCallback(() => onEndRef.current?.(), [])
+	const [startTimer, stopTimer] = useTimeout(stableTimerCb, timeout)
+
+	const stopRecognition = useCallback(() => {
+		try {
+			setIsListening(false)
+			stop()
+			unsubscribeAllRef.current?.()
+		} catch (error) {
+			propsRef.current.onError?.(error)
+		}
+	}, [stop])
+
+	const _onStart = useCallback(
+		(e) => {
+			startTimer()
+			propsRef.current.onStart?.(e)
+		},
+		[startTimer]
+	)
+
+	const _onSpeechStart = useCallback(
+		(e) => {
+			stopTimer()
+			propsRef.current.onSpeechStart?.(e)
+		},
+		[stopTimer]
+	)
+
+	const _onSpeechEnd = useCallback(
+		(e) => {
+			startTimer()
+			propsRef.current.onSpeechEnd?.(e)
+		},
+		[startTimer]
+	)
+
+	const _onResult = useCallback(
+		(event, result) => {
+			stopTimer()
+			stopRecognition()
+			triggerCommandRef.current(result)
+			propsRef.current.onResult?.(result, event)
+		},
+		[stopTimer, stopRecognition]
+	)
+
+	const _onError = useCallback(
+		(error) => {
+			stopRecognition()
+			propsRef.current.onError?.(error)
+		},
+		[stopRecognition]
+	)
+
+	const _onNoMatch = useCallback(
+		(e) => {
+			stopTimer()
+			stopRecognition()
+			propsRef.current.onNoMatch?.(e)
+		},
+		[stopTimer, stopRecognition]
+	)
+
+	const _onEnd = useCallback(
+		(e) => {
+			stopTimer()
+			stopRecognition()
+			propsRef.current.onEnd?.(e)
+		},
+		[stopTimer, stopRecognition]
+	)
+
+	onEndRef.current = _onEnd
+
+	const HANDLERS = useMemo(
+		() => ({
+			start: _onStart,
+			end: _onEnd,
+			speechstart: _onSpeechStart,
+			speechend: _onSpeechEnd,
+			result: _onResult,
+			error: _onError,
+			nomatch: _onNoMatch,
+		}),
+		[_onStart, _onEnd, _onSpeechStart, _onSpeechEnd, _onResult, _onError, _onNoMatch]
+	)
+
+	// Assigned inline (not in useEffect) so it's ready before any event fires
+	unsubscribeAllRef.current = () => Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe(event, fn))
+
+	const startRecognition = useCallback(() => {
 		try {
 			setIsListening(true)
-			subscribeAll()
+			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
 			start()
 		} catch (error) {
 			_onError(error)
 		}
-	}
-
-	const stopRecognition = () => {
-		try {
-			setIsListening(false)
-			stop()
-		} catch (error) {
-			onError?.(error)
-		}
-	}
+	}, [HANDLERS, subscribe, start, _onError])
 
 	const _onFocus = () => {
 		if (!className && outlineStyle) {
@@ -72,52 +155,6 @@ const Vocal = ({
 			buttonRef.current.style.outline = 'none'
 		}
 	}
-
-	const _onStart = (e) => {
-		startTimer()
-		onStart?.(e)
-	}
-
-	const _onSpeechStart = (e) => {
-		stopTimer()
-		onSpeechStart?.(e)
-	}
-
-	const _onSpeechEnd = (e) => {
-		startTimer()
-		onSpeechEnd?.(e)
-	}
-
-	const _onResult = (event, result) => {
-		stopTimer()
-		stopRecognition()
-		triggerCommand(result)
-		onResult?.(result, event)
-	}
-
-	const _onError = (error) => {
-		stopRecognition()
-		onError?.(error)
-	}
-
-	const _onNoMatch = (e) => {
-		stopTimer()
-		stopRecognition()
-		onNoMatch?.(e)
-	}
-
-	const HANDLERS = {
-		start: _onStart,
-		end: _onEnd,
-		speechstart: _onSpeechStart,
-		speechend: _onSpeechEnd,
-		result: _onResult,
-		error: _onError,
-		nomatch: _onNoMatch,
-	}
-
-	const subscribeAll = () => Object.entries(HANDLERS).forEach(([event, handler]) => subscribe(event, handler))
-	const unsubscribeAll = () => Object.entries(HANDLERS).forEach(([event, handler]) => unsubscribe(event, handler))
 
 	const _renderDefault = () => (
 		<button

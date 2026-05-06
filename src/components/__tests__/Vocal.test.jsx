@@ -267,4 +267,40 @@ describe('Vocal', () => {
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
+
+	it('calls the updated onEnd prop after a re-render during an active session', async () => {
+		const onEndV1 = vi.fn()
+		const onEndV2 = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd: onEndV1 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onEnd: onEndV2 }))
+		})
+
+		await act(async () => {
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onEndV2).toHaveBeenCalled())
+		})
+
+		expect(onEndV1).not.toHaveBeenCalled()
+	})
+
+	it('correctly ends recognition after a re-render during an active session', async () => {
+		const onEnd = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			rerender(getInstance({ __rsInstance: recognition, onEnd }))
+			recognition.instance.say('Foo')
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+	})
 })
