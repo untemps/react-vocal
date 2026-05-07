@@ -427,4 +427,50 @@ describe('Vocal', () => {
 
 		expect(onErrorV1).not.toHaveBeenCalled()
 	})
+
+	it('returns the most confident alternative when multiple alternatives are provided', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([[
+				{ transcript: 'bar', confidence: 0.4 },
+				{ transcript: 'foo', confidence: 0.9 },
+				{ transcript: 'baz', confidence: 0.1 },
+			]])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('foo', expect.anything()))
+		})
+	})
+
+	it('joins all segments when multiple result segments are provided', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello ', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('hello world', expect.anything()))
+		})
+	})
+
+	it('picks highest-confidence alternative per segment when multi-segment with multi-alternative', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'good ', confidence: 0.8 }, { transcript: 'bad ', confidence: 0.2 }],
+				[{ transcript: 'day', confidence: 0.95 }, { transcript: 'dey', confidence: 0.3 }],
+			])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('good day', expect.anything()))
+		})
+	})
 })
