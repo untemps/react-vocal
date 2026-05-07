@@ -67,5 +67,8 @@ global.SpeechRecognition = vi.fn(function () {
 				handlers.nomatch?.()
 			}
 		}),
+		error: vi.fn(function (err) {
+			handlers.error?.(err)
+		}),
 	}
 })
