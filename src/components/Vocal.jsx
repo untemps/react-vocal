@@ -82,11 +82,22 @@ const Vocal = ({
 	)
 
 	const _onResult = useCallback(
-		(event, result) => {
+		(event) => {
+			const transcript = Array.from(event?.results ?? [], (segment) => {
+				let best = { confidence: -Infinity, transcript: '' }
+				for (let j = 0; j < segment.length; j++) {
+					const alt = segment[j]
+					if (alt.confidence === undefined || alt.confidence > best.confidence) {
+						best = alt
+					}
+				}
+				return best.transcript ?? ''
+			}).join('')
+
 			stopTimer()
 			stopRecognition()
-			triggerCommandRef.current(result)
-			propsRef.current.onResult?.(result, event)
+			triggerCommandRef.current(transcript)
+			propsRef.current.onResult?.(transcript, event)
 		},
 		[stopTimer, stopRecognition]
 	)
