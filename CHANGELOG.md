@@ -1,3 +1,10 @@
+# [2.0.0-beta.2](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* Stabilize event handlers and fix stale prop closures ([#112](https://github.com/untemps/react-vocal/issues/112)) ([69c5c00](https://github.com/untemps/react-vocal/commit/69c5c00ed73e792b6dd91dd6b294163e1c3d00dc))
+
 # [2.0.0-beta.1](https://github.com/untemps/react-vocal/compare/v1.7.35...v2.0.0-beta.1) (2026-05-05)
 
 
