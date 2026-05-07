@@ -1,3 +1,10 @@
+# [2.0.0-beta.3](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-05-07)
+
+
+### Features
+
+* Aggregate all result segments picking highest-confidence alternative ([#113](https://github.com/untemps/react-vocal/issues/113)) ([600600d](https://github.com/untemps/react-vocal/commit/600600dfde457df6fe93974d76d0b48599846082))
+
 # [2.0.0-beta.2](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-05-07)
 
 
