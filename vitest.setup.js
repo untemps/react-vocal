@@ -59,7 +59,6 @@ global.SpeechRecognition = vi.fn(function () {
 
 			const resultEvent = new Event('result')
 			resultEvent.resultIndex = 0
-			// input: null (nomatch) | string (single result) | array of result arrays (multi-segment/alternative)
 			resultEvent.results = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : []
 			handlers.speechend?.()
 			if (input) {

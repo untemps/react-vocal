@@ -168,7 +168,6 @@ const Vocal = ({
 		}
 	}
 
-
 	const _renderDefault = () => (
 		<button
 			data-testid="__vocal-root__"
