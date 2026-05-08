@@ -8,6 +8,14 @@ import useCommands from '../hooks/useCommands'
 
 import Icon from './Icon'
 
+const tryMatchCommand = (segmentData, trigger) => {
+	for (const { alternatives } of segmentData) {
+		for (const a of alternatives) {
+			if (trigger(a) !== null) return
+		}
+	}
+}
+
 const Vocal = ({
 	children,
 	commands = null,
@@ -100,14 +108,7 @@ const Vocal = ({
 
 			stopTimer()
 			stopRecognition()
-			const tryMatchCommand = (segs) => {
-				for (const { alternatives } of segs) {
-					for (const a of alternatives) {
-						if (triggerCommandRef.current(a) !== null) return
-					}
-				}
-			}
-			tryMatchCommand(segmentData)
+			tryMatchCommand(segmentData, triggerCommandRef.current)
 			propsRef.current.onResult?.(transcript, event)
 		},
 		[stopTimer, stopRecognition]

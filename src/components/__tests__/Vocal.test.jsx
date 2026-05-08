@@ -494,6 +494,37 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('returns the most confident alternative as the onResult transcript', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([[
+				{ transcript: 'bar', confidence: 0.4 },
+				{ transcript: 'foo', confidence: 0.9 },
+				{ transcript: 'baz', confidence: 0.1 },
+			]])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('foo', expect.anything()))
+		})
+	})
+
+	it('joins all segments into the onResult transcript', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello ', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('hello world', expect.anything()))
+		})
+	})
+
 	it('triggers command matched on a word within a multi-word segment', async () => {
 		const callback = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
