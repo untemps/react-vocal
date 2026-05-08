@@ -130,7 +130,7 @@ describe('useVocal', () => {
 				result: {
 					current: [ref],
 				},
-			} = renderHook(() => useVocal(null, null, foo))
+			} = renderHook(() => useVocal(null, null, 1, foo))
 			expect(ref.current).toBe(foo)
 		})
 

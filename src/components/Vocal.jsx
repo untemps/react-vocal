@@ -14,6 +14,8 @@ const Vocal = ({
 	lang = 'en-US',
 	grammars = null,
 	timeout = 3000,
+	precision = 0.4,
+	maxAlternatives = 1,
 	ariaLabel = 'start recognition',
 	style = null,
 	className = null,
@@ -30,8 +32,8 @@ const Vocal = ({
 	const buttonRef = useRef(null)
 	const [isListening, setIsListening] = useState(false)
 
-	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, __rsInstance)
-	const triggerCommand = useCommands(commands)
+	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, __rsInstance)
+	const triggerCommand = useCommands(commands, precision)
 
 	const propsRef = useRef({})
 	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
@@ -52,7 +54,6 @@ const Vocal = ({
 			stop()
 		} catch (error) {
 			propsRef.current.onError?.(error)
-		} finally {
 			unsubscribeAllRef.current?.()
 		}
 	}, [stop])
@@ -83,20 +84,30 @@ const Vocal = ({
 
 	const _onResult = useCallback(
 		(event) => {
-			const transcript = Array.from(event?.results ?? [], (segment) => {
+			const segmentData = Array.from(event?.results ?? [], (segment) => {
 				let best = { confidence: -Infinity, transcript: '' }
+				const alternatives = []
 				for (let j = 0; j < segment.length; j++) {
 					const alt = segment[j]
+					alternatives.push(alt.transcript ?? '')
 					if (alt.confidence === undefined || alt.confidence > best.confidence) {
 						best = alt
 					}
 				}
-				return best.transcript ?? ''
-			}).join('')
+				return { best: best.transcript ?? '', alternatives }
+			})
+			const transcript = segmentData.map((s) => s.best).join('')
 
 			stopTimer()
 			stopRecognition()
-			triggerCommandRef.current(transcript)
+			const tryMatchCommand = (segs) => {
+				for (const { alternatives } of segs) {
+					for (const a of alternatives) {
+						if (triggerCommandRef.current(a) !== null) return
+					}
+				}
+			}
+			tryMatchCommand(segmentData)
 			propsRef.current.onResult?.(transcript, event)
 		},
 		[stopTimer, stopRecognition]
@@ -123,6 +134,7 @@ const Vocal = ({
 		(e) => {
 			stopTimer()
 			stopRecognition()
+			unsubscribeAllRef.current?.()
 			propsRef.current.onEnd?.(e)
 		},
 		[stopTimer, stopRecognition]
