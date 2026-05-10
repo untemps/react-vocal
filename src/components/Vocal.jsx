@@ -134,9 +134,12 @@ const Vocal = ({
 	const _onEnd = useCallback(
 		(e) => {
 			stopTimer()
-			stopRecognition()
-			unsubscribeAllRef.current?.()
-			propsRef.current.onEnd?.(e)
+			try {
+				stopRecognition()
+				unsubscribeAllRef.current?.()
+			} finally {
+				propsRef.current.onEnd?.(e)
+			}
 		},
 		[stopTimer, stopRecognition]
 	)
