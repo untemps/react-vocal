@@ -52,6 +52,9 @@ const useCommands = (commands, precision = 0.4) => {
 				return commands[key]?.(input)
 			}
 		} else {
+			// `k.includes(lInput)` can produce false positives when input is short
+			// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
+			// only runs when fuse.js is absent, so degraded precision is expected.
 			const lInput = input.toLowerCase()
 			const match = keys.find((k) => lInput.includes(k) || k.includes(lInput))
 			if (match) return commands[match]?.(input)
