@@ -198,6 +198,8 @@ The component utilizes a special hook called `useCommands` to respond to the com
 
 **Homophone tolerance** is achieved via `maxAlternatives`: by setting it to 3–5, the speech engine returns several transcription candidates per segment. The correct word (e.g. _vert_) may appear as a secondary alternative when the primary is a homophone (e.g. _verre_), and will still trigger the command.
 
+**At most one command fires per utterance.** Alternatives and segments are scanned in order and matching stops at the first hit, so a single recognition event can trigger at most one command callback.
+
 ---
 
 #### `Vocal` component API

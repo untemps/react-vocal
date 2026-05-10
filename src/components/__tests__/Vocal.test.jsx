@@ -478,6 +478,25 @@ describe('Vocal', () => {
 		expect(callback).not.toHaveBeenCalled()
 	})
 
+	it('fires only the first matching command when multiple segments each match a different command', async () => {
+		const callbackHello = vi.fn()
+		const callbackWorld = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { hello: callbackHello, world: callbackWorld }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(callbackHello).toHaveBeenCalledWith('hello'))
+		})
+
+		expect(callbackWorld).not.toHaveBeenCalled()
+	})
+
 	it('passes full joined transcript to onResult regardless of command segment matching', async () => {
 		const onResult = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()

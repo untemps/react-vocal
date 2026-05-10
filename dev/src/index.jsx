@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import Vocal from '../../src'
@@ -16,14 +16,20 @@ const App = () => {
 
 	const _log = (value) => setLogs((prev) => `${prev}${prev.length > 0 ? '\n' : ''} ----- ${value}`)
 
-	const commands = Object.fromEntries(
-		Object.entries(COMMANDS).map(([key, color]) => [
-			key,
-			(input) => {
-				_log(`command matched: "${input}" → ${color}`)
-				setBorderColor(color)
-			},
-		])
+	// Memoized to avoid recreating the commands object (and re-indexing useCommands) on every render
+	const commands = useMemo(
+		() =>
+			Object.fromEntries(
+				Object.entries(COMMANDS).map(([key, color]) => [
+					key,
+					(input) => {
+						_log(`command matched: "${input}" → ${color}`)
+						setBorderColor(color)
+					},
+				])
+			),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[]
 	)
 
 	return (
