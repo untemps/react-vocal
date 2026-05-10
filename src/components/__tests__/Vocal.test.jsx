@@ -428,7 +428,92 @@ describe('Vocal', () => {
 		expect(onErrorV1).not.toHaveBeenCalled()
 	})
 
-	it('returns the most confident alternative when multiple alternatives are provided', async () => {
+	it('triggers command matched on first segment in multi-segment result', async () => {
+		const callback = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { hello: callback }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('hello'))
+		})
+	})
+
+	it('triggers command matched on second segment in multi-segment result', async () => {
+		const callback = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { world: callback }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('world'))
+		})
+	})
+
+	it('does not trigger command when no segment matches', async () => {
+		const callback = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { foo: callback }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await new Promise((r) => setTimeout(r, 100))
+		})
+
+		expect(callback).not.toHaveBeenCalled()
+	})
+
+	it('fires only the first matching command when multiple segments each match a different command', async () => {
+		const callbackHello = vi.fn()
+		const callbackWorld = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { hello: callbackHello, world: callbackWorld }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(callbackHello).toHaveBeenCalledWith('hello'))
+		})
+
+		expect(callbackWorld).not.toHaveBeenCalled()
+	})
+
+	it('passes full joined transcript to onResult regardless of command segment matching', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { hello: vi.fn() }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, onResult }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([
+				[{ transcript: 'hello ', confidence: 0.9 }],
+				[{ transcript: 'world', confidence: 0.8 }],
+			])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('hello world', expect.anything()))
+		})
+	})
+
+	it('returns the most confident alternative as the onResult transcript', async () => {
 		const onResult = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
@@ -444,7 +529,7 @@ describe('Vocal', () => {
 		})
 	})
 
-	it('joins all segments when multiple result segments are provided', async () => {
+	it('joins all segments into the onResult transcript', async () => {
 		const onResult = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
@@ -459,18 +544,68 @@ describe('Vocal', () => {
 		})
 	})
 
-	it('picks highest-confidence alternative per segment when multi-segment with multi-alternative', async () => {
-		const onResult = vi.fn()
+	it('triggers command matched on a word within a multi-word segment', async () => {
+		const callback = vi.fn()
 		const recognition = new SpeechRecognitionWrapper()
-		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
+		const commands = { rouge: callback }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
-				[{ transcript: 'good ', confidence: 0.8 }, { transcript: 'bad ', confidence: 0.2 }],
-				[{ transcript: 'day', confidence: 0.95 }, { transcript: 'dey', confidence: 0.3 }],
-			])
-			await waitFor(() => expect(onResult).toHaveBeenCalledWith('good day', expect.anything()))
+			recognition.instance.say([[{ transcript: 'je veux du rouge', confidence: 0.9 }]])
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('rouge'))
+		})
+	})
+
+	it('triggers command matched on a secondary alternative (homophone)', async () => {
+		const callback = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { vert: callback }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, maxAlternatives: 3 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			// Primary alternative is the homophone; secondary is the correct word
+			recognition.instance.say([[
+				{ transcript: 'verre', confidence: 0.9 },
+				{ transcript: 'vert', confidence: 0.7 },
+			]])
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('vert'))
+		})
+	})
+
+	it('passes the most confident transcript to onResult even when command matches a secondary alternative', async () => {
+		const onResult = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const commands = { vert: vi.fn() }
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, onResult, maxAlternatives: 3 }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say([[
+				{ transcript: 'verre', confidence: 0.9 },
+				{ transcript: 'vert', confidence: 0.7 },
+			]])
+			await waitFor(() => expect(onResult).toHaveBeenCalledWith('verre', expect.anything()))
+		})
+	})
+
+	it('calls onEnd via the end event when stop is asynchronous', async () => {
+		const onEnd = vi.fn()
+		const recognition = new SpeechRecognitionWrapper()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd }))
+
+		// Simulate async stop: override stop() so the end event does not fire immediately
+		recognition.instance.stop = vi.fn()
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			recognition.instance.say('Foo')
+			// stopRecognition was called but end has not fired yet — onEnd must not be called
+			expect(onEnd).not.toHaveBeenCalled()
+			// Browser fires end asynchronously after recognition stops
+			recognition.instance.end()
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
 })

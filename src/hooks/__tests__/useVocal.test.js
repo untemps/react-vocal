@@ -124,13 +124,18 @@ describe('useVocal', () => {
 			expect(ref.current).toBeDefined()
 		})
 
+		it('passes maxAlternatives to SpeechRecognitionWrapper constructor', () => {
+			renderHook(() => useVocal('en-US', null, 5))
+			expect(SpeechRecognitionWrapper).toHaveBeenCalledWith({ lang: 'en-US', grammars: null, maxAlternatives: 5 })
+		})
+
 		it('uses custom SpeechRecognition instance', () => {
 			const foo = new SpeechRecognitionWrapper()
 			const {
 				result: {
 					current: [ref],
 				},
-			} = renderHook(() => useVocal(null, null, foo))
+			} = renderHook(() => useVocal(null, null, 1, foo))
 			expect(ref.current).toBe(foo)
 		})
 
