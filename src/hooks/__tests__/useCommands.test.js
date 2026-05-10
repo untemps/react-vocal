@@ -1,10 +1,12 @@
 import { act, renderHook } from '@testing-library/react'
-import Fuse from 'fuse.js'
 
 import useCommands from '../useCommands'
 
-// Mock the dynamic import so it resolves synchronously in tests.
-// fuse.js is a devDependency (available in test env) but an optional peerDependency at runtime.
+// Static import anchors fuse.js in the module graph so vi.mock intercepts the
+// dynamic import('fuse.js') inside the hook. Without it the dynamic import resolves
+// against the real module before the async mock factory completes.
+import 'fuse.js'
+
 vi.mock('fuse.js', async () => {
 	const actual = await vi.importActual('fuse.js')
 	return actual

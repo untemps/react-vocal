@@ -8,8 +8,7 @@ const useCommands = (commands, precision = 0.4) => {
 	const keys = Object.keys(commands)
 	const hasPhraseKeys = keys.some((k) => k.includes(' '))
 
-	// Fuse.js is an optional peer dependency used only for phrase command keys.
-	// It is loaded lazily so consumers who only use single-word commands incur no bundle cost.
+	// Lazy-loaded so consumers using only single-word commands incur no bundle cost.
 	const fuseRef = useRef(null)
 
 	useEffect(() => {
@@ -36,7 +35,6 @@ const useCommands = (commands, precision = 0.4) => {
 		if (!keys.length) return null
 
 		if (!hasPhraseKeys) {
-			// Single-word keys: exact case-insensitive lookup, word-level splitting for embedded commands
 			const words = input.trim().split(/\s+/)
 			const targets = words.length > 1 ? words : [input.trim()]
 			for (const w of targets) {
@@ -54,7 +52,6 @@ const useCommands = (commands, precision = 0.4) => {
 				return commands[key]?.(input)
 			}
 		} else {
-			// Fuse.js not yet loaded or not installed: simple case-insensitive contains match
 			const lInput = input.toLowerCase()
 			const match = keys.find((k) => lInput.includes(k) || k.includes(lInput))
 			if (match) return commands[match]?.(input)
