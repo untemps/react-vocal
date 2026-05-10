@@ -1,6 +1,14 @@
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
+import Fuse from 'fuse.js'
 
 import useCommands from '../useCommands'
+
+// Mock the dynamic import so it resolves synchronously in tests.
+// fuse.js is a devDependency (available in test env) but an optional peerDependency at runtime.
+vi.mock('fuse.js', async () => {
+	const actual = await vi.importActual('fuse.js')
+	return actual
+})
 
 describe('useCommands', () => {
 	it('returns triggerCommand function', () => {
@@ -41,13 +49,15 @@ describe('useCommands', () => {
 			['Change la bordure en vert', 'Change la bordure en verre de rouge', null],
 			['Change la bordure en vert', 'Change la bordure en violet', null],
 			['Change la bordure en vert', 'Modifie la bordure en violet', null],
-		])('triggers callback mapped to approximate inputs', (command, input, expected) => {
+		])('triggers callback mapped to approximate inputs', async (command, input, expected) => {
 			const commands = {
 				[command]: () => value,
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
+			// Flush the dynamic import microtask
+			await act(async () => {})
 			expect(triggerCommand(input)).toBe(expected)
 		})
 	})
@@ -60,5 +70,19 @@ describe('useCommands', () => {
 			result: { current: triggerCommand },
 		} = renderHook(() => useCommands(commands))
 		expect(triggerCommand('gag')).toBeNull()
+	})
+
+	it('falls back to contains matching when fuse.js is not available', async () => {
+		vi.doMock('fuse.js', () => {
+			throw new Error('fuse.js not installed')
+		})
+		const { default: useCommandsWithoutFuse } = await import('../useCommands')
+		const commands = { 'change color': () => 'matched' }
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommandsWithoutFuse(commands))
+		await act(async () => {})
+		expect(triggerCommand('change color')).toBe('matched')
+		vi.doUnmock('fuse.js')
 	})
 })

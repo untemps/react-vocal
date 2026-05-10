@@ -46,6 +46,14 @@ Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the u
 yarn add @untemps/react-vocal
 ```
 
+Fuzzy matching for phrase commands requires [fuse.js](https://fusejs.io/) as an optional peer dependency:
+
+```bash
+yarn add fuse.js
+```
+
+Without fuse.js, phrase commands fall back to case-insensitive exact matching. Single-word commands always use exact matching and never require fuse.js.
+
 ## Usage
 
 ### `Vocal` component
@@ -192,7 +200,9 @@ const commands = {
 
 The component utilizes a special hook called `useCommands` to respond to the commands.  
 The hook performs a fuzzy search to match approximate commands if needed. This allows to fix accidental typos or approximate recognition results.  
-To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorithm to find strings that are approximately equal to a given input. The score precision that distinguishes acceptable command-to-callback mapping from negative matching can be customized in the hook instantiantion.
+To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorithm to find strings that are approximately equal to a given input. The score precision that distinguishes acceptable command-to-callback mapping from negative matching can be customized in the hook instantiation.
+
+fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive exact matching.
 
 ```javascript
 useCommands(commands, threshold) // threshold is the limit not to exceed to be considered a match
