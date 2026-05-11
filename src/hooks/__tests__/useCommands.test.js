@@ -1,6 +1,16 @@
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 
 import useCommands from '../useCommands'
+
+// Static import anchors fuse.js in the module graph so vi.mock intercepts the
+// dynamic import('fuse.js') inside the hook. Without it the dynamic import resolves
+// against the real module before the async mock factory completes.
+import 'fuse.js'
+
+vi.mock('fuse.js', async () => {
+	const actual = await vi.importActual('fuse.js')
+	return actual
+})
 
 describe('useCommands', () => {
 	it('returns triggerCommand function', () => {
@@ -41,13 +51,15 @@ describe('useCommands', () => {
 			['Change la bordure en vert', 'Change la bordure en verre de rouge', null],
 			['Change la bordure en vert', 'Change la bordure en violet', null],
 			['Change la bordure en vert', 'Modifie la bordure en violet', null],
-		])('triggers callback mapped to approximate inputs', (command, input, expected) => {
+		])('triggers callback mapped to approximate inputs', async (command, input, expected) => {
 			const commands = {
 				[command]: () => value,
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
+			// Flush the dynamic import microtask
+			await act(async () => {})
 			expect(triggerCommand(input)).toBe(expected)
 		})
 	})
@@ -85,5 +97,19 @@ describe('useCommands', () => {
 		expect(triggerCommand('verre')).toBeNull()
 		// The engine surfaces 'vert' as a secondary alternative (score 0) — exact match
 		expect(triggerCommand('vert')).toBe('green')
+	})
+
+	it('falls back to contains matching when fuse.js is not available', async () => {
+		vi.doMock('fuse.js', () => {
+			throw new Error('fuse.js not installed')
+		})
+		const { default: useCommandsWithoutFuse } = await import('../useCommands')
+		const commands = { 'change color': () => 'matched' }
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommandsWithoutFuse(commands))
+		await act(async () => {})
+		expect(triggerCommand('change color')).toBe('matched')
+		vi.doUnmock('fuse.js')
 	})
 })
