@@ -50,6 +50,9 @@ const Vocal = ({
 	const continuousRef = useRef(continuous)
 	continuousRef.current = continuous
 
+	// In continuous mode, transcript accumulates across segments and is only emitted via onResult on session end
+	const accumulatedRef = useRef({ transcript: '', event: null })
+
 	const triggerCommandRef = useRef(triggerCommand)
 	triggerCommandRef.current = triggerCommand
 
@@ -111,13 +114,14 @@ const Vocal = ({
 			const transcript = segmentData.map((s) => s.best).join('')
 
 			stopTimer()
-			if (!continuousRef.current) {
-				stopRecognition()
-			}
-			// Continuous mode: timer is not restarted — session stays open until explicit stop or
-			// until the next speechend fires (mid-session silence) and no new speech follows.
 			tryMatchCommand(segmentData, triggerCommandRef.current)
-			propsRef.current.onResult?.(transcript, event)
+			if (continuousRef.current) {
+				// Accumulate — onResult fires once at session end, not after each segment
+				accumulatedRef.current = { transcript, event }
+			} else {
+				stopRecognition()
+				propsRef.current.onResult?.(transcript, event)
+			}
 		},
 		[stopTimer, stopRecognition]
 	)
@@ -145,6 +149,10 @@ const Vocal = ({
 			try {
 				stopRecognition()
 				unsubscribeAllRef.current?.()
+				if (continuousRef.current && accumulatedRef.current.transcript) {
+					propsRef.current.onResult?.(accumulatedRef.current.transcript, accumulatedRef.current.event)
+					accumulatedRef.current = { transcript: '', event: null }
+				}
 			} finally {
 				propsRef.current.onEnd?.(e)
 			}
@@ -172,6 +180,7 @@ const Vocal = ({
 
 	const startRecognition = useCallback(() => {
 		try {
+			accumulatedRef.current = { transcript: '', event: null }
 			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
 			start()
