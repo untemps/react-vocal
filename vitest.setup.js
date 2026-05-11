@@ -39,6 +39,7 @@ global.SpeechGrammarList = vi.fn(function () {
 })
 global.SpeechRecognition = vi.fn(function () {
 	const handlers = {}
+	let accumulatedResults = []
 	return {
 		addEventListener: vi.fn(function (type, callback) {
 			handlers[type] = callback
@@ -46,6 +47,7 @@ global.SpeechRecognition = vi.fn(function () {
 		removeEventListener: vi.fn(),
 		dispatchEvent: vi.fn(),
 		start: vi.fn(function () {
+			accumulatedResults = []
 			handlers.start?.()
 		}),
 		stop: vi.fn(function () {
@@ -57,9 +59,13 @@ global.SpeechRecognition = vi.fn(function () {
 		say: vi.fn(function (input) {
 			handlers.speechstart?.()
 
+			const newSegments = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : []
+			const resultIndex = accumulatedResults.length
+			accumulatedResults = [...accumulatedResults, ...newSegments]
+
 			const resultEvent = new Event('result')
-			resultEvent.resultIndex = 0
-			resultEvent.results = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : []
+			resultEvent.resultIndex = resultIndex
+			resultEvent.results = accumulatedResults
 			handlers.speechend?.()
 			if (input) {
 				handlers.result?.(resultEvent)

@@ -608,4 +608,92 @@ describe('Vocal', () => {
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
+
+	describe('Continuous sessions', () => {
+		it('keeps session active after first result', async () => {
+			const onResult = vi.fn()
+			const recognition = new SpeechRecognitionWrapper()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, continuous: true }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			await act(async () => {
+				recognition.instance.say('Foo')
+				await waitFor(() => expect(onResult).toHaveBeenCalledTimes(1))
+			})
+
+			expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
+		})
+
+		it('fires onResult for each segment and accumulates transcript', async () => {
+			const onResult = vi.fn()
+			const recognition = new SpeechRecognitionWrapper()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, continuous: true }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			await act(async () => {
+				recognition.instance.say('Hello')
+				await waitFor(() => expect(onResult).toHaveBeenCalledTimes(1))
+			})
+
+			await act(async () => {
+				recognition.instance.say(' world')
+				await waitFor(() => expect(onResult).toHaveBeenCalledTimes(2))
+			})
+
+			expect(onResult).toHaveBeenNthCalledWith(1, 'Hello', expect.anything())
+			expect(onResult).toHaveBeenNthCalledWith(2, 'Hello world', expect.anything())
+		})
+
+		it('stops session on explicit button click while listening', async () => {
+			const onEnd = vi.fn()
+			const recognition = new SpeechRecognitionWrapper()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd, continuous: true }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			await act(async () => {
+				recognition.instance.say('Foo')
+				await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+			})
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+				await waitFor(() => expect(onEnd).toHaveBeenCalled())
+			})
+
+			expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
+		})
+
+		it('matches commands across multiple segments', async () => {
+			const commandFn = vi.fn()
+			const recognition = new SpeechRecognitionWrapper()
+			const { getByTestId } = render(
+				getInstance({ __rsInstance: recognition, commands: { rouge: commandFn }, continuous: true })
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			await act(async () => {
+				recognition.instance.say('bleu')
+				await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+			})
+
+			expect(commandFn).not.toHaveBeenCalled()
+
+			await act(async () => {
+				recognition.instance.say('rouge')
+				await waitFor(() => expect(commandFn).toHaveBeenCalled())
+			})
+		})
+	})
 })
