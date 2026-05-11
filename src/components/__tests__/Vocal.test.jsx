@@ -99,10 +99,10 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
 	})
 
-	it('renders default cursor when listening', () => {
+	it('sets aria-pressed when listening', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.click(getByTestId('__vocal-root__'))
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' })
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
 	})
 
 	it('renders outline when focused', () => {
@@ -276,7 +276,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {
@@ -298,7 +298,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {
@@ -310,7 +310,7 @@ describe('Vocal', () => {
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
 	})
 
 	it('calls the updated onResult prop after a re-render during an active session', async () => {
@@ -321,7 +321,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {
@@ -344,7 +344,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {
@@ -367,7 +367,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {
@@ -390,7 +390,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {
@@ -413,7 +413,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' }))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 		})
 
 		await act(async () => {

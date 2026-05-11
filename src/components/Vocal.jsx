@@ -24,6 +24,7 @@ const Vocal = ({
 	timeout = 3000,
 	precision = 0.4, // Fuse.js score threshold for phrase commands only; single-word commands always use exact lookup
 	maxAlternatives = 1,
+	continuous = false,
 	ariaLabel = 'start recognition',
 	style = null,
 	className = null,
@@ -40,11 +41,14 @@ const Vocal = ({
 	const buttonRef = useRef(null)
 	const [isListening, setIsListening] = useState(false)
 
-	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, __rsInstance)
+	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, continuous, __rsInstance)
 	const triggerCommand = useCommands(commands, precision)
 
 	const propsRef = useRef({})
 	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
+
+	const continuousRef = useRef(continuous)
+	continuousRef.current = continuous
 
 	const triggerCommandRef = useRef(triggerCommand)
 	triggerCommandRef.current = triggerCommand
@@ -107,11 +111,16 @@ const Vocal = ({
 			const transcript = segmentData.map((s) => s.best).join('')
 
 			stopTimer()
-			stopRecognition()
+			if (continuousRef.current) {
+				// Keep session open — reset silence timer so auto-stop fires after `timeout` ms of inactivity
+				startTimer()
+			} else {
+				stopRecognition()
+			}
 			tryMatchCommand(segmentData, triggerCommandRef.current)
 			propsRef.current.onResult?.(transcript, event)
 		},
-		[stopTimer, stopRecognition]
+		[stopTimer, startTimer, stopRecognition]
 	)
 
 	const _onError = useCallback(
@@ -188,8 +197,8 @@ const Vocal = ({
 		<button
 			data-testid="__vocal-root__"
 			ref={buttonRef}
-			role="button"
 			aria-label={ariaLabel}
+			aria-pressed={isListening}
 			style={
 				className
 					? null
@@ -199,14 +208,14 @@ const Vocal = ({
 							backgroundColor: 'transparent', // `background: none` shorthand resets all sub-properties; jsdom 29 + jest-dom v6 don't reflect that correctly via getComputedStyle
 							border: 'none',
 							padding: 0,
-							cursor: !isListening ? 'pointer' : 'default',
+							cursor: 'pointer',
 							...style,
 					  }
 			}
 			className={className}
 			onFocus={_onFocus}
 			onBlur={_onBlur}
-			onClick={startRecognition}
+			onClick={isListening ? stopRecognition : startRecognition}
 		>
 			<Icon isActive={isListening} color="#aaa" />
 		</button>
