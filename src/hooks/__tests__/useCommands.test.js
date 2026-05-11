@@ -74,6 +74,31 @@ describe('useCommands', () => {
 		expect(triggerCommand('gag')).toBeNull()
 	})
 
+	it('triggers all registered commands when multiple commands are defined', () => {
+		const commands = {
+			rouge: () => 'red',
+			bleu: () => 'blue',
+			jaune: () => 'yellow',
+		}
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommands(commands))
+		expect(triggerCommand('rouge')).toBe('red')
+		expect(triggerCommand('bleu')).toBe('blue')
+		expect(triggerCommand('jaune')).toBe('yellow')
+	})
+
+	it('does not match near-homophones with strict precision — rely on maxAlternatives instead', () => {
+		const commands = { vert: () => 'green' }
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommands(commands))
+		// 'verre' scores 0.4 against 'vert' — not strictly < STRICT_PRECISION (0.4)
+		expect(triggerCommand('verre')).toBeNull()
+		// The engine surfaces 'vert' as a secondary alternative (score 0) — exact match
+		expect(triggerCommand('vert')).toBe('green')
+	})
+
 	it('falls back to contains matching when fuse.js is not available', async () => {
 		vi.doMock('fuse.js', () => {
 			throw new Error('fuse.js not installed')

@@ -1,43 +1,56 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import Vocal from '../../src'
+
+const COMMANDS = {
+	rouge: 'red',
+	bleu: 'blue',
+	vert: 'green',
+	jaune: 'yellow',
+}
 
 const App = () => {
 	const [logs, setLogs] = useState('')
 	const [borderColor, setBorderColor] = useState()
 
-	const _log = (value) => setLogs((logs) => `${logs}${logs.length > 0 ? '\n' : ''} ----- ${value}`)
+	const _log = (value) => setLogs((prev) => `${prev}${prev.length > 0 ? '\n' : ''} ----- ${value}`)
 
-	const _onVocalStart = () => {
-		_log('start')
-	}
-
-	const _onVocalEnd = () => {
-		_log(`end`)
-	}
-
-	const _onVocalResult = (result) => {
-		_log(`result: "${result}"`)
-	}
-
-	const _onVocalError = (e) => {
-		_log(e.message)
-	}
+	// Memoized to avoid recreating the commands object (and re-indexing useCommands) on every render
+	const commands = useMemo(
+		() =>
+			Object.fromEntries(
+				Object.entries(COMMANDS).map(([key, color]) => [
+					key,
+					(input) => {
+						_log(`command matched: "${input}" → ${color}`)
+						setBorderColor(color)
+					},
+				])
+			),
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[]
+	)
 
 	return (
 		<>
 			<Vocal
 				lang="fr"
-				commands={{
-					'Change la bordure en rouge': () => setBorderColor('red'),
-				}}
-				onStart={_onVocalStart}
-				onEnd={_onVocalEnd}
-				onResult={_onVocalResult}
-				onError={_onVocalError}
+				commands={commands}
+				onStart={() => _log('start')}
+				onEnd={() => _log('end')}
+				onResult={(result) => _log(`result: "${result}"`)}
+				onError={(e) => _log(`error: ${e.message}`)}
+				maxAlternatives={3}
 			/>
-			<textarea value={logs} rows={30} disabled style={{ width: '100%', marginTop: 16, borderColor }} />
+			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
+				Commandes :{' '}
+				{Object.keys(COMMANDS).map((k, i) => (
+					<span key={k}>{i > 0 && ', '}<code>{k}</code></span>
+				))}
+				{' '}— ou dans une phrase (ex : «&nbsp;je veux du vert&nbsp;»)
+			</p>
+			<textarea value={logs} rows={30} disabled style={{ width: '100%', borderColor }} />
 		</>
 	)
 }

@@ -1,3 +1,10 @@
+# [2.0.0-beta.4](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-05-10)
+
+
+### Features
+
+* Per-segment command matching, maxAlternatives, and exact lookup ([39b6370](https://github.com/untemps/react-vocal/commit/39b63701b2a15c058b5ae510be8ad4b4437d6763))
+
 # [2.0.0-beta.3](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-05-07)
 
 

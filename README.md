@@ -204,13 +204,13 @@ To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorit
 
 fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive exact matching.
 
-```javascript
-useCommands(commands, threshold) // threshold is the limit not to exceed to be considered a match
-```
+**Single-word command keys** (e.g. `rouge`, `submit`) use exact case-insensitive lookup. When the recognition returns a multi-word transcript, each word is tried individually so a command fires even when embedded in a phrase (e.g. _"je veux du rouge"_ triggers `rouge`).
 
-See [fuze.js scoring theory](https://fusejs.io/concepts/scoring-theory.html) for more details.
+**Phrase command keys** (e.g. `'Change the background color'`) use [fuse.js](https://fusejs.io/) fuzzy matching. The `precision` prop controls the Fuse.js score threshold (default `0.4` — lower is stricter).
 
-> :warning: **The `Vocal` component doesn't expose that score yet.** For now on you have to deal with the default value (*0.4*)
+**Homophone tolerance** is achieved via `maxAlternatives`: by setting it to 3–5, the speech engine returns several transcription candidates per segment. The correct word (e.g. _vert_) may appear as a secondary alternative when the primary is a homophone (e.g. _verre_), and will still trigger the command.
+
+**At most one command fires per utterance.** Alternatives and segments are scanned in order and matching stops at the first hit, so a single recognition event can trigger at most one command callback.
 
 ---
 
@@ -218,10 +218,12 @@ See [fuze.js scoring theory](https://fusejs.io/concepts/scoring-theory.html) for
 
 | Props         | Type              | Default              | Description                                                                                     |
 | ------------- | ----------------- | -------------------- | ----------------------------------------------------------------------------------------------- |
-| commands      | object            | null                 | Callbacks to be triggered when specified commands are detected by the recognition               |
-| lang          | string            | 'en-US'              | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
-| grammars      | SpeechGrammarList | null                 | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
-| timeout       | number            | 3000                 | Time in ms to wait before discarding the recognition                                            |
+| commands        | object            | null                 | Callbacks to be triggered when specified commands are detected by the recognition               |
+| lang            | string            | 'en-US'              | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
+| grammars        | SpeechGrammarList | null                 | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
+| timeout         | number            | 3000                 | Time in ms to wait before discarding the recognition                                            |
+| precision       | number            | 0.4                  | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word commands always use exact lookup. |
+| maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _vert_ / _verre_ in French). |
 | style         | object            | null                 | Styles of the root element if className is not specified                                        |
 | className     | string            | null                 | Class of the root element                                                                       |
 | ariaLabel     | string            | 'start recognition'  | Accessible label for the default button                                                         |
@@ -296,13 +298,14 @@ const App = () => {
 #### Signature
 
 ```
-useVocal(lang, grammars)
+useVocal(lang, grammars, maxAlternatives)
 ```
 
-| Args     | Type              | Default | Description                                                                                     |
-| -------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------- |
-| lang     | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
-| grammars | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
+| Args            | Type              | Default | Description                                                                                     |
+| --------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------- |
+| lang            | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
+| grammars        | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
+| maxAlternatives | number            | 1       | Maximum number of recognition alternatives per segment                                          |
 
 ---
 

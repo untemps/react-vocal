@@ -1,12 +1,19 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 const useCommands = (commands, precision = 0.4) => {
-	commands = !!commands
-		? Object.entries(commands)?.reduce((acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }), {})
-		: {}
+	const normalized = useMemo(
+		() =>
+			!!commands
+				? Object.entries(commands).reduce((acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }), {})
+				: {},
+		[commands]
+	)
 
-	const keys = Object.keys(commands)
-	const hasPhraseKeys = keys.some((k) => k.includes(' '))
+	const keys = useMemo(() => Object.keys(normalized), [normalized])
+
+	// Fuzzy matching is only needed for phrase command keys.
+	// Single-word keys use exact case-insensitive lookup — simpler and no false positives.
+	const hasPhraseKeys = useMemo(() => keys.some((k) => k.includes(' ')), [keys])
 
 	// Lazy-loaded so consumers using only single-word commands incur no bundle cost.
 	const fuseRef = useRef(null)
@@ -29,7 +36,7 @@ const useCommands = (commands, precision = 0.4) => {
 					)
 				}
 			})
-	}, [hasPhraseKeys, keys.join(',')])
+	}, [hasPhraseKeys, keys])
 
 	const triggerCommand = (input) => {
 		if (!keys.length) return null
@@ -39,7 +46,7 @@ const useCommands = (commands, precision = 0.4) => {
 			const targets = words.length > 1 ? words : [input.trim()]
 			for (const w of targets) {
 				const key = w.toLowerCase()
-				if (key in commands) return commands[key]?.(w)
+				if (key in normalized) return normalized[key]?.(w)
 			}
 			return null
 		}
@@ -49,7 +56,7 @@ const useCommands = (commands, precision = 0.4) => {
 			const result = fuse.search(input).filter((r) => r.score < precision)
 			if (result?.length) {
 				const key = result[0].item.toLowerCase()
-				return commands[key]?.(input)
+				return normalized[key]?.(input)
 			}
 		} else {
 			// `k.includes(lInput)` can produce false positives when input is short
@@ -57,7 +64,7 @@ const useCommands = (commands, precision = 0.4) => {
 			// only runs when fuse.js is absent, so degraded precision is expected.
 			const lInput = input.toLowerCase()
 			const match = keys.find((k) => lInput.includes(k) || k.includes(lInput))
-			if (match) return commands[match]?.(input)
+			if (match) return normalized[match]?.(input)
 		}
 		return null
 	}
