@@ -111,16 +111,15 @@ const Vocal = ({
 			const transcript = segmentData.map((s) => s.best).join('')
 
 			stopTimer()
-			if (continuousRef.current) {
-				// Keep session open — reset silence timer so auto-stop fires after `timeout` ms of inactivity
-				startTimer()
-			} else {
+			if (!continuousRef.current) {
 				stopRecognition()
 			}
+			// Continuous mode: timer is not restarted — session stays open until explicit stop or
+			// until the next speechend fires (mid-session silence) and no new speech follows.
 			tryMatchCommand(segmentData, triggerCommandRef.current)
 			propsRef.current.onResult?.(transcript, event)
 		},
-		[stopTimer, startTimer, stopRecognition]
+		[stopTimer, stopRecognition]
 	)
 
 	const _onError = useCallback(
