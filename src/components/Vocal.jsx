@@ -22,6 +22,7 @@ const Vocal = ({
 	lang = 'en-US',
 	grammars = null,
 	timeout = 3000,
+	silenceTimeout = null,
 	precision = 0.4, // Fuse.js score threshold for phrase commands only; single-word commands always use exact lookup
 	maxAlternatives = 1,
 	continuous = false,
@@ -59,9 +60,13 @@ const Vocal = ({
 	const unsubscribeAllRef = useRef(null)
 	const onEndRef = useRef(null)
 
+	const silenceTimeoutRef = useRef(silenceTimeout)
+	silenceTimeoutRef.current = silenceTimeout
+
 	// Breaks the circular dep: _onEnd → useTimeout(handler) → startTimer captures _onEnd
 	const stableTimerCb = useCallback(() => onEndRef.current?.(), [])
 	const [startTimer, stopTimer] = useTimeout(stableTimerCb, timeout)
+	const [startSilenceTimer, stopSilenceTimer] = useTimeout(stableTimerCb, silenceTimeout ?? 0)
 
 	const stopRecognition = useCallback(() => {
 		try {
@@ -118,12 +123,13 @@ const Vocal = ({
 			if (continuousRef.current) {
 				// Accumulate — onResult fires once at session end, not after each segment
 				accumulatedRef.current = { transcript, event }
+				if (silenceTimeoutRef.current != null) startSilenceTimer()
 			} else {
 				stopRecognition()
 				propsRef.current.onResult?.(transcript, event)
 			}
 		},
-		[stopTimer, stopRecognition]
+		[stopTimer, startSilenceTimer, stopRecognition]
 	)
 
 	const _onError = useCallback(
@@ -146,6 +152,7 @@ const Vocal = ({
 	const _onEnd = useCallback(
 		(e) => {
 			stopTimer()
+			stopSilenceTimer()
 			try {
 				stopRecognition()
 				unsubscribeAllRef.current?.()
@@ -157,7 +164,7 @@ const Vocal = ({
 				propsRef.current.onEnd?.(e)
 			}
 		},
-		[stopTimer, stopRecognition]
+		[stopTimer, stopSilenceTimer, stopRecognition]
 	)
 
 	onEndRef.current = _onEnd
@@ -181,13 +188,14 @@ const Vocal = ({
 	const startRecognition = useCallback(() => {
 		try {
 			accumulatedRef.current = { transcript: '', event: null }
+			stopSilenceTimer()
 			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
 			start()
 		} catch (error) {
 			_onError(error)
 		}
-	}, [HANDLERS, subscribe, start, _onError])
+	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError])
 
 	const _onFocus = () => {
 		if (!className && outlineStyle) {

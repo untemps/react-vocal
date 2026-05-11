@@ -703,5 +703,33 @@ describe('Vocal', () => {
 				await waitFor(() => expect(commandFn).toHaveBeenCalled())
 			})
 		})
+
+		it('auto-stops after silenceTimeout ms of inactivity following last result', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const onResult = vi.fn()
+			const recognition = new SpeechRecognitionWrapper()
+			const { getByTestId } = render(
+				getInstance({ __rsInstance: recognition, onEnd, onResult, continuous: true, silenceTimeout: 5000 })
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			act(() => {
+				recognition.instance.say('Hello')
+			})
+
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(5000)
+			})
+
+			expect(onEnd).toHaveBeenCalled()
+			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
+			vi.useRealTimers()
+		})
 	})
 })
