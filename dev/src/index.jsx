@@ -13,6 +13,7 @@ const COMMANDS = {
 const App = () => {
 	const [logs, setLogs] = useState('')
 	const [borderColor, setBorderColor] = useState()
+	const [continuous, setContinuous] = useState(false)
 
 	const _log = (value) => setLogs((prev) => `${prev}${prev.length > 0 ? '\n' : ''} ----- ${value}`)
 
@@ -34,9 +35,14 @@ const App = () => {
 
 	return (
 		<>
+			<label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+				<input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
+				Mode continu (clic = écoute, nouveau clic = arrêt)
+			</label>
 			<Vocal
 				lang="fr"
 				commands={commands}
+				continuous={continuous}
 				onStart={() => _log('start')}
 				onEnd={() => _log('end')}
 				onResult={(result) => _log(`result: "${result}"`)}
