@@ -1,3 +1,15 @@
+# [2.0.0-beta.5](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-05-11)
+
+
+### Features
+
+* Make fuse.js an optional peer dependency ([#117](https://github.com/untemps/react-vocal/issues/117)) ([a1c2a33](https://github.com/untemps/react-vocal/commit/a1c2a337f8d4ba4729c81f0a9b8664bcf914755f))
+
+
+### BREAKING CHANGES
+
+* fuse.js must now be installed separately to enable fuzzy matching for phrase commands.
+
 # [2.0.0-beta.4](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-05-10)
 
 
