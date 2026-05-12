@@ -48,7 +48,7 @@ const App = () => {
             <p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
-                Mode continu (clic = écoute, nouveau clic = arrêt)
+                Mode continu
               </label>
             </p>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>

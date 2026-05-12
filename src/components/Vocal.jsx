@@ -60,6 +60,7 @@ const Vocal = ({
 	const unsubscribeAllRef = useRef(null)
 	const onEndRef = useRef(null)
 
+	// Kept in a ref so _onResult can read the current value without being in its dep array
 	const silenceTimeoutRef = useRef(silenceTimeout)
 	silenceTimeoutRef.current = silenceTimeout
 
@@ -121,7 +122,6 @@ const Vocal = ({
 			stopTimer()
 			if (continuousRef.current) {
 				// Accumulate — onResult fires once at session end, not after each segment
-				// Commands are not evaluated in continuous mode (dictation use case)
 				accumulatedRef.current = { transcript, event }
 				if (silenceTimeoutRef.current != null) startSilenceTimer()
 			} else {
@@ -225,7 +225,7 @@ const Vocal = ({
 							backgroundColor: 'transparent', // `background: none` shorthand resets all sub-properties; jsdom 29 + jest-dom v6 don't reflect that correctly via getComputedStyle
 							border: 'none',
 							padding: 0,
-							cursor: 'pointer',
+							cursor: !continuous && isListening ? 'default' : 'pointer',
 							...style,
 					  }
 			}

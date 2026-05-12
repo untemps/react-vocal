@@ -99,6 +99,18 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
 	})
 
+	it('renders default cursor when listening in non-continuous mode', () => {
+		const { getByTestId } = render(getInstance())
+		fireEvent.click(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'default' })
+	})
+
+	it('renders pointer cursor when listening in continuous mode', () => {
+		const { getByTestId } = render(getInstance({ continuous: true }))
+		fireEvent.click(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
+	})
+
 	it('sets aria-pressed when listening', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.click(getByTestId('__vocal-root__'))
