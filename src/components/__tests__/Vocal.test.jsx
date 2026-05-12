@@ -157,7 +157,7 @@ describe('Vocal', () => {
 			await waitFor(() => flag)
 
 			recognition.instance.say('Foo')
-			await waitFor(() => expect(callback).toHaveBeenCalledWith('Foo'))
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('Foo', 'foo'))
 		})
 	})
 
@@ -452,7 +452,7 @@ describe('Vocal', () => {
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
-			await waitFor(() => expect(callback).toHaveBeenCalledWith('hello'))
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('hello', 'hello'))
 		})
 	})
 
@@ -468,7 +468,7 @@ describe('Vocal', () => {
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
-			await waitFor(() => expect(callback).toHaveBeenCalledWith('world'))
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('world', 'world'))
 		})
 	})
 
@@ -503,7 +503,7 @@ describe('Vocal', () => {
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
-			await waitFor(() => expect(callbackHello).toHaveBeenCalledWith('hello'))
+			await waitFor(() => expect(callbackHello).toHaveBeenCalledWith('hello', 'hello'))
 		})
 
 		expect(callbackWorld).not.toHaveBeenCalled()
@@ -565,7 +565,7 @@ describe('Vocal', () => {
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
 			recognition.instance.say([[{ transcript: 'je veux du rouge', confidence: 0.9 }]])
-			await waitFor(() => expect(callback).toHaveBeenCalledWith('rouge'))
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('rouge', 'rouge'))
 		})
 	})
 
@@ -582,7 +582,7 @@ describe('Vocal', () => {
 				{ transcript: 'verre', confidence: 0.9 },
 				{ transcript: 'vert', confidence: 0.7 },
 			]])
-			await waitFor(() => expect(callback).toHaveBeenCalledWith('vert'))
+			await waitFor(() => expect(callback).toHaveBeenCalledWith('vert', 'vert'))
 		})
 	})
 

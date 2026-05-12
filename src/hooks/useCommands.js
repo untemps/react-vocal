@@ -46,7 +46,7 @@ const useCommands = (commands, precision = 0.4) => {
 			const targets = words.length > 1 ? words : [input.trim()]
 			for (const w of targets) {
 				const key = w.toLowerCase()
-				if (key in normalized) return normalized[key]?.(w)
+				if (key in normalized) return normalized[key]?.(w, key)
 			}
 			return null
 		}
@@ -56,7 +56,7 @@ const useCommands = (commands, precision = 0.4) => {
 			const result = fuse.search(input).filter((r) => r.score < precision)
 			if (result?.length) {
 				const key = result[0].item.toLowerCase()
-				return normalized[key]?.(input)
+				return normalized[key]?.(input, key)
 			}
 		} else {
 			// `k.includes(lInput)` can produce false positives when input is short
@@ -64,7 +64,7 @@ const useCommands = (commands, precision = 0.4) => {
 			// only runs when fuse.js is absent, so degraded precision is expected.
 			const lInput = input.toLowerCase()
 			const match = keys.find((k) => lInput.includes(k) || k.includes(lInput))
-			if (match) return normalized[match]?.(input)
+			if (match) return normalized[match]?.(input, match)
 		}
 		return null
 	}
