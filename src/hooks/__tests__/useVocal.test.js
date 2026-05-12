@@ -126,7 +126,12 @@ describe('useVocal', () => {
 
 		it('passes maxAlternatives to SpeechRecognitionWrapper constructor', () => {
 			renderHook(() => useVocal('en-US', null, 5))
-			expect(SpeechRecognitionWrapper).toHaveBeenCalledWith({ lang: 'en-US', grammars: null, maxAlternatives: 5 })
+			expect(SpeechRecognitionWrapper).toHaveBeenCalledWith({
+				lang: 'en-US',
+				grammars: null,
+				maxAlternatives: 5,
+				continuous: false,
+			})
 		})
 
 		it('uses custom SpeechRecognition instance', () => {
@@ -135,7 +140,7 @@ describe('useVocal', () => {
 				result: {
 					current: [ref],
 				},
-			} = renderHook(() => useVocal(null, null, 1, foo))
+			} = renderHook(() => useVocal(null, null, 1, false, foo))
 			expect(ref.current).toBe(foo)
 		})
 

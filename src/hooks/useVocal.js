@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
 
-const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, __rsInstance = null) => {
+const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuous = false, __rsInstance = null) => {
 	const ref = useRef(null)
 
 	useEffect(() => {
 		if (SpeechRecognitionWrapper.isSupported) {
-			ref.current = __rsInstance || new SpeechRecognitionWrapper({ lang, grammars, maxAlternatives })
+			ref.current = __rsInstance || new SpeechRecognitionWrapper({ lang, grammars, maxAlternatives, continuous })
 			return () => {
 				ref.current.abort()
 				ref.current.cleanup()
 			}
 		}
-	}, [lang, grammars, maxAlternatives, __rsInstance])
+	}, [lang, grammars, maxAlternatives, continuous, __rsInstance])
 
 	const start = useCallback(() => {
 		if (ref.current) {
