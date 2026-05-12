@@ -14,7 +14,6 @@ const App = () => {
 	const [logs, setLogs] = useState('')
 	const [borderColor, setBorderColor] = useState()
 	const [continuous, setContinuous] = useState(false)
-	const [silenceTimeout, setSilenceTimeout] = useState(10000)
 
 	const _log = (value) => setLogs((prev) => `${prev}${prev.length > 0 ? '\n' : ''} ----- ${value}`)
 
@@ -36,35 +35,22 @@ const App = () => {
 
 	return (
 		<>
-			<label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-				<input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
-				Mode continu (clic = écoute, nouveau clic = arrêt)
-			</label>
-			{continuous && (
-				<label style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-					Silence auto-stop :
-					<input
-						type="number"
-						value={silenceTimeout / 1000}
-						min={1}
-						step={1}
-						style={{ width: 60 }}
-						onChange={(e) => setSilenceTimeout(Number(e.target.value) * 1000)}
-					/>
-					s (0 = désactivé)
-				</label>
-			)}
 			<Vocal
 				lang="fr"
 				commands={commands}
 				continuous={continuous}
-				silenceTimeout={continuous && silenceTimeout > 0 ? silenceTimeout : null}
 				onStart={() => _log('start')}
 				onEnd={() => _log('end')}
 				onResult={(result) => _log(`result: "${result}"`)}
 				onError={(e) => _log(`error: ${e.message}`)}
 				maxAlternatives={3}
 			/>
+            <p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
+                Mode continu (clic = écoute, nouveau clic = arrêt)
+              </label>
+            </p>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
 				Commandes :{' '}
 				{Object.keys(COMMANDS).map((k, i) => (

@@ -119,12 +119,13 @@ const Vocal = ({
 			const transcript = segmentData.map((s) => s.best).join('')
 
 			stopTimer()
-			tryMatchCommand(segmentData, triggerCommandRef.current)
 			if (continuousRef.current) {
 				// Accumulate — onResult fires once at session end, not after each segment
+				// Commands are not evaluated in continuous mode (dictation use case)
 				accumulatedRef.current = { transcript, event }
 				if (silenceTimeoutRef.current != null) startSilenceTimer()
 			} else {
+				tryMatchCommand(segmentData, triggerCommandRef.current)
 				stopRecognition()
 				propsRef.current.onResult?.(transcript, event)
 			}

@@ -680,11 +680,12 @@ describe('Vocal', () => {
 			expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
 		})
 
-		it('matches commands across multiple segments', async () => {
+		it('does not evaluate commands in continuous mode', async () => {
 			const commandFn = vi.fn()
+			const onEnd = vi.fn()
 			const recognition = new SpeechRecognitionWrapper()
 			const { getByTestId } = render(
-				getInstance({ __rsInstance: recognition, commands: { rouge: commandFn }, continuous: true })
+				getInstance({ __rsInstance: recognition, commands: { rouge: commandFn }, onEnd, continuous: true })
 			)
 
 			await act(async () => {
@@ -692,16 +693,16 @@ describe('Vocal', () => {
 			})
 
 			await act(async () => {
-				recognition.instance.say('bleu')
+				recognition.instance.say('rouge')
 				await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 			})
 
-			expect(commandFn).not.toHaveBeenCalled()
-
 			await act(async () => {
-				recognition.instance.say('rouge')
-				await waitFor(() => expect(commandFn).toHaveBeenCalled())
+				fireEvent.click(getByTestId('__vocal-root__'))
+				await waitFor(() => expect(onEnd).toHaveBeenCalled())
 			})
+
+			expect(commandFn).not.toHaveBeenCalled()
 		})
 
 		it('auto-stops after silenceTimeout ms of inactivity following last result', async () => {
