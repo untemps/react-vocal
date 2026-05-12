@@ -60,7 +60,6 @@ const Vocal = ({
 	const unsubscribeAllRef = useRef(null)
 	const onEndRef = useRef(null)
 
-	// Kept in a ref so _onResult can read the current value without being in its dep array
 	const silenceTimeoutRef = useRef(silenceTimeout)
 	silenceTimeoutRef.current = silenceTimeout
 
