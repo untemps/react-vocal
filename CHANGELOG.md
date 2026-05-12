@@ -1,3 +1,10 @@
+# [2.0.0-beta.6](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.5...v2.0.0-beta.6) (2026-05-12)
+
+
+### Features
+
+* Add continuous session support ([#118](https://github.com/untemps/react-vocal/issues/118)) ([690ba61](https://github.com/untemps/react-vocal/commit/690ba617746aa28499d7ea2d48751453a652ff5e))
+
 # [2.0.0-beta.5](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-05-11)
 
 
