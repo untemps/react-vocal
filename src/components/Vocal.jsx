@@ -22,8 +22,10 @@ const Vocal = ({
 	lang = 'en-US',
 	grammars = null,
 	timeout = 3000,
+	silenceTimeout = null,
 	precision = 0.4, // Fuse.js score threshold for phrase commands only; single-word commands always use exact lookup
 	maxAlternatives = 1,
+	continuous = false,
 	ariaLabel = 'start recognition',
 	style = null,
 	className = null,
@@ -40,11 +42,17 @@ const Vocal = ({
 	const buttonRef = useRef(null)
 	const [isListening, setIsListening] = useState(false)
 
-	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, __rsInstance)
+	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, continuous, __rsInstance)
 	const triggerCommand = useCommands(commands, precision)
 
 	const propsRef = useRef({})
 	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
+
+	const continuousRef = useRef(continuous)
+	continuousRef.current = continuous
+
+	// In continuous mode, transcript accumulates across segments and is only emitted via onResult on session end
+	const accumulatedRef = useRef({ transcript: '', event: null })
 
 	const triggerCommandRef = useRef(triggerCommand)
 	triggerCommandRef.current = triggerCommand
@@ -52,9 +60,13 @@ const Vocal = ({
 	const unsubscribeAllRef = useRef(null)
 	const onEndRef = useRef(null)
 
+	const silenceTimeoutRef = useRef(silenceTimeout)
+	silenceTimeoutRef.current = silenceTimeout
+
 	// Breaks the circular dep: _onEnd → useTimeout(handler) → startTimer captures _onEnd
 	const stableTimerCb = useCallback(() => onEndRef.current?.(), [])
 	const [startTimer, stopTimer] = useTimeout(stableTimerCb, timeout)
+	const [startSilenceTimer, stopSilenceTimer] = useTimeout(stableTimerCb, silenceTimeout ?? 0)
 
 	const stopRecognition = useCallback(() => {
 		try {
@@ -107,11 +119,18 @@ const Vocal = ({
 			const transcript = segmentData.map((s) => s.best).join('')
 
 			stopTimer()
-			stopRecognition()
-			tryMatchCommand(segmentData, triggerCommandRef.current)
-			propsRef.current.onResult?.(transcript, event)
+			if (continuousRef.current) {
+				// Accumulate — onResult fires once at session end, not after each segment
+				accumulatedRef.current.transcript = transcript
+				accumulatedRef.current.event = event
+				if (silenceTimeoutRef.current > 0) startSilenceTimer()
+			} else {
+				tryMatchCommand(segmentData, triggerCommandRef.current)
+				stopRecognition()
+				propsRef.current.onResult?.(transcript, event)
+			}
 		},
-		[stopTimer, stopRecognition]
+		[stopTimer, startSilenceTimer, stopRecognition]
 	)
 
 	const _onError = useCallback(
@@ -134,14 +153,20 @@ const Vocal = ({
 	const _onEnd = useCallback(
 		(e) => {
 			stopTimer()
+			stopSilenceTimer()
 			try {
 				stopRecognition()
 				unsubscribeAllRef.current?.()
+				if (continuousRef.current && accumulatedRef.current.transcript) {
+					propsRef.current.onResult?.(accumulatedRef.current.transcript, accumulatedRef.current.event)
+					accumulatedRef.current.transcript = ''
+					accumulatedRef.current.event = null
+				}
 			} finally {
 				propsRef.current.onEnd?.(e)
 			}
 		},
-		[stopTimer, stopRecognition]
+		[stopTimer, stopSilenceTimer, stopRecognition]
 	)
 
 	onEndRef.current = _onEnd
@@ -164,13 +189,16 @@ const Vocal = ({
 
 	const startRecognition = useCallback(() => {
 		try {
+			accumulatedRef.current.transcript = ''
+			accumulatedRef.current.event = null
+			stopSilenceTimer()
 			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
 			start()
 		} catch (error) {
 			_onError(error)
 		}
-	}, [HANDLERS, subscribe, start, _onError])
+	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError])
 
 	const _onFocus = () => {
 		if (!className && outlineStyle) {
@@ -188,8 +216,8 @@ const Vocal = ({
 		<button
 			data-testid="__vocal-root__"
 			ref={buttonRef}
-			role="button"
 			aria-label={ariaLabel}
+			aria-pressed={isListening}
 			style={
 				className
 					? null
@@ -199,14 +227,14 @@ const Vocal = ({
 							backgroundColor: 'transparent', // `background: none` shorthand resets all sub-properties; jsdom 29 + jest-dom v6 don't reflect that correctly via getComputedStyle
 							border: 'none',
 							padding: 0,
-							cursor: !isListening ? 'pointer' : 'default',
+							cursor: !continuous && isListening ? 'default' : 'pointer',
 							...style,
 					  }
 			}
 			className={className}
 			onFocus={_onFocus}
 			onBlur={_onBlur}
-			onClick={startRecognition}
+			onClick={isListening ? stopRecognition : startRecognition}
 		>
 			<Icon isActive={isListening} color="#aaa" />
 		</button>
