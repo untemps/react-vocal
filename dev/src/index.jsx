@@ -23,8 +23,8 @@ const App = () => {
 			Object.fromEntries(
 				Object.entries(COMMANDS).map(([key, color]) => [
 					key,
-					(input, key) => {
-						_log(`command matched: "${key}" → ${color}`)
+					(rawInput, commandKey) => {
+						_log(`command matched: "${commandKey}" → ${color}`)
 						setBorderColor(color)
 					},
 				])
