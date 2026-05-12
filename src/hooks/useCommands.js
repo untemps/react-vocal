@@ -63,8 +63,8 @@ const useCommands = (commands, precision = 0.4) => {
 			// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
 			// only runs when fuse.js is absent, so degraded precision is expected.
 			const lInput = input.toLowerCase()
-			const match = keys.find((k) => lInput.includes(k) || k.includes(lInput))
-			if (match) return normalized[match]?.(input, match)
+			const key = keys.find((k) => lInput.includes(k) || k.includes(lInput))
+			if (key) return normalized[key]?.(input, key)
 		}
 		return null
 	}
