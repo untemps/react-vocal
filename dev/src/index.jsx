@@ -41,7 +41,7 @@ const App = () => {
 				continuous={continuous}
 				onStart={() => _log('start')}
 				onEnd={() => _log('end')}
-				onResult={(result) => _log(`result: "${result}"`)}
+				onResult={(result) => _log(`transcript: "${result}"`)}
 				onError={(e) => _log(`error: ${e.message}`)}
 				maxAlternatives={3}
 			/>
