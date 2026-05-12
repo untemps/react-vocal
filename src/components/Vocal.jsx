@@ -121,7 +121,8 @@ const Vocal = ({
 			stopTimer()
 			if (continuousRef.current) {
 				// Accumulate — onResult fires once at session end, not after each segment
-				accumulatedRef.current = { transcript, event }
+				accumulatedRef.current.transcript = transcript
+				accumulatedRef.current.event = event
 				if (silenceTimeoutRef.current > 0) startSilenceTimer()
 			} else {
 				tryMatchCommand(segmentData, triggerCommandRef.current)
@@ -158,7 +159,8 @@ const Vocal = ({
 				unsubscribeAllRef.current?.()
 				if (continuousRef.current && accumulatedRef.current.transcript) {
 					propsRef.current.onResult?.(accumulatedRef.current.transcript, accumulatedRef.current.event)
-					accumulatedRef.current = { transcript: '', event: null }
+					accumulatedRef.current.transcript = ''
+					accumulatedRef.current.event = null
 				}
 			} finally {
 				propsRef.current.onEnd?.(e)
@@ -187,7 +189,8 @@ const Vocal = ({
 
 	const startRecognition = useCallback(() => {
 		try {
-			accumulatedRef.current = { transcript: '', event: null }
+			accumulatedRef.current.transcript = ''
+			accumulatedRef.current.event = null
 			stopSilenceTimer()
 			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
