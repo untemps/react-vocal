@@ -122,7 +122,7 @@ const Vocal = ({
 			if (continuousRef.current) {
 				// Accumulate — onResult fires once at session end, not after each segment
 				accumulatedRef.current = { transcript, event }
-				if (silenceTimeoutRef.current != null) startSilenceTimer()
+				if (silenceTimeoutRef.current > 0) startSilenceTimer()
 			} else {
 				tryMatchCommand(segmentData, triggerCommandRef.current)
 				stopRecognition()
