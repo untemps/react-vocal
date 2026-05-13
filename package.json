@@ -20,6 +20,12 @@
 	"publishConfig": {
 		"access": "public"
 	},
+	"files": [
+		"dist/index.js",
+		"dist/index.es.js",
+		"dist/index.umd.js",
+		"CHANGELOG.md"
+	],
 	"main": "dist/index.js",
 	"module": "dist/index.es.js",
 	"engines": {
