@@ -1,4 +1,4 @@
-import React, { cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react'
+import React, { cloneElement, isValidElement, useCallback, useMemo, useRef } from 'react'
 import { isSupported } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
@@ -41,9 +41,14 @@ const Vocal = ({
 	__rsInstance,
 }) => {
 	const buttonRef = useRef(null)
-	const [isListening, setIsListening] = useState(false)
 
-	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, continuous, __rsInstance)
+	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening }] = useVocal(
+		lang,
+		grammars,
+		maxAlternatives,
+		continuous,
+		__rsInstance
+	)
 	const triggerCommand = useCommands(commands, precision)
 
 	const propsRef = useRef({})
@@ -71,7 +76,6 @@ const Vocal = ({
 
 	const stopRecognition = useCallback(() => {
 		try {
-			setIsListening(false)
 			stop()
 		} catch (error) {
 			propsRef.current.onError?.(error)
@@ -193,7 +197,6 @@ const Vocal = ({
 			accumulatedRef.current.transcript = ''
 			accumulatedRef.current.event = null
 			stopSilenceTimer()
-			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
 			start({ signal })
 		} catch (error) {

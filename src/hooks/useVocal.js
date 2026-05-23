@@ -1,21 +1,37 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createVocal, isSupported } from '@untemps/vocal'
 
 const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuous = false, __rsInstance = null) => {
 	const ref = useRef(null)
+	const [isRecording, setIsRecording] = useState(false)
 
 	useEffect(() => {
 		if (isSupported()) {
-			ref.current = __rsInstance || createVocal({ lang, grammars, maxAlternatives, continuous })
+			const instance = __rsInstance || createVocal({ lang, grammars, maxAlternatives, continuous })
+			ref.current = instance
+
+			const handleStart = () => setIsRecording(true)
+			const handleStop = () => setIsRecording(false)
+			instance.on('start', handleStart)
+			instance.on('end', handleStop)
+			instance.on('error', handleStop)
+
 			return () => {
-				ref.current.abort()
-				ref.current.cleanup()
+				instance.off('start', handleStart)
+				instance.off('end', handleStop)
+				instance.off('error', handleStop)
+				instance.abort()
+				instance.cleanup()
+				setIsRecording(false)
 			}
 		}
 	}, [lang, grammars, maxAlternatives, continuous, __rsInstance])
 
 	const start = useCallback((options) => {
 		if (ref.current) {
+			// Optimistic update so the UI reacts immediately at click, before the
+			// async permission/getUserMedia chain resolves and fires the 'start' event.
+			setIsRecording(true)
 			ref.current.start(options)
 		}
 	}, [])
@@ -50,7 +66,7 @@ const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuo
 		}
 	}, [])
 
-	return [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
+	return [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
 }
 
 export default useVocal

@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react'
+import { act, renderHook } from '@testing-library/react'
 import { createVocal, isSupported } from '@untemps/vocal'
 
 import useVocal from '../useVocal'
@@ -94,6 +94,12 @@ describe('useVocal', () => {
 		})
 
 		beforeEach(() => {
+			mockStart.mockClear()
+			mockStop.mockClear()
+			mockAbort.mockClear()
+			mockOn.mockClear()
+			mockOff.mockClear()
+			mockCleanup.mockClear()
 			vi.mocked(createVocal).mockImplementation(() => ({
 				start: mockStart,
 				stop: mockStop,
@@ -206,6 +212,42 @@ describe('useVocal', () => {
 			} = renderHook(() => useVocal())
 			unsubscribe('foo', vi.fn())
 			expect(mockOff).toHaveBeenCalled()
+		})
+
+		it('exposes isRecording as false initially', () => {
+			const { result } = renderHook(() => useVocal())
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('flips isRecording to true on the start event', async () => {
+			const { result } = renderHook(() => useVocal())
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			await act(async () => startCallback(new Event('start')))
+			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('flips isRecording back to false on the end event', async () => {
+			const { result } = renderHook(() => useVocal())
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			const endCallback = mockOn.mock.calls.find(([type]) => type === 'end')[1]
+			await act(async () => startCallback(new Event('start')))
+			await act(async () => endCallback(new Event('end')))
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('flips isRecording back to false on the error event', async () => {
+			const { result } = renderHook(() => useVocal())
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			const errorCallback = mockOn.mock.calls.find(([type]) => type === 'error')[1]
+			await act(async () => startCallback(new Event('start')))
+			await act(async () => errorCallback(new Event('error')))
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('optimistically flips isRecording to true when start() is called', async () => {
+			const { result } = renderHook(() => useVocal())
+			await act(async () => result.current[1].start())
+			expect(result.current[1].isRecording).toBe(true)
 		})
 	})
 })
