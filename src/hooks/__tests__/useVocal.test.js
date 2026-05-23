@@ -147,6 +147,17 @@ describe('useVocal', () => {
 			expect(mockStart).toHaveBeenCalled()
 		})
 
+		it('forwards start options (signal) to the vocal instance', () => {
+			const controller = new AbortController()
+			const {
+				result: {
+					current: [, { start }],
+				},
+			} = renderHook(() => useVocal())
+			start({ signal: controller.signal })
+			expect(mockStart).toHaveBeenCalledWith({ signal: controller.signal })
+		})
+
 		it('triggers stop function', () => {
 			const {
 				result: {

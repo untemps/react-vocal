@@ -237,6 +237,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | onResult      | func              | null                 | Handler called when a result is recognized                                                      |
 | onError       | func              | null                 | Handler called when an error occurs                                                             |
 | onNoMatch     | func              | null                 | Handler called when no result can be recognized                                                 |
+| signal        | AbortSignal       | null                 | Optional `AbortSignal` propagated to the underlying `start()` call. Aborting it cancels the in-flight start (e.g. while waiting for microphone permission). |
 
 ### `useVocal` hook
 
@@ -321,12 +322,26 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
 | Args        | Type | Description                                          |
 | ----------- | ---- | ---------------------------------------------------- |
 | ref         | Ref  | React ref to the underlying `@untemps/vocal` instance |
-| start       | func | Function to start the recognition                    |
+| start       | func | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. |
 | stop        | func | Function to stop the recognition                     |
 | abort       | func | Function to abort the recognition                    |
 | subscribe   | func | Function to subscribe to recognition events          |
 | unsubscribe | func | Function to unsubscribe to recognition events        |
 | clean       | func | Function to clean subscription to recognition events |
+
+#### Cancelling a start in flight
+
+Both `<Vocal signal={...}>` and `useVocal().start({ signal })` accept an `AbortSignal`. Aborting the controller while the browser is still resolving microphone permission cancels the start cleanly — no `start` event is dispatched.
+
+```javascript
+const controller = new AbortController()
+
+// Cancel pending recognition after 2s of waiting for permission
+setTimeout(() => controller.abort(), 2000)
+
+const [, { start }] = useVocal('en-US')
+start({ signal: controller.signal })
+```
 
 ### Browser support flag
 

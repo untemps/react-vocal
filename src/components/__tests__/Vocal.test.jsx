@@ -609,6 +609,20 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('does not dispatch the start event when the signal prop is already aborted', async () => {
+		const onStart = vi.fn()
+		const controller = new AbortController()
+		controller.abort()
+		const { getByTestId } = render(getInstance({ onStart, signal: controller.signal }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await new Promise((r) => setTimeout(r, 50))
+		})
+
+		expect(onStart).not.toHaveBeenCalled()
+	})
+
 	it('calls onEnd via the end event when stop is asynchronous', async () => {
 		const onEnd = vi.fn()
 		const recognition = createVocal()

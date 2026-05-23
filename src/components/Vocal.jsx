@@ -37,6 +37,7 @@ const Vocal = ({
 	onResult = null,
 	onError = null,
 	onNoMatch = null,
+	signal = null,
 	__rsInstance,
 }) => {
 	const buttonRef = useRef(null)
@@ -194,11 +195,11 @@ const Vocal = ({
 			stopSilenceTimer()
 			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
-			start()
+			start({ signal })
 		} catch (error) {
 			_onError(error)
 		}
-	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError])
+	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError, signal])
 
 	const _onFocus = () => {
 		if (!className && outlineStyle) {

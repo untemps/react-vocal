@@ -14,9 +14,9 @@ const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuo
 		}
 	}, [lang, grammars, maxAlternatives, continuous, __rsInstance])
 
-	const start = useCallback(() => {
+	const start = useCallback((options) => {
 		if (ref.current) {
-			ref.current.start()
+			ref.current.start(options)
 		}
 	}, [])
 
