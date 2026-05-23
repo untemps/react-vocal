@@ -8,10 +8,11 @@ import useCommands from '../hooks/useCommands'
 
 import Icon from './Icon'
 
-const tryMatchCommand = (segmentData, trigger) => {
-	for (const { alternatives } of segmentData) {
-		for (const a of alternatives) {
-			if (trigger(a) !== null) return
+const tryMatchCommand = (results, trigger) => {
+	if (!results) return
+	for (const segment of results) {
+		for (const alt of segment) {
+			if (trigger(alt.transcript ?? '') !== null) return
 		}
 	}
 }
@@ -108,31 +109,17 @@ const Vocal = ({
 	)
 
 	const _onResult = useCallback(
-		(event) => {
-			const segmentData = Array.from(event?.results ?? [], (segment) => {
-				let best = { confidence: -Infinity, transcript: '' }
-				const alternatives = []
-				for (let j = 0; j < segment.length; j++) {
-					const alt = segment[j]
-					alternatives.push(alt.transcript ?? '')
-					if (alt.confidence === undefined || alt.confidence > best.confidence) {
-						best = alt
-					}
-				}
-				return { best: best.transcript ?? '', alternatives }
-			})
-			const transcript = segmentData.map((s) => s.best).join('')
-
+		(event, bestAlternative) => {
 			stopTimer()
 			if (continuousRef.current) {
 				// Accumulate — onResult fires once at session end, not after each segment
-				accumulatedRef.current.transcript = transcript
+				accumulatedRef.current.transcript = bestAlternative
 				accumulatedRef.current.event = event
 				if (silenceTimeoutRef.current > 0) startSilenceTimer()
 			} else {
-				tryMatchCommand(segmentData, triggerCommandRef.current)
+				tryMatchCommand(event?.results, triggerCommandRef.current)
 				stopRecognition()
-				propsRef.current.onResult?.(transcript, event)
+				propsRef.current.onResult?.(bestAlternative, event)
 			}
 		},
 		[stopTimer, startSilenceTimer, stopRecognition]

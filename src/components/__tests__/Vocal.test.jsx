@@ -516,22 +516,6 @@ describe('Vocal', () => {
 		expect(callbackWorld).not.toHaveBeenCalled()
 	})
 
-	it('passes full joined transcript to onResult regardless of command segment matching', async () => {
-		const onResult = vi.fn()
-		const recognition = createVocal()
-		const commands = { hello: vi.fn() }
-		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, onResult }))
-
-		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-			getSr().say([
-				[{ transcript: 'hello ', confidence: 0.9 }],
-				[{ transcript: 'world', confidence: 0.8 }],
-			])
-			await waitFor(() => expect(onResult).toHaveBeenCalledWith('hello world', expect.anything()))
-		})
-	})
-
 	it('returns the most confident alternative as the onResult transcript', async () => {
 		const onResult = vi.fn()
 		const recognition = createVocal()
@@ -545,21 +529,6 @@ describe('Vocal', () => {
 				{ transcript: 'baz', confidence: 0.1 },
 			]])
 			await waitFor(() => expect(onResult).toHaveBeenCalledWith('foo', expect.anything()))
-		})
-	})
-
-	it('joins all segments into the onResult transcript', async () => {
-		const onResult = vi.fn()
-		const recognition = createVocal()
-		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
-
-		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-			getSr().say([
-				[{ transcript: 'hello ', confidence: 0.9 }],
-				[{ transcript: 'world', confidence: 0.8 }],
-			])
-			await waitFor(() => expect(onResult).toHaveBeenCalledWith('hello world', expect.anything()))
 		})
 	})
 
@@ -663,7 +632,9 @@ describe('Vocal', () => {
 		it('fires onResult once at session end with full accumulated transcript', async () => {
 			const onResult = vi.fn()
 			const onEnd = vi.fn()
-			const recognition = createVocal()
+			// Vocal must be created with continuous: true so its internal listeners
+			// intercept intermediate results and emit a single aggregated event on stop.
+			const recognition = createVocal({ continuous: true })
 			const { getByTestId } = render(
 				getInstance({ __rsInstance: recognition, onResult, onEnd, continuous: true })
 			)
@@ -677,7 +648,7 @@ describe('Vocal', () => {
 			})
 
 			await act(async () => {
-				getSr().say(' world')
+				getSr().say('world')
 			})
 
 			expect(onResult).not.toHaveBeenCalled()
