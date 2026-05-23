@@ -1,9 +1,16 @@
 import React from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
-import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
+import { createVocal, isSupported } from '@untemps/vocal'
 
 import Vocal from '../Vocal'
+
+vi.mock('@untemps/vocal', async (importOriginal) => {
+	const actual = await importOriginal()
+	return { ...actual, isSupported: vi.fn(actual.isSupported) }
+})
+
+const getSr = () => globalThis.__getSpeechRecognition()
 
 const defaultProps = {}
 const getInstance = (props = {}, children = null) => (
@@ -30,7 +37,7 @@ describe('Vocal', () => {
 	})
 
 	it('renders no children element if SpeechRecognition is not supported', () => {
-		vi.spyOn(SpeechRecognitionWrapper, 'isSupported', 'get').mockReturnValueOnce(false)
+		vi.mocked(isSupported).mockReturnValueOnce(false)
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
 		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
 		expect(queryByTestId('__vocal-custom-root__')).not.toBeInTheDocument()
@@ -142,12 +149,12 @@ describe('Vocal', () => {
 
 	it('responds to command', async () => {
 		const callback = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { foo: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		let flag = false
-		recognition.addEventListener('start', async () => {
+		recognition.on('start', async () => {
 			flag = true
 		})
 
@@ -156,7 +163,7 @@ describe('Vocal', () => {
 
 			await waitFor(() => flag)
 
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(callback).toHaveBeenCalledWith('Foo', 'foo'))
 		})
 	})
@@ -172,11 +179,11 @@ describe('Vocal', () => {
 
 	it('triggers onResult handler', async () => {
 		const onResult = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
 
 		let flag = false
-		recognition.addEventListener('start', async () => {
+		recognition.on('start', async () => {
 			flag = true
 		})
 
@@ -185,18 +192,18 @@ describe('Vocal', () => {
 
 			await waitFor(() => flag)
 
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onResult).toHaveBeenCalledWith('Foo', expect.anything()))
 		})
 	})
 
 	it('triggers onNoMatch handler', async () => {
 		const onNoMatch = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onNoMatch }))
 
 		let flag = false
-		recognition.addEventListener('start', async () => {
+		recognition.on('start', async () => {
 			flag = true
 		})
 
@@ -205,18 +212,18 @@ describe('Vocal', () => {
 
 			await waitFor(() => flag)
 
-			recognition.instance.say(null)
+			getSr().say(null)
 			await waitFor(() => expect(onNoMatch).toHaveBeenCalled())
 		})
 	})
 
 	it('triggers onSpeechStart handler', async () => {
 		const onSpeechStart = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechStart }))
 
 		let flag = false
-		recognition.addEventListener('start', async () => {
+		recognition.on('start', async () => {
 			flag = true
 		})
 
@@ -225,18 +232,18 @@ describe('Vocal', () => {
 
 			await waitFor(() => flag)
 
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onSpeechStart).toHaveBeenCalled())
 		})
 	})
 
 	it('triggers onSpeechEnd handler', async () => {
 		const onSpeechEnd = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechEnd }))
 
 		let flag = false
-		recognition.addEventListener('start', async () => {
+		recognition.on('start', async () => {
 			flag = true
 		})
 
@@ -245,7 +252,7 @@ describe('Vocal', () => {
 
 			await waitFor(() => flag)
 
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onSpeechEnd).toHaveBeenCalled())
 		})
 	})
@@ -262,11 +269,11 @@ describe('Vocal', () => {
 
 	it('triggers onEnd handler after speech', async () => {
 		const onEnd = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
 		let flag = false
-		recognition.addEventListener('start', async () => {
+		recognition.on('start', async () => {
 			flag = true
 		})
 
@@ -275,7 +282,7 @@ describe('Vocal', () => {
 
 			await waitFor(() => flag)
 
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
@@ -283,7 +290,7 @@ describe('Vocal', () => {
 	it('calls the updated onEnd prop after a re-render during an active session', async () => {
 		const onEndV1 = vi.fn()
 		const onEndV2 = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd: onEndV1 }))
 
 		await act(async () => {
@@ -296,7 +303,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onEndV2).toHaveBeenCalled())
 		})
 
@@ -305,7 +312,7 @@ describe('Vocal', () => {
 
 	it('resets to idle after a re-render during an active session', async () => {
 		const onEnd = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
 		await act(async () => {
@@ -318,7 +325,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 
@@ -328,7 +335,7 @@ describe('Vocal', () => {
 	it('calls the updated onResult prop after a re-render during an active session', async () => {
 		const onResultV1 = vi.fn()
 		const onResultV2 = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onResult: onResultV1 }))
 
 		await act(async () => {
@@ -341,7 +348,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onResultV2).toHaveBeenCalledWith('Foo', expect.anything()))
 		})
 
@@ -351,7 +358,7 @@ describe('Vocal', () => {
 	it('calls the updated onSpeechStart prop after a re-render during an active session', async () => {
 		const onSpeechStartV1 = vi.fn()
 		const onSpeechStartV2 = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onSpeechStart: onSpeechStartV1 }))
 
 		await act(async () => {
@@ -364,7 +371,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onSpeechStartV2).toHaveBeenCalled())
 		})
 
@@ -374,7 +381,7 @@ describe('Vocal', () => {
 	it('calls the updated onSpeechEnd prop after a re-render during an active session', async () => {
 		const onSpeechEndV1 = vi.fn()
 		const onSpeechEndV2 = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onSpeechEnd: onSpeechEndV1 }))
 
 		await act(async () => {
@@ -387,7 +394,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			await waitFor(() => expect(onSpeechEndV2).toHaveBeenCalled())
 		})
 
@@ -397,7 +404,7 @@ describe('Vocal', () => {
 	it('calls the updated onNoMatch prop after a re-render during an active session', async () => {
 		const onNoMatchV1 = vi.fn()
 		const onNoMatchV2 = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onNoMatch: onNoMatchV1 }))
 
 		await act(async () => {
@@ -410,7 +417,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.say(null)
+			getSr().say(null)
 			await waitFor(() => expect(onNoMatchV2).toHaveBeenCalled())
 		})
 
@@ -420,7 +427,7 @@ describe('Vocal', () => {
 	it('calls the updated onError prop after a re-render during an active session', async () => {
 		const onErrorV1 = vi.fn()
 		const onErrorV2 = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onError: onErrorV1 }))
 
 		await act(async () => {
@@ -433,7 +440,7 @@ describe('Vocal', () => {
 		})
 
 		await act(async () => {
-			recognition.instance.error(new Error('mic failure'))
+			getSr().error(new Error('mic failure'))
 			await waitFor(() => expect(onErrorV2).toHaveBeenCalled())
 		})
 
@@ -442,13 +449,13 @@ describe('Vocal', () => {
 
 	it('triggers command matched on first segment in multi-segment result', async () => {
 		const callback = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { hello: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
+			getSr().say([
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
@@ -458,13 +465,13 @@ describe('Vocal', () => {
 
 	it('triggers command matched on second segment in multi-segment result', async () => {
 		const callback = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { world: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
+			getSr().say([
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
@@ -474,13 +481,13 @@ describe('Vocal', () => {
 
 	it('does not trigger command when no segment matches', async () => {
 		const callback = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { foo: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
+			getSr().say([
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
@@ -493,13 +500,13 @@ describe('Vocal', () => {
 	it('fires only the first matching command when multiple segments each match a different command', async () => {
 		const callbackHello = vi.fn()
 		const callbackWorld = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { hello: callbackHello, world: callbackWorld }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
+			getSr().say([
 				[{ transcript: 'hello', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
@@ -511,13 +518,13 @@ describe('Vocal', () => {
 
 	it('passes full joined transcript to onResult regardless of command segment matching', async () => {
 		const onResult = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { hello: vi.fn() }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, onResult }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
+			getSr().say([
 				[{ transcript: 'hello ', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
@@ -527,12 +534,12 @@ describe('Vocal', () => {
 
 	it('returns the most confident alternative as the onResult transcript', async () => {
 		const onResult = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([[
+			getSr().say([[
 				{ transcript: 'bar', confidence: 0.4 },
 				{ transcript: 'foo', confidence: 0.9 },
 				{ transcript: 'baz', confidence: 0.1 },
@@ -543,12 +550,12 @@ describe('Vocal', () => {
 
 	it('joins all segments into the onResult transcript', async () => {
 		const onResult = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([
+			getSr().say([
 				[{ transcript: 'hello ', confidence: 0.9 }],
 				[{ transcript: 'world', confidence: 0.8 }],
 			])
@@ -558,27 +565,27 @@ describe('Vocal', () => {
 
 	it('triggers command matched on a word within a multi-word segment', async () => {
 		const callback = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { rouge: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([[{ transcript: 'je veux du rouge', confidence: 0.9 }]])
+			getSr().say([[{ transcript: 'je veux du rouge', confidence: 0.9 }]])
 			await waitFor(() => expect(callback).toHaveBeenCalledWith('rouge', 'rouge'))
 		})
 	})
 
 	it('triggers command matched on a secondary alternative (homophone)', async () => {
 		const callback = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { vert: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, maxAlternatives: 3 }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
 			// Primary alternative is the homophone; secondary is the correct word
-			recognition.instance.say([[
+			getSr().say([[
 				{ transcript: 'verre', confidence: 0.9 },
 				{ transcript: 'vert', confidence: 0.7 },
 			]])
@@ -588,13 +595,13 @@ describe('Vocal', () => {
 
 	it('passes the most confident transcript to onResult even when command matches a secondary alternative', async () => {
 		const onResult = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const commands = { vert: vi.fn() }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, onResult, maxAlternatives: 3 }))
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say([[
+			getSr().say([[
 				{ transcript: 'verre', confidence: 0.9 },
 				{ transcript: 'vert', confidence: 0.7 },
 			]])
@@ -604,19 +611,19 @@ describe('Vocal', () => {
 
 	it('calls onEnd via the end event when stop is asynchronous', async () => {
 		const onEnd = vi.fn()
-		const recognition = new SpeechRecognitionWrapper()
+		const recognition = createVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
 		// Simulate async stop: override stop() so the end event does not fire immediately
-		recognition.instance.stop = vi.fn()
+		getSr().stop = vi.fn()
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.instance.say('Foo')
+			getSr().say('Foo')
 			// stopRecognition was called but end has not fired yet — onEnd must not be called
 			expect(onEnd).not.toHaveBeenCalled()
 			// Browser fires end asynchronously after recognition stops
-			recognition.instance.end()
+			getSr().end()
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
@@ -624,7 +631,7 @@ describe('Vocal', () => {
 	describe('Continuous sessions', () => {
 		it('keeps session active after first result without firing onResult', async () => {
 			const onResult = vi.fn()
-			const recognition = new SpeechRecognitionWrapper()
+			const recognition = createVocal()
 			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, continuous: true }))
 
 			await act(async () => {
@@ -632,7 +639,7 @@ describe('Vocal', () => {
 			})
 
 			await act(async () => {
-				recognition.instance.say('Foo')
+				getSr().say('Foo')
 			})
 
 			expect(onResult).not.toHaveBeenCalled()
@@ -642,7 +649,7 @@ describe('Vocal', () => {
 		it('fires onResult once at session end with full accumulated transcript', async () => {
 			const onResult = vi.fn()
 			const onEnd = vi.fn()
-			const recognition = new SpeechRecognitionWrapper()
+			const recognition = createVocal()
 			const { getByTestId } = render(
 				getInstance({ __rsInstance: recognition, onResult, onEnd, continuous: true })
 			)
@@ -652,11 +659,11 @@ describe('Vocal', () => {
 			})
 
 			await act(async () => {
-				recognition.instance.say('Hello')
+				getSr().say('Hello')
 			})
 
 			await act(async () => {
-				recognition.instance.say(' world')
+				getSr().say(' world')
 			})
 
 			expect(onResult).not.toHaveBeenCalled()
@@ -672,7 +679,7 @@ describe('Vocal', () => {
 
 		it('stops session on explicit button click while listening', async () => {
 			const onEnd = vi.fn()
-			const recognition = new SpeechRecognitionWrapper()
+			const recognition = createVocal()
 			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd, continuous: true }))
 
 			await act(async () => {
@@ -680,7 +687,7 @@ describe('Vocal', () => {
 			})
 
 			await act(async () => {
-				recognition.instance.say('Foo')
+				getSr().say('Foo')
 				await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 			})
 
@@ -695,7 +702,7 @@ describe('Vocal', () => {
 		it('does not evaluate commands in continuous mode', async () => {
 			const commandFn = vi.fn()
 			const onEnd = vi.fn()
-			const recognition = new SpeechRecognitionWrapper()
+			const recognition = createVocal()
 			const { getByTestId } = render(
 				getInstance({ __rsInstance: recognition, commands: { rouge: commandFn }, onEnd, continuous: true })
 			)
@@ -705,7 +712,7 @@ describe('Vocal', () => {
 			})
 
 			await act(async () => {
-				recognition.instance.say('rouge')
+				getSr().say('rouge')
 				await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
 			})
 
@@ -721,7 +728,7 @@ describe('Vocal', () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const onResult = vi.fn()
-			const recognition = new SpeechRecognitionWrapper()
+			const recognition = createVocal()
 			const { getByTestId } = render(
 				getInstance({ __rsInstance: recognition, onEnd, onResult, continuous: true, silenceTimeout: 5000 })
 			)
@@ -731,7 +738,7 @@ describe('Vocal', () => {
 			})
 
 			act(() => {
-				recognition.instance.say('Hello')
+				getSr().say('Hello')
 			})
 
 			expect(onEnd).not.toHaveBeenCalled()

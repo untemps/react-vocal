@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react'
-import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
+import { createVocal, isSupported } from '@untemps/vocal'
 
 import useVocal from '../useVocal'
 
@@ -9,18 +9,13 @@ describe('useVocal', () => {
 	const mockStart = vi.fn()
 	const mockStop = vi.fn()
 	const mockAbort = vi.fn()
-	const mockAddEventListener = vi.fn()
-	const mockRemoveEventListener = vi.fn()
+	const mockOn = vi.fn()
+	const mockOff = vi.fn()
 	const mockCleanup = vi.fn()
-
-	const mockIsSupported = vi.fn()
-	Object.defineProperty(SpeechRecognitionWrapper, 'isSupported', {
-		get: mockIsSupported,
-	})
 
 	describe('with no SpeechRecognition support', () => {
 		beforeAll(() => {
-			mockIsSupported.mockReturnValue(false)
+			vi.mocked(isSupported).mockReturnValue(false)
 		})
 
 		it('cannot create SpeechRecognition instance', () => {
@@ -79,7 +74,7 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			subscribe('foo', vi.fn())
-			expect(mockAddEventListener).not.toHaveBeenCalled()
+			expect(mockOn).not.toHaveBeenCalled()
 		})
 
 		it('not triggers unsubscribe function', () => {
@@ -89,30 +84,28 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			unsubscribe('foo', vi.fn())
-			expect(mockRemoveEventListener).not.toHaveBeenCalled()
+			expect(mockOff).not.toHaveBeenCalled()
 		})
 	})
 
 	describe('with SpeechRecognition support', () => {
 		beforeAll(() => {
-			mockIsSupported.mockReturnValue(true)
+			vi.mocked(isSupported).mockReturnValue(true)
 		})
 
 		beforeEach(() => {
-			SpeechRecognitionWrapper.mockImplementation(function () {
-				return {
-					start: mockStart,
-					stop: mockStop,
-					abort: mockAbort,
-					addEventListener: mockAddEventListener,
-					removeEventListener: mockRemoveEventListener,
-					cleanup: mockCleanup,
-				}
-			})
+			vi.mocked(createVocal).mockImplementation(() => ({
+				start: mockStart,
+				stop: mockStop,
+				abort: mockAbort,
+				on: mockOn,
+				off: mockOff,
+				cleanup: mockCleanup,
+			}))
 		})
 
 		afterEach(() => {
-			SpeechRecognitionWrapper.mockReset()
+			vi.mocked(createVocal).mockReset()
 		})
 
 		it('creates SpeechRecognition instance', () => {
@@ -124,9 +117,9 @@ describe('useVocal', () => {
 			expect(ref.current).toBeDefined()
 		})
 
-		it('passes maxAlternatives to SpeechRecognitionWrapper constructor', () => {
+		it('passes maxAlternatives to createVocal factory', () => {
 			renderHook(() => useVocal('en-US', null, 5))
-			expect(SpeechRecognitionWrapper).toHaveBeenCalledWith({
+			expect(createVocal).toHaveBeenCalledWith({
 				lang: 'en-US',
 				grammars: null,
 				maxAlternatives: 5,
@@ -135,7 +128,7 @@ describe('useVocal', () => {
 		})
 
 		it('uses custom SpeechRecognition instance', () => {
-			const foo = new SpeechRecognitionWrapper()
+			const foo = createVocal()
 			const {
 				result: {
 					current: [ref],
@@ -191,7 +184,7 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			subscribe('foo', vi.fn())
-			expect(mockAddEventListener).toHaveBeenCalled()
+			expect(mockOn).toHaveBeenCalled()
 		})
 
 		it('triggers unsubscribe function', () => {
@@ -201,7 +194,7 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			unsubscribe('foo', vi.fn())
-			expect(mockRemoveEventListener).toHaveBeenCalled()
+			expect(mockOff).toHaveBeenCalled()
 		})
 	})
 })

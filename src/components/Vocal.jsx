@@ -1,5 +1,5 @@
 import React, { cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react'
-import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
+import { isSupported } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
 import useVocal from '../hooks/useVocal'
@@ -241,7 +241,7 @@ const Vocal = ({
 	)
 
 	const _renderChildren = () => {
-		if (SpeechRecognitionWrapper.isSupported) {
+		if (isSupported()) {
 			if (isFunction(children)) {
 				return children(startRecognition, stopRecognition, isListening)
 			} else if (isValidElement(children)) {

@@ -37,47 +37,64 @@ global.SpeechGrammarList = vi.fn(function () {
 		length: 0,
 	}
 })
+
+let currentSr = null
+global.__getSpeechRecognition = () => currentSr
+
 global.SpeechRecognition = vi.fn(function () {
 	const handlers = {}
 	let accumulatedResults = []
-	return {
+	const sr = {
 		addEventListener: vi.fn(function (type, callback) {
 			handlers[type] = callback
 		}),
-		removeEventListener: vi.fn(),
+		removeEventListener: vi.fn(function (type) {
+			delete handlers[type]
+		}),
 		dispatchEvent: vi.fn(),
 		start: vi.fn(function () {
 			accumulatedResults = []
-			handlers.start?.()
+			handlers.start?.(new Event('start'))
 		}),
 		stop: vi.fn(function () {
-			handlers.end?.()
+			handlers.end?.(new Event('end'))
 		}),
 		abort: vi.fn(function () {
-			handlers.end?.()
+			handlers.end?.(new Event('end'))
 		}),
 		say: vi.fn(function (input) {
-			handlers.speechstart?.()
+			handlers.speechstart?.(new Event('speechstart'))
 
 			const newSegments = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : []
 			const resultIndex = accumulatedResults.length
-			accumulatedResults = [...accumulatedResults, ...newSegments]
+			const segmentsWithFinal = newSegments.map((segment) => {
+				const arr = segment.slice()
+				Object.defineProperty(arr, 'isFinal', { value: true })
+				Object.defineProperty(arr, 'item', { value: (i) => arr[i] })
+				return arr
+			})
+			accumulatedResults = [...accumulatedResults, ...segmentsWithFinal]
+
+			const resultsArray = accumulatedResults.slice()
+			Object.defineProperty(resultsArray, 'item', { value: (i) => resultsArray[i] })
 
 			const resultEvent = new Event('result')
 			resultEvent.resultIndex = resultIndex
-			resultEvent.results = accumulatedResults
-			handlers.speechend?.()
+			resultEvent.results = resultsArray
+			handlers.speechend?.(new Event('speechend'))
 			if (input) {
 				handlers.result?.(resultEvent)
 			} else {
-				handlers.nomatch?.()
+				handlers.nomatch?.(new Event('nomatch'))
 			}
 		}),
 		end: vi.fn(function () {
-			handlers.end?.()
+			handlers.end?.(new Event('end'))
 		}),
 		error: vi.fn(function (err) {
 			handlers.error?.(err)
 		}),
 	}
+	currentSr = sr
+	return sr
 })

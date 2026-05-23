@@ -1057,22 +1057,22 @@
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.4.tgz#56e2cc26c397c038fab0e3a917a12d5c5909e901"
   integrity sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==
 
-"@untemps/user-permissions-utils@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@untemps/user-permissions-utils/-/user-permissions-utils-1.1.0.tgz#133b3628f4691b11008444ffbfbbf82375b1f8ef"
-  integrity sha512-0QLjzj9JIFZc+YGs2QnTh3ic9a4MCvPvtkL/SrtgWU7vw9bmtra2FnHfFr4vp8OtyLLzoTo3UGCvXP92VnOIDw==
+"@untemps/user-permissions-utils@^1.3.3":
+  version "1.3.4"
+  resolved "https://registry.yarnpkg.com/@untemps/user-permissions-utils/-/user-permissions-utils-1.3.4.tgz#f7e66f4e5f77d47a5e7f4c2e4b2d3db83f79a8fa"
+  integrity sha512-pVZ8S4EGWugDUf74cwsHs8TO7aheBqKFyqdIS33wIVEqxuo4S7anDtdwg/gFDx7RZ6LoQ6Mi3Iz3T2wsJu6JKw==
 
 "@untemps/utils@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@untemps/utils/-/utils-3.2.0.tgz#dc26d65d54e4a5e9b940b5c7f65832f60ff283dd"
   integrity sha512-P48fcASTI8LSngn8cYjDq8KkasjDLghOnDmMatjwTLp0/qwp8/sifYuAJDODCqXXr7xATxcTnkULzNdZqavuNA==
 
-"@untemps/vocal@^1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@untemps/vocal/-/vocal-1.3.0.tgz#85877e7ff00bb88591586383c56c4ea15871ea1c"
-  integrity sha512-i4GyGM1WL41XpnEidURVcBbu+jJLWsi7JMUzpS3XjPqFHAaK1nm4GP9ZwCEGrfIYDEMM65a62kNNxxi7Vmpm3Q==
+"@untemps/vocal@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/@untemps/vocal/-/vocal-2.0.1.tgz#67b45c70817f07d355ce1aa029220ae6c8a2a3c1"
+  integrity sha512-TBRxtkzA2d7/RHkDIHBUf9WUiPPZKrLjB4sfVluWbfuO1MPpBqchg0TaJCtMjiYwbI56sdbM2VHtZjSk4xfmlA==
   dependencies:
-    "@untemps/user-permissions-utils" "^1.1.0"
+    "@untemps/user-permissions-utils" "^1.3.3"
 
 "@vitejs/plugin-react@^6.0.1":
   version "6.0.1"
