@@ -33,7 +33,7 @@ timeout elapses.
 Some browsers supports the `SpeechRecognition` API but not all the related APIs.  
 For example, browsers on iOS 14.5, the `SpeechGrammar` and `SpeechGrammarList` and `Permissions` APIs are not supported.
 
-Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlaying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
+Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
 
 ## Requirements
 
@@ -320,7 +320,7 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
 
 | Args        | Type | Description                                          |
 | ----------- | ---- | ---------------------------------------------------- |
-| ref         | Ref  | React ref to the SpeechRecognitionWrapper instance   |
+| ref         | Ref  | React ref to the underlying `@untemps/vocal` instance |
 | start       | func | Function to start the recognition                    |
 | stop        | func | Function to stop the recognition                     |
 | abort       | func | Function to abort the recognition                    |
@@ -332,11 +332,13 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
 
 #### Basic usage
 
+`isSupported` is a function that returns `true` when the browser supports the Web Speech API (along with the Permissions and MediaDevices APIs that `@untemps/vocal` relies on). It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
+
 ```javascript
 import Vocal, { isSupported } from '@untemps/react-vocal'
 
 const App = () => {
-	return isSupported ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
+	return isSupported() ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
 }
 ```
 

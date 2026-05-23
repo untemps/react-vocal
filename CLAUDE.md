@@ -21,19 +21,19 @@ Build formats defined in `vite.config.js` `build.lib`: `cjs` → `dist/index.js`
 
 ## Architecture
 
-React library wrapping the [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) via `@untemps/vocal` (the `SpeechRecognitionWrapper` class).
+React library wrapping the [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API) via `@untemps/vocal` 2.x (functional API: `createVocal`, `isSupported`, `on`/`off`).
 
 ### Public API (`src/index.js`)
 
 - **`Vocal`** (default export) — the component
 - **`useVocal`** — named export, the hook
-- **`isSupported`** — boolean re-exported from `@untemps/vocal`
+- **`isSupported`** — function re-exported from `@untemps/vocal` (call it: `isSupported()`)
 
 ### Hook layer (`src/hooks/`)
 
 | Hook | Role |
 |------|------|
-| `useVocal` | Creates/manages a `SpeechRecognitionWrapper` instance in a ref. Returns `[ref, { start, stop, abort, subscribe, unsubscribe, clean }]`. Instance is re-created when `lang` or `grammars` change. |
+| `useVocal` | Creates/manages a vocal instance (`createVocal()` from `@untemps/vocal`) in a ref. Returns `[ref, { start, stop, abort, subscribe, unsubscribe, clean }]`. Instance is re-created when `lang` or `grammars` change. `subscribe`/`unsubscribe` delegate to the instance's `on`/`off`. |
 | `useCommands` | Fuzzy-matches a speech result string against a `commands` map using **fuse.js** (default score threshold `0.4` — lower = stricter). Keys are lowercased. |
 | `useTimeout` | Manages the recognition timeout: starts on `start` event, pauses on `speechstart`, restarts on `speechend`, fires `_onEnd` on expiry. |
 
@@ -46,11 +46,11 @@ Composes the three hooks above. Three render modes depending on `children`:
 
 All props have default values in the function signature (React 19: `defaultProps` no longer applied to function components). No `propTypes` — removed as deprecated in React 19.
 
-The `__rsInstance` prop (undocumented) injects a custom `SpeechRecognitionWrapper` instance, used exclusively in tests.
+The `__rsInstance` prop (undocumented) injects a custom vocal instance, used exclusively in tests.
 
 ### Testing
 
-`vitest.setup.js` globally mocks `SpeechRecognition`, `Permissions`, `MediaDevices`, and `SpeechGrammarList`. The mock exposes a custom `say(sentence)` method that fires the full `speechstart → result/nomatch → speechend` event sequence synchronously — use it to simulate recognition in tests.
+`vitest.setup.js` globally mocks `SpeechRecognition`, `Permissions`, `MediaDevices`, and `SpeechGrammarList`. The mock exposes a custom `say(sentence)` method that fires the full `speechstart → result/nomatch → speechend` event sequence synchronously — use it to simulate recognition in tests. The last `SpeechRecognition` instance created by the mock is reachable via `globalThis.__getSpeechRecognition()` (the wrapper's `.instance` getter was removed in vocal 2.x).
 
 Vitest globals are enabled (`globals: true`) — `describe`, `it`, `expect`, `vi` available without imports in test files.
 
