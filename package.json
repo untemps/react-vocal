@@ -23,7 +23,6 @@
 	"files": [
 		"dist/index.js",
 		"dist/index.es.js",
-		"dist/index.umd.js",
 		"CHANGELOG.md"
 	],
 	"main": "dist/index.js",
@@ -101,10 +100,6 @@
 						{
 							"path": "dist/index.es.js",
 							"label": "ES distribution"
-						},
-						{
-							"path": "dist/index.umd.js",
-							"label": "UMD distribution"
 						}
 					]
 				}

@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 yarn test           # watch mode (Vitest)
 yarn test:ci        # CI mode with coverage (also runs in pre-commit hook)
-yarn build          # build CJS + ES + UMD to dist/ (Vite library mode)
+yarn build          # build CJS + ES to dist/ (Vite library mode)
 yarn dev            # dev server at http://localhost:10001/ (separate dev/ package)
 yarn prettier       # format all JS files and stage tracked changes
 ```
@@ -17,7 +17,7 @@ Run a single test file:
 yarn vitest src/hooks/__tests__/useVocal.test.js
 ```
 
-Build formats defined in `vite.config.js` `build.lib`: `cjs` → `dist/index.js`, `es` → `dist/index.es.js`, `umd` → `dist/index.umd.js`.
+Build formats defined in `vite.config.js` `build.lib`: `cjs` → `dist/index.js`, `es` → `dist/index.es.js`.
 
 ## Architecture
 
