@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-const useTimeout = (handler, timeout = 0) => {
-	const ref = useRef(-1)
+const useTimeout = (handler: () => void, timeout: number = 0): [start: () => void, stop: () => void] => {
+	const ref = useRef<ReturnType<typeof setTimeout> | number>(-1)
 
 	const stop = useCallback(() => {
-		clearTimeout(ref.current)
+		clearTimeout(ref.current as ReturnType<typeof setTimeout>)
 		ref.current = -1
 	}, [])
 

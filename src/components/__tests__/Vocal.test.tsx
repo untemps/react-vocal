@@ -1,19 +1,18 @@
-import React from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { isSupported } from '@untemps/vocal'
 
-import Vocal from '../Vocal'
+import Vocal, { type VocalProps } from '../Vocal'
 import { createMockVocal } from './createMockVocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
-	const actual = await importOriginal()
+	const actual = (await importOriginal()) as typeof import('@untemps/vocal')
 	return { ...actual, isSupported: vi.fn(actual.isSupported) }
 })
 
-const defaultProps = {}
-const getInstance = (props = {}, children = null) => (
-	<Vocal {...defaultProps} {...props}>
+const defaultProps: Partial<VocalProps> = {}
+const getInstance = (props: Partial<VocalProps> | null = {}, children: VocalProps['children'] = null) => (
+	<Vocal {...defaultProps} {...(props ?? {})}>
 		{children}
 	</Vocal>
 )
@@ -55,7 +54,7 @@ describe('Vocal', () => {
 			getInstance({ onStart }, (start) => <div data-testid="__vocal-custom-root__" onClick={start} />)
 		)
 		await act(async () => {
-			fireEvent.click(queryByTestId('__vocal-custom-root__'))
+			fireEvent.click(queryByTestId('__vocal-custom-root__')!)
 			await waitFor(() => expect(onStart).toHaveBeenCalled())
 		})
 	})
@@ -71,8 +70,8 @@ describe('Vocal', () => {
 			))
 		)
 		await act(async () => {
-			fireEvent.click(queryByText('start'))
-			fireEvent.click(queryByText('stop'))
+			fireEvent.click(queryByText('start')!)
+			fireEvent.click(queryByText('stop')!)
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
 	})
@@ -89,11 +88,11 @@ describe('Vocal', () => {
 			))
 		)
 		await act(async () => {
-			fireEvent.click(queryByText('start'))
+			fireEvent.click(queryByText('start')!)
 			await waitFor(() => {
 				expect(queryByText('Started')).toBeInTheDocument()
 			})
-			fireEvent.click(queryByText('stop'))
+			fireEvent.click(queryByText('stop')!)
 			await waitFor(() => {
 				expect(queryByText('Stopped')).toBeInTheDocument()
 			})
@@ -164,9 +163,9 @@ describe('Vocal', () => {
 
 	it('triggers onStart handler', async () => {
 		const onStart = vi.fn()
-		const { queryByTestId } = render(getInstance({ onStart }))
+		const { getByTestId } = render(getInstance({ onStart }))
 		await act(async () => {
-			fireEvent.click(queryByTestId('__vocal-root__'))
+			fireEvent.click(getByTestId('__vocal-root__'))
 			await waitFor(() => expect(onStart).toHaveBeenCalled())
 		})
 	})
@@ -328,7 +327,9 @@ describe('Vocal', () => {
 		const onSpeechStartV1 = vi.fn()
 		const onSpeechStartV2 = vi.fn()
 		const recognition = createMockVocal()
-		const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onSpeechStart: onSpeechStartV1 }))
+		const { getByTestId, rerender } = render(
+			getInstance({ __rsInstance: recognition, onSpeechStart: onSpeechStartV1 })
+		)
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
@@ -424,10 +425,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.say([
-				[{ transcript: 'hello', confidence: 0.9 }],
-				[{ transcript: 'world', confidence: 0.8 }],
-			])
+			recognition.say([[{ transcript: 'hello', confidence: 0.9 }], [{ transcript: 'world', confidence: 0.8 }]])
 			await waitFor(() => expect(callback).toHaveBeenCalledWith('hello', 'hello'))
 		})
 	})
@@ -440,10 +438,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.say([
-				[{ transcript: 'hello', confidence: 0.9 }],
-				[{ transcript: 'world', confidence: 0.8 }],
-			])
+			recognition.say([[{ transcript: 'hello', confidence: 0.9 }], [{ transcript: 'world', confidence: 0.8 }]])
 			await waitFor(() => expect(callback).toHaveBeenCalledWith('world', 'world'))
 		})
 	})
@@ -456,10 +451,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.say([
-				[{ transcript: 'hello', confidence: 0.9 }],
-				[{ transcript: 'world', confidence: 0.8 }],
-			])
+			recognition.say([[{ transcript: 'hello', confidence: 0.9 }], [{ transcript: 'world', confidence: 0.8 }]])
 			await new Promise((r) => setTimeout(r, 100))
 		})
 
@@ -475,10 +467,7 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.say([
-				[{ transcript: 'hello', confidence: 0.9 }],
-				[{ transcript: 'world', confidence: 0.8 }],
-			])
+			recognition.say([[{ transcript: 'hello', confidence: 0.9 }], [{ transcript: 'world', confidence: 0.8 }]])
 			await waitFor(() => expect(callbackHello).toHaveBeenCalledWith('hello', 'hello'))
 		})
 
@@ -492,11 +481,13 @@ describe('Vocal', () => {
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.say([[
-				{ transcript: 'bar', confidence: 0.4 },
-				{ transcript: 'foo', confidence: 0.9 },
-				{ transcript: 'baz', confidence: 0.1 },
-			]])
+			recognition.say([
+				[
+					{ transcript: 'bar', confidence: 0.4 },
+					{ transcript: 'foo', confidence: 0.9 },
+					{ transcript: 'baz', confidence: 0.1 },
+				],
+			])
 			await waitFor(() => expect(onResult).toHaveBeenCalledWith('foo', expect.anything()))
 		})
 	})
@@ -523,10 +514,12 @@ describe('Vocal', () => {
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
 			// Primary alternative is the homophone; secondary is the correct word
-			recognition.say([[
-				{ transcript: 'verre', confidence: 0.9 },
-				{ transcript: 'vert', confidence: 0.7 },
-			]])
+			recognition.say([
+				[
+					{ transcript: 'verre', confidence: 0.9 },
+					{ transcript: 'vert', confidence: 0.7 },
+				],
+			])
 			await waitFor(() => expect(callback).toHaveBeenCalledWith('vert', 'vert'))
 		})
 	})
@@ -535,14 +528,18 @@ describe('Vocal', () => {
 		const onResult = vi.fn()
 		const recognition = createMockVocal()
 		const commands = { vert: vi.fn() }
-		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands, onResult, maxAlternatives: 3 }))
+		const { getByTestId } = render(
+			getInstance({ __rsInstance: recognition, commands, onResult, maxAlternatives: 3 })
+		)
 
 		await act(async () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
-			recognition.say([[
-				{ transcript: 'verre', confidence: 0.9 },
-				{ transcript: 'vert', confidence: 0.7 },
-			]])
+			recognition.say([
+				[
+					{ transcript: 'verre', confidence: 0.9 },
+					{ transcript: 'vert', confidence: 0.7 },
+				],
+			])
 			await waitFor(() => expect(onResult).toHaveBeenCalledWith('verre', expect.anything()))
 		})
 	})
@@ -746,9 +743,9 @@ describe('Vocal', () => {
 		vi.resetModules()
 		const { default: VocalWithMockedUseVocal } = await import('../Vocal')
 		const onError = vi.fn()
-		const { queryByTestId } = render(<VocalWithMockedUseVocal onError={onError} />)
+		const { getByTestId } = render(<VocalWithMockedUseVocal onError={onError} />)
 		await act(async () => {
-			fireEvent.click(queryByTestId('__vocal-root__'))
+			fireEvent.click(getByTestId('__vocal-root__'))
 			await waitFor(() => expect(onError).toHaveBeenCalled())
 		})
 		vi.doUnmock('../../hooks/useVocal')

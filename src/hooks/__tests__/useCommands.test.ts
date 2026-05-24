@@ -30,7 +30,7 @@ describe('useCommands', () => {
 
 	it('passes input as callback argument', () => {
 		const commands = {
-			foo: (input) => input,
+			foo: (input: string) => input,
 		}
 		const {
 			result: { current: triggerCommand },

@@ -107,6 +107,9 @@ describe('useVocal', () => {
 				on: mockOn,
 				off: mockOff,
 				cleanup: mockCleanup,
+				get isRecording() {
+					return false
+				},
 			}))
 		})
 
@@ -139,7 +142,7 @@ describe('useVocal', () => {
 				result: {
 					current: [ref],
 				},
-			} = renderHook(() => useVocal(null, null, 1, false, foo))
+			} = renderHook(() => useVocal(undefined, null, 1, false, foo))
 			expect(ref.current).toBe(foo)
 		})
 
@@ -232,15 +235,15 @@ describe('useVocal', () => {
 
 		it('flips isRecording to true on the start event', async () => {
 			const { result } = renderHook(() => useVocal())
-			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')![1]
 			await act(async () => startCallback(new Event('start')))
 			expect(result.current[1].isRecording).toBe(true)
 		})
 
 		it('flips isRecording back to false on the end event', async () => {
 			const { result } = renderHook(() => useVocal())
-			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
-			const endCallback = mockOn.mock.calls.find(([type]) => type === 'end')[1]
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')![1]
+			const endCallback = mockOn.mock.calls.find(([type]) => type === 'end')![1]
 			await act(async () => startCallback(new Event('start')))
 			await act(async () => endCallback(new Event('end')))
 			expect(result.current[1].isRecording).toBe(false)
@@ -248,8 +251,8 @@ describe('useVocal', () => {
 
 		it('flips isRecording back to false on the error event', async () => {
 			const { result } = renderHook(() => useVocal())
-			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
-			const errorCallback = mockOn.mock.calls.find(([type]) => type === 'error')[1]
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')![1]
+			const errorCallback = mockOn.mock.calls.find(([type]) => type === 'error')![1]
 			await act(async () => startCallback(new Event('start')))
 			await act(async () => errorCallback(new Event('error')))
 			expect(result.current[1].isRecording).toBe(false)
