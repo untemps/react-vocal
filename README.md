@@ -379,8 +379,8 @@ const App = () => {
 
 	const [, { start, subscribe }] = useVocal('fr-FR')
 
-	const _onResult = (transcript) => {
-		triggerCommand(transcript)
+	const _onResult = (_event, bestAlternative) => {
+		triggerCommand(bestAlternative)
 	}
 
 	const _onClick = () => {
