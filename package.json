@@ -24,6 +24,7 @@
 		"dist/*.cjs",
 		"dist/*.es.js",
 		"dist/*.d.ts",
+		"dist/*.map",
 		"CHANGELOG.md"
 	],
 	"type": "module",
@@ -37,6 +38,12 @@
 			"import": "./dist/index.es.js",
 			"require": "./dist/index.cjs",
 			"default": "./dist/index.es.js"
+		},
+		"./testing": {
+			"types": "./dist/testing.d.ts",
+			"import": "./dist/testing.es.js",
+			"require": "./dist/testing.cjs",
+			"default": "./dist/testing.es.js"
 		}
 	},
 	"engines": {
@@ -78,13 +85,17 @@
 		"fuse.js": ">=6.0.0",
 		"react": ">=16.13.1",
 		"react-dom": ">=16.13.1",
-		"typescript": ">=6.0.0"
+		"typescript": ">=6.0.0",
+		"vitest": ">=2.0.0"
 	},
 	"peerDependenciesMeta": {
 		"fuse.js": {
 			"optional": true
 		},
 		"typescript": {
+			"optional": true
+		},
+		"vitest": {
 			"optional": true
 		}
 	},
