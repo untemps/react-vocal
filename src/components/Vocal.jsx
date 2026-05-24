@@ -63,6 +63,7 @@ const Vocal = ({
 
 	const unsubscribeAllRef = useRef(null)
 	const onEndRef = useRef(null)
+	const isEndingRef = useRef(false)
 
 	const silenceTimeoutRef = useRef(silenceTimeout)
 	silenceTimeoutRef.current = silenceTimeout
@@ -143,12 +144,18 @@ const Vocal = ({
 
 	const _onEnd = useCallback(
 		(e) => {
+			// Guard against re-entry: when a timer (timeout/silenceTimeout) fires _onEnd,
+			// stopRecognition() calls vocal.stop() which dispatches the 'end' event, which
+			// would re-enter _onEnd and double-fire onEnd.
+			if (isEndingRef.current) return
+			isEndingRef.current = true
 			stopTimer()
 			stopSilenceTimer()
 			try {
 				stopRecognition()
 				unsubscribeAllRef.current?.()
 			} finally {
+				isEndingRef.current = false
 				propsRef.current.onEnd?.(e)
 			}
 		},

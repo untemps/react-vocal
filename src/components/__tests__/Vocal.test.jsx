@@ -731,7 +731,8 @@ describe('Vocal', () => {
 				vi.advanceTimersByTime(5000)
 			})
 
-			expect(onEnd).toHaveBeenCalled()
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			expect(onResult).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
 			vi.useRealTimers()
 		})
