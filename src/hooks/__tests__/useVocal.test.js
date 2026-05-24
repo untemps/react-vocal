@@ -1,5 +1,5 @@
-import { renderHook } from '@testing-library/react'
-import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
+import { act, renderHook } from '@testing-library/react'
+import { createVocal, isSupported } from '@untemps/vocal'
 
 import useVocal from '../useVocal'
 
@@ -9,18 +9,13 @@ describe('useVocal', () => {
 	const mockStart = vi.fn()
 	const mockStop = vi.fn()
 	const mockAbort = vi.fn()
-	const mockAddEventListener = vi.fn()
-	const mockRemoveEventListener = vi.fn()
+	const mockOn = vi.fn()
+	const mockOff = vi.fn()
 	const mockCleanup = vi.fn()
-
-	const mockIsSupported = vi.fn()
-	Object.defineProperty(SpeechRecognitionWrapper, 'isSupported', {
-		get: mockIsSupported,
-	})
 
 	describe('with no SpeechRecognition support', () => {
 		beforeAll(() => {
-			mockIsSupported.mockReturnValue(false)
+			vi.mocked(isSupported).mockReturnValue(false)
 		})
 
 		it('cannot create SpeechRecognition instance', () => {
@@ -79,7 +74,7 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			subscribe('foo', vi.fn())
-			expect(mockAddEventListener).not.toHaveBeenCalled()
+			expect(mockOn).not.toHaveBeenCalled()
 		})
 
 		it('not triggers unsubscribe function', () => {
@@ -89,30 +84,34 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			unsubscribe('foo', vi.fn())
-			expect(mockRemoveEventListener).not.toHaveBeenCalled()
+			expect(mockOff).not.toHaveBeenCalled()
 		})
 	})
 
 	describe('with SpeechRecognition support', () => {
 		beforeAll(() => {
-			mockIsSupported.mockReturnValue(true)
+			vi.mocked(isSupported).mockReturnValue(true)
 		})
 
 		beforeEach(() => {
-			SpeechRecognitionWrapper.mockImplementation(function () {
-				return {
-					start: mockStart,
-					stop: mockStop,
-					abort: mockAbort,
-					addEventListener: mockAddEventListener,
-					removeEventListener: mockRemoveEventListener,
-					cleanup: mockCleanup,
-				}
-			})
+			mockStart.mockClear()
+			mockStop.mockClear()
+			mockAbort.mockClear()
+			mockOn.mockClear()
+			mockOff.mockClear()
+			mockCleanup.mockClear()
+			vi.mocked(createVocal).mockImplementation(() => ({
+				start: mockStart,
+				stop: mockStop,
+				abort: mockAbort,
+				on: mockOn,
+				off: mockOff,
+				cleanup: mockCleanup,
+			}))
 		})
 
 		afterEach(() => {
-			SpeechRecognitionWrapper.mockReset()
+			vi.mocked(createVocal).mockReset()
 		})
 
 		it('creates SpeechRecognition instance', () => {
@@ -124,9 +123,9 @@ describe('useVocal', () => {
 			expect(ref.current).toBeDefined()
 		})
 
-		it('passes maxAlternatives to SpeechRecognitionWrapper constructor', () => {
+		it('passes maxAlternatives to createVocal factory', () => {
 			renderHook(() => useVocal('en-US', null, 5))
-			expect(SpeechRecognitionWrapper).toHaveBeenCalledWith({
+			expect(createVocal).toHaveBeenCalledWith({
 				lang: 'en-US',
 				grammars: null,
 				maxAlternatives: 5,
@@ -135,7 +134,7 @@ describe('useVocal', () => {
 		})
 
 		it('uses custom SpeechRecognition instance', () => {
-			const foo = new SpeechRecognitionWrapper()
+			const foo = createVocal()
 			const {
 				result: {
 					current: [ref],
@@ -152,6 +151,28 @@ describe('useVocal', () => {
 			} = renderHook(() => useVocal())
 			start()
 			expect(mockStart).toHaveBeenCalled()
+		})
+
+		it('forwards start options (signal) to the vocal instance', () => {
+			const controller = new AbortController()
+			const {
+				result: {
+					current: [, { start }],
+				},
+			} = renderHook(() => useVocal())
+			start({ signal: controller.signal })
+			expect(mockStart).toHaveBeenCalledWith({ signal: controller.signal })
+		})
+
+		it('returns the promise from the vocal start() call', () => {
+			const startPromise = Promise.resolve()
+			mockStart.mockReturnValue(startPromise)
+			const {
+				result: {
+					current: [, { start }],
+				},
+			} = renderHook(() => useVocal())
+			expect(start()).toBe(startPromise)
 		})
 
 		it('triggers stop function', () => {
@@ -191,7 +212,7 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			subscribe('foo', vi.fn())
-			expect(mockAddEventListener).toHaveBeenCalled()
+			expect(mockOn).toHaveBeenCalled()
 		})
 
 		it('triggers unsubscribe function', () => {
@@ -201,7 +222,43 @@ describe('useVocal', () => {
 				},
 			} = renderHook(() => useVocal())
 			unsubscribe('foo', vi.fn())
-			expect(mockRemoveEventListener).toHaveBeenCalled()
+			expect(mockOff).toHaveBeenCalled()
+		})
+
+		it('exposes isRecording as false initially', () => {
+			const { result } = renderHook(() => useVocal())
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('flips isRecording to true on the start event', async () => {
+			const { result } = renderHook(() => useVocal())
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			await act(async () => startCallback(new Event('start')))
+			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('flips isRecording back to false on the end event', async () => {
+			const { result } = renderHook(() => useVocal())
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			const endCallback = mockOn.mock.calls.find(([type]) => type === 'end')[1]
+			await act(async () => startCallback(new Event('start')))
+			await act(async () => endCallback(new Event('end')))
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('flips isRecording back to false on the error event', async () => {
+			const { result } = renderHook(() => useVocal())
+			const startCallback = mockOn.mock.calls.find(([type]) => type === 'start')[1]
+			const errorCallback = mockOn.mock.calls.find(([type]) => type === 'error')[1]
+			await act(async () => startCallback(new Event('start')))
+			await act(async () => errorCallback(new Event('error')))
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('optimistically flips isRecording to true when start() is called', async () => {
+			const { result } = renderHook(() => useVocal())
+			await act(async () => result.current[1].start())
+			expect(result.current[1].isRecording).toBe(true)
 		})
 	})
 })
