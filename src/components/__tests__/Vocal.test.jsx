@@ -152,16 +152,11 @@ describe('Vocal', () => {
 		const commands = { foo: callback }
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, commands }))
 
-		let flag = false
-		recognition.on('start', async () => {
-			flag = true
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 
 		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-
-			await waitFor(() => flag)
-
 			recognition.say('Foo')
 			await waitFor(() => expect(callback).toHaveBeenCalledWith('Foo', 'foo'))
 		})
@@ -181,16 +176,11 @@ describe('Vocal', () => {
 		const recognition = createMockVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult }))
 
-		let flag = false
-		recognition.on('start', async () => {
-			flag = true
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 
 		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-
-			await waitFor(() => flag)
-
 			recognition.say('Foo')
 			await waitFor(() => expect(onResult).toHaveBeenCalledWith('Foo', expect.anything()))
 		})
@@ -201,16 +191,11 @@ describe('Vocal', () => {
 		const recognition = createMockVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onNoMatch }))
 
-		let flag = false
-		recognition.on('start', async () => {
-			flag = true
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 
 		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-
-			await waitFor(() => flag)
-
 			recognition.say(null)
 			await waitFor(() => expect(onNoMatch).toHaveBeenCalled())
 		})
@@ -221,16 +206,11 @@ describe('Vocal', () => {
 		const recognition = createMockVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechStart }))
 
-		let flag = false
-		recognition.on('start', async () => {
-			flag = true
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 
 		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-
-			await waitFor(() => flag)
-
 			recognition.say('Foo')
 			await waitFor(() => expect(onSpeechStart).toHaveBeenCalled())
 		})
@@ -241,16 +221,11 @@ describe('Vocal', () => {
 		const recognition = createMockVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onSpeechEnd }))
 
-		let flag = false
-		recognition.on('start', async () => {
-			flag = true
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 
 		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-
-			await waitFor(() => flag)
-
 			recognition.say('Foo')
 			await waitFor(() => expect(onSpeechEnd).toHaveBeenCalled())
 		})
@@ -271,16 +246,11 @@ describe('Vocal', () => {
 		const recognition = createMockVocal()
 		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd }))
 
-		let flag = false
-		recognition.on('start', async () => {
-			flag = true
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 
 		await act(async () => {
-			fireEvent.click(getByTestId('__vocal-root__'))
-
-			await waitFor(() => flag)
-
 			recognition.say('Foo')
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
