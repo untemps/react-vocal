@@ -10,7 +10,7 @@ export type TriggerCommand = (rawInput: string) => unknown
 const useCommands = (commands?: CommandsMap | null, precision: number = 0.4): TriggerCommand => {
 	const normalized = useMemo<CommandsMap>(
 		() =>
-			!!commands
+			commands
 				? Object.entries(commands).reduce<CommandsMap>(
 						(acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }),
 						{}

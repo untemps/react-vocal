@@ -45,6 +45,7 @@
 	"devDependencies": {
 		"@commitlint/cli": "^20.5.3",
 		"@commitlint/config-conventional": "^20.5.3",
+		"@eslint/js": "^10.0.1",
 		"@microsoft/api-extractor": "^7.58.7",
 		"@semantic-release/changelog": "^6.0.3",
 		"@semantic-release/git": "^10.0.1",
@@ -57,7 +58,10 @@
 		"@untemps/utils": "^3.2.0",
 		"@vitejs/plugin-react": "^6.0.1",
 		"@vitest/coverage-v8": "^4.1.5",
+		"eslint": "^10.4.0",
+		"eslint-config-prettier": "^10.1.8",
 		"fuse.js": "^7.3.0",
+		"globals": "^17.6.0",
 		"husky": "^9.1.7",
 		"jsdom": "^29.1.1",
 		"prettier": "^3.8.3",
@@ -65,6 +69,7 @@
 		"react-dom": "^19.2.5",
 		"semantic-release": "^25.0.3",
 		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.59.4",
 		"vite": "^8.0.10",
 		"vite-plugin-dts": "^5.0.1",
 		"vitest": "^4.1.5"
@@ -136,6 +141,7 @@
 		"test": "vitest",
 		"test:ci": "vitest run --coverage",
 		"typecheck": "tsc --noEmit",
+		"lint": "eslint src vitest.setup.ts",
 		"build": "vite build",
 		"prepare": "husky",
 		"prettier": "prettier \"*/**/*.{js,ts,tsx}\" --ignore-path ./.prettierignore --write && git add -u && git status"
