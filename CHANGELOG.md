@@ -1,3 +1,10 @@
+# [2.0.0-beta.16](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.15...v2.0.0-beta.16) (2026-05-24)
+
+
+### Features
+
+* Export useCommands and fix README result callback examples ([#158](https://github.com/untemps/react-vocal/issues/158)) ([990636a](https://github.com/untemps/react-vocal/commit/990636a3d7b3a7981629b0172318ae9bc739abf8))
+
 # [2.0.0-beta.15](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.14...v2.0.0-beta.15) (2026-05-24)
 
 
