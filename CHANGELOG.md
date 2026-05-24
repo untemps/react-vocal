@@ -1,3 +1,25 @@
+# [2.0.0-beta.8](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.7...v2.0.0-beta.8) (2026-05-24)
+
+
+### Features
+
+* Migrate to @untemps/vocal 2.x functional API ([#146](https://github.com/untemps/react-vocal/issues/146)) ([582575f](https://github.com/untemps/react-vocal/commit/582575f391472e0e95b0c793b57c7c3edca71939))
+
+
+### BREAKING CHANGES
+
+* `isSupported` is now a function instead of a boolean snapshot. Consumers must call it as `isSupported()`.
+Migration:
+   // before
+   import { isSupported } from '@untemps/react-vocal'
+   if (isSupported) { ... }
+   // after
+   import { isSupported } from '@untemps/react-vocal'
+   if (isSupported()) { ... }
+The function form is SSR-safe — it returns `false` when `window` is undefined, so consumers no longer need a manual `typeof window` guard before checking support.
+* UMD bundle is no longer published.
+`dist/index.umd.js` is removed from the release artifacts and from the npm tarball. Consumers loading react-vocal via `<script src="…/dist/index.umd.js">` or an AMD loader must migrate to the ES bundle (`dist/index.es.js`) via a module-aware loader (or use a bundler). The CJS bundle (`dist/index.js`) remains available for Node-style require().
+
 # [2.0.0-beta.7](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.6...v2.0.0-beta.7) (2026-05-13)
 
 # [2.0.0-beta.6](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.5...v2.0.0-beta.6) (2026-05-12)
