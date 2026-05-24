@@ -33,7 +33,7 @@ timeout elapses.
 Some browsers supports the `SpeechRecognition` API but not all the related APIs.  
 For example, browsers on iOS 14.5, the `SpeechGrammar` and `SpeechGrammarList` and `Permissions` APIs are not supported.
 
-Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlaying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
+Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
 
 ## Requirements
 
@@ -237,6 +237,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | onResult      | func              | null                 | Handler called when a result is recognized                                                      |
 | onError       | func              | null                 | Handler called when an error occurs                                                             |
 | onNoMatch     | func              | null                 | Handler called when no result can be recognized                                                 |
+| signal        | AbortSignal       | null                 | Optional `AbortSignal` propagated to the underlying `start()` call. Aborting it cancels the in-flight start (e.g. while waiting for microphone permission). |
 
 ### `useVocal` hook
 
@@ -315,28 +316,45 @@ useVocal(lang, grammars, maxAlternatives, continuous)
 #### Return value
 
 ```
-const [ref, { start, stop, abort, subscribe, unsubscribe, clean }]
+const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
 ```
 
 | Args        | Type | Description                                          |
 | ----------- | ---- | ---------------------------------------------------- |
-| ref         | Ref  | React ref to the SpeechRecognitionWrapper instance   |
-| start       | func | Function to start the recognition                    |
+| ref         | Ref  | React ref to the underlying `@untemps/vocal` instance |
+| start       | func | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. Returns the underlying `vocal.start()` promise (resolves once the session starts, rejects on microphone/permission errors). |
 | stop        | func | Function to stop the recognition                     |
 | abort       | func | Function to abort the recognition                    |
 | subscribe   | func | Function to subscribe to recognition events          |
 | unsubscribe | func | Function to unsubscribe to recognition events        |
 | clean       | func | Function to clean subscription to recognition events |
+| isRecording | bool | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
+
+#### Cancelling a start in flight
+
+Both `<Vocal signal={...}>` and `useVocal().start({ signal })` accept an `AbortSignal`. Aborting the controller while the browser is still resolving microphone permission cancels the start cleanly — no `start` event is dispatched.
+
+```javascript
+const controller = new AbortController()
+
+// Cancel pending recognition after 2s of waiting for permission
+setTimeout(() => controller.abort(), 2000)
+
+const [, { start }] = useVocal('en-US')
+start({ signal: controller.signal })
+```
 
 ### Browser support flag
 
 #### Basic usage
 
+`isSupported` is a function that returns `true` when the browser supports the Web Speech API (along with the Permissions and MediaDevices APIs that `@untemps/vocal` relies on). It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
+
 ```javascript
 import Vocal, { isSupported } from '@untemps/react-vocal'
 
 const App = () => {
-	return isSupported ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
+	return isSupported() ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
 }
 ```
 

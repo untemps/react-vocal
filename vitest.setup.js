@@ -37,47 +37,42 @@ global.SpeechGrammarList = vi.fn(function () {
 		length: 0,
 	}
 })
+
+// Minimal SpeechRecognition mock used by tests that create a real `createVocal()`
+// instance (i.e. tests that don't inject a __rsInstance mock). Just enough to make
+// vocal 2.x's isSupported()/start() chain succeed and forward start/end events.
+// Tests that need to simulate speech results inject a createMockVocal() instance
+// instead — see src/components/__tests__/createMockVocal.js.
 global.SpeechRecognition = vi.fn(function () {
 	const handlers = {}
-	let accumulatedResults = []
+	const fire = (type, event) => {
+		const list = handlers[type]
+		if (!list) return
+		for (const cb of list.slice()) cb(event)
+	}
 	return {
 		addEventListener: vi.fn(function (type, callback) {
-			handlers[type] = callback
+			if (!handlers[type]) handlers[type] = []
+			handlers[type].push(callback)
 		}),
-		removeEventListener: vi.fn(),
-		dispatchEvent: vi.fn(),
-		start: vi.fn(function () {
-			accumulatedResults = []
-			handlers.start?.()
-		}),
-		stop: vi.fn(function () {
-			handlers.end?.()
-		}),
-		abort: vi.fn(function () {
-			handlers.end?.()
-		}),
-		say: vi.fn(function (input) {
-			handlers.speechstart?.()
-
-			const newSegments = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : []
-			const resultIndex = accumulatedResults.length
-			accumulatedResults = [...accumulatedResults, ...newSegments]
-
-			const resultEvent = new Event('result')
-			resultEvent.resultIndex = resultIndex
-			resultEvent.results = accumulatedResults
-			handlers.speechend?.()
-			if (input) {
-				handlers.result?.(resultEvent)
+		removeEventListener: vi.fn(function (type, callback) {
+			if (!handlers[type]) return
+			if (callback) {
+				handlers[type] = handlers[type].filter((cb) => cb !== callback)
+				if (handlers[type].length === 0) delete handlers[type]
 			} else {
-				handlers.nomatch?.()
+				delete handlers[type]
 			}
 		}),
-		end: vi.fn(function () {
-			handlers.end?.()
+		dispatchEvent: vi.fn(),
+		start: vi.fn(function () {
+			fire('start', new Event('start'))
 		}),
-		error: vi.fn(function (err) {
-			handlers.error?.(err)
+		stop: vi.fn(function () {
+			fire('end', new Event('end'))
+		}),
+		abort: vi.fn(function () {
+			fire('end', new Event('end'))
 		}),
 	}
 })

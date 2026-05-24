@@ -1,5 +1,5 @@
-import React, { cloneElement, isValidElement, useCallback, useMemo, useRef, useState } from 'react'
-import { Vocal as SpeechRecognitionWrapper } from '@untemps/vocal'
+import React, { cloneElement, isValidElement, useCallback, useMemo, useRef } from 'react'
+import { isSupported as isSupportedFn } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
 import useVocal from '../hooks/useVocal'
@@ -8,10 +8,10 @@ import useCommands from '../hooks/useCommands'
 
 import Icon from './Icon'
 
-const tryMatchCommand = (segmentData, trigger) => {
-	for (const { alternatives } of segmentData) {
-		for (const a of alternatives) {
-			if (trigger(a) !== null) return
+const tryMatchCommand = (results, trigger) => {
+	for (const segment of results) {
+		for (const alt of segment) {
+			if (trigger(alt.transcript ?? '') !== null) return
 		}
 	}
 }
@@ -37,12 +37,19 @@ const Vocal = ({
 	onResult = null,
 	onError = null,
 	onNoMatch = null,
+	signal = null,
 	__rsInstance,
 }) => {
 	const buttonRef = useRef(null)
-	const [isListening, setIsListening] = useState(false)
+	const isSupported = useMemo(() => isSupportedFn(), [])
 
-	const [, { start, stop, subscribe, unsubscribe }] = useVocal(lang, grammars, maxAlternatives, continuous, __rsInstance)
+	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening }] = useVocal(
+		lang,
+		grammars,
+		maxAlternatives,
+		continuous,
+		__rsInstance
+	)
 	const triggerCommand = useCommands(commands, precision)
 
 	const propsRef = useRef({})
@@ -51,14 +58,12 @@ const Vocal = ({
 	const continuousRef = useRef(continuous)
 	continuousRef.current = continuous
 
-	// In continuous mode, transcript accumulates across segments and is only emitted via onResult on session end
-	const accumulatedRef = useRef({ transcript: '', event: null })
-
 	const triggerCommandRef = useRef(triggerCommand)
 	triggerCommandRef.current = triggerCommand
 
 	const unsubscribeAllRef = useRef(null)
 	const onEndRef = useRef(null)
+	const isEndingRef = useRef(false)
 
 	const silenceTimeoutRef = useRef(silenceTimeout)
 	silenceTimeoutRef.current = silenceTimeout
@@ -70,7 +75,6 @@ const Vocal = ({
 
 	const stopRecognition = useCallback(() => {
 		try {
-			setIsListening(false)
 			stop()
 		} catch (error) {
 			propsRef.current.onError?.(error)
@@ -97,40 +101,28 @@ const Vocal = ({
 	const _onSpeechEnd = useCallback(
 		(e) => {
 			startTimer()
+			// silenceTimeout fires stop() after N ms of silence following speech in continuous mode.
+			// Anchored on speechend because vocal 2.x intercepts intermediate result events in continuous mode,
+			// so _onResult only runs once on the aggregated end-of-session event.
+			if (continuousRef.current && silenceTimeoutRef.current > 0) startSilenceTimer()
 			propsRef.current.onSpeechEnd?.(e)
 		},
-		[startTimer]
+		[startTimer, startSilenceTimer]
 	)
 
 	const _onResult = useCallback(
-		(event) => {
-			const segmentData = Array.from(event?.results ?? [], (segment) => {
-				let best = { confidence: -Infinity, transcript: '' }
-				const alternatives = []
-				for (let j = 0; j < segment.length; j++) {
-					const alt = segment[j]
-					alternatives.push(alt.transcript ?? '')
-					if (alt.confidence === undefined || alt.confidence > best.confidence) {
-						best = alt
-					}
-				}
-				return { best: best.transcript ?? '', alternatives }
-			})
-			const transcript = segmentData.map((s) => s.best).join('')
-
+		(event, bestAlternative) => {
 			stopTimer()
-			if (continuousRef.current) {
-				// Accumulate — onResult fires once at session end, not after each segment
-				accumulatedRef.current.transcript = transcript
-				accumulatedRef.current.event = event
-				if (silenceTimeoutRef.current > 0) startSilenceTimer()
-			} else {
-				tryMatchCommand(segmentData, triggerCommandRef.current)
+			// In continuous mode, vocal 2.x emits a single aggregated synthetic event just before 'end' —
+			// no need to accumulate. tryMatchCommand is skipped in continuous because commands are
+			// intentionally not evaluated against the full session transcript.
+			if (!continuousRef.current) {
+				tryMatchCommand(event?.results ?? [], triggerCommandRef.current)
 				stopRecognition()
-				propsRef.current.onResult?.(transcript, event)
 			}
+			propsRef.current.onResult?.(bestAlternative, event)
 		},
-		[stopTimer, startSilenceTimer, stopRecognition]
+		[stopTimer, stopRecognition]
 	)
 
 	const _onError = useCallback(
@@ -152,17 +144,18 @@ const Vocal = ({
 
 	const _onEnd = useCallback(
 		(e) => {
+			// Guard against re-entry: when a timer (timeout/silenceTimeout) fires _onEnd,
+			// stopRecognition() calls vocal.stop() which dispatches the 'end' event, which
+			// would re-enter _onEnd and double-fire onEnd.
+			if (isEndingRef.current) return
+			isEndingRef.current = true
 			stopTimer()
 			stopSilenceTimer()
 			try {
 				stopRecognition()
 				unsubscribeAllRef.current?.()
-				if (continuousRef.current && accumulatedRef.current.transcript) {
-					propsRef.current.onResult?.(accumulatedRef.current.transcript, accumulatedRef.current.event)
-					accumulatedRef.current.transcript = ''
-					accumulatedRef.current.event = null
-				}
 			} finally {
+				isEndingRef.current = false
 				propsRef.current.onEnd?.(e)
 			}
 		},
@@ -189,16 +182,15 @@ const Vocal = ({
 
 	const startRecognition = useCallback(() => {
 		try {
-			accumulatedRef.current.transcript = ''
-			accumulatedRef.current.event = null
 			stopSilenceTimer()
-			setIsListening(true)
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
-			start()
+			// vocal 2.x rejects on microphone/permission errors — catch the async
+			// rejection so it doesn't surface as an UnhandledPromiseRejection.
+			start({ signal })?.catch?.(_onError)
 		} catch (error) {
 			_onError(error)
 		}
-	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError])
+	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError, signal])
 
 	const _onFocus = () => {
 		if (!className && outlineStyle) {
@@ -241,7 +233,7 @@ const Vocal = ({
 	)
 
 	const _renderChildren = () => {
-		if (SpeechRecognitionWrapper.isSupported) {
+		if (isSupported) {
 			if (isFunction(children)) {
 				return children(startRecognition, stopRecognition, isListening)
 			} else if (isValidElement(children)) {
