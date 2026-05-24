@@ -252,7 +252,7 @@ const App = () => {
 	const [isListening, setIsListening] = useState(false)
 	const [result, setResult] = useState('')
 
-	const [, { start, subscribe }] = useVocal('fr_FR')
+	const [, { start, subscribe }] = useVocal('fr-FR')
 
 	const _onButtonClick = () => {
 		setIsListening(true)
