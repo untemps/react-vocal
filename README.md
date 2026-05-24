@@ -490,6 +490,33 @@ Example:
 
 The `classifyError` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `useVocal().start({ signal })` call site.
 
+### Testing
+
+The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking:
+
+```typescript
+import { createVocal } from '@untemps/vocal'
+import { render } from '@testing-library/react'
+import Vocal from '@untemps/react-vocal'
+// Reuse the project's createMockVocal helper for shaping the injected instance
+// (the helper is currently shipped only in the test suite — copy it into your
+// own test utilities, or build your own VocalInstance-shaped object).
+
+vi.mock('@untemps/vocal', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@untemps/vocal')>()
+	return { ...actual, createVocal: vi.fn(actual.createVocal) }
+})
+
+it('reacts to a recognized command', async () => {
+	const recognition = createMockVocal()
+	vi.mocked(createVocal).mockReturnValue(recognition)
+	render(<Vocal commands={{ red: setBorderRed }} />)
+	// trigger and assert as usual
+})
+```
+
+The same pattern works for `useVocal`. There is no public prop or argument to swap the vocal instance — the module-level mock is the supported, stable entry point.
+
 ## Development
 
 The component can be served for development purpose on `http://localhost:10001/` using:
