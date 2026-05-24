@@ -417,6 +417,107 @@ describe('Vocal', () => {
 		expect(onErrorV1).not.toHaveBeenCalled()
 	})
 
+	describe('error classification', () => {
+		it.each([
+			['no-speech', 'no-speech', 'No speech detected'],
+			['network', 'network', 'Network error'],
+			['audio-capture', 'audio-capture', 'No microphone'],
+			['service-not-allowed', 'service-not-allowed', 'Service blocked'],
+			['not-allowed', 'permission-denied', 'Permission denied'],
+			['aborted', 'aborted', 'Aborted by user'],
+		])('classifies SpeechRecognition error "%s" as type "%s"', async (srErrorCode, expectedType, message) => {
+			const onError = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onError }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			const srEvent = { error: srErrorCode, message }
+			await act(async () => {
+				recognition.error(srEvent)
+				await waitFor(() => expect(onError).toHaveBeenCalled())
+			})
+
+			expect(onError).toHaveBeenCalledWith({
+				type: expectedType,
+				message,
+				original: srEvent,
+			})
+		})
+
+		it.each([
+			['NotAllowedError', 'permission-denied'],
+			['NotFoundError', 'audio-capture'],
+			['NotReadableError', 'audio-capture'],
+			['AbortError', 'aborted'],
+		])('classifies DOMException %s as type "%s"', async (name, expectedType) => {
+			const onError = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onError }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			const domException = new DOMException('Some message', name)
+			await act(async () => {
+				recognition.error(domException)
+				await waitFor(() => expect(onError).toHaveBeenCalled())
+			})
+
+			expect(onError).toHaveBeenCalledWith({
+				type: expectedType,
+				message: 'Some message',
+				original: domException,
+			})
+		})
+
+		it('classifies an unknown Error as "unknown"', async () => {
+			const onError = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onError }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			const err = new Error('Boom')
+			await act(async () => {
+				recognition.error(err)
+				await waitFor(() => expect(onError).toHaveBeenCalled())
+			})
+
+			expect(onError).toHaveBeenCalledWith({
+				type: 'unknown',
+				message: 'Boom',
+				original: err,
+			})
+		})
+
+		it('classifies a non-Error value as "unknown" with a fallback message', async () => {
+			const onError = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onError }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			await act(async () => {
+				recognition.error('weird string')
+				await waitFor(() => expect(onError).toHaveBeenCalled())
+			})
+
+			expect(onError).toHaveBeenCalledWith({
+				type: 'unknown',
+				message: 'weird string',
+				original: 'weird string',
+			})
+		})
+	})
+
 	it('triggers command matched on first segment in multi-segment result', async () => {
 		const callback = vi.fn()
 		const recognition = createMockVocal()

@@ -19,6 +19,61 @@ import Icon from './Icon'
 
 export type OnResultCallback = (bestAlternative: string, event: SpeechRecognitionEvent | Event) => void
 
+export type VocalErrorType =
+	| 'permission-denied'
+	| 'no-speech'
+	| 'network'
+	| 'audio-capture'
+	| 'service-not-allowed'
+	| 'aborted'
+	| 'unknown'
+
+export interface VocalError {
+	type: VocalErrorType
+	message: string
+	original: unknown
+}
+
+export type OnErrorCallback = (error: VocalError) => void
+
+const SR_ERROR_TO_TYPE: Record<string, VocalErrorType> = {
+	'no-speech': 'no-speech',
+	network: 'network',
+	'audio-capture': 'audio-capture',
+	'service-not-allowed': 'service-not-allowed',
+	'not-allowed': 'permission-denied',
+	aborted: 'aborted',
+}
+
+const DOM_EXCEPTION_NAME_TO_TYPE: Record<string, VocalErrorType> = {
+	NotAllowedError: 'permission-denied',
+	NotFoundError: 'audio-capture',
+	NotReadableError: 'audio-capture',
+	AbortError: 'aborted',
+}
+
+export const classifyError = (err: unknown): VocalError => {
+	// SpeechRecognition error event carries an `error` discriminator string
+	if (err && typeof err === 'object' && 'error' in err && typeof (err as { error: unknown }).error === 'string') {
+		const sre = err as { error: string; message?: string }
+		const type = SR_ERROR_TO_TYPE[sre.error] ?? 'unknown'
+		return { type, message: sre.message || sre.error, original: err }
+	}
+	// DOMException from getUserMedia / permissions APIs is identified by `name`
+	if (err && typeof err === 'object' && 'name' in err && typeof (err as { name: unknown }).name === 'string') {
+		const e = err as Error
+		const type = DOM_EXCEPTION_NAME_TO_TYPE[e.name] ?? (err instanceof Error ? 'unknown' : 'unknown')
+		// Only classify by name if the name matched; otherwise fall through to message-based default
+		if (DOM_EXCEPTION_NAME_TO_TYPE[e.name]) {
+			return { type, message: e.message || e.name, original: err }
+		}
+	}
+	if (err instanceof Error) {
+		return { type: 'unknown', message: err.message || 'unknown', original: err }
+	}
+	return { type: 'unknown', message: typeof err === 'string' ? err : 'unknown', original: err }
+}
+
 export interface VocalProps {
 	children?: ReactNode | ((start: () => void, stop: () => void, isStarted: boolean) => ReactElement | null)
 	commands?: CommandsMap | null
@@ -38,7 +93,7 @@ export interface VocalProps {
 	onSpeechStart?: ((event: Event) => void) | null
 	onSpeechEnd?: ((event: Event) => void) | null
 	onResult?: OnResultCallback | null
-	onError?: ((error: unknown) => void) | null
+	onError?: OnErrorCallback | null
 	onNoMatch?: ((event: Event) => void) | null
 	signal?: AbortSignal | null
 	/**
@@ -115,6 +170,10 @@ const Vocal = ({
 	})
 	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
 
+	const fireError = useCallback((err: unknown) => {
+		propsRef.current.onError?.(classifyError(err))
+	}, [])
+
 	const continuousRef = useRef(continuous)
 	continuousRef.current = continuous
 
@@ -137,10 +196,10 @@ const Vocal = ({
 		try {
 			stop()
 		} catch (error) {
-			propsRef.current.onError?.(error)
+			fireError(error)
 			unsubscribeAllRef.current?.()
 		}
-	}, [stop])
+	}, [stop, fireError])
 
 	const _onStart = useCallback(
 		(e: Event) => {
@@ -192,9 +251,9 @@ const Vocal = ({
 	const _onError = useCallback(
 		(error: unknown) => {
 			stopRecognition()
-			propsRef.current.onError?.(error)
+			fireError(error)
 		},
-		[stopRecognition]
+		[stopRecognition, fireError]
 	)
 
 	const _onNoMatch = useCallback(
