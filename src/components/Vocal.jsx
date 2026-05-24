@@ -58,9 +58,6 @@ const Vocal = ({
 	const continuousRef = useRef(continuous)
 	continuousRef.current = continuous
 
-	// In continuous mode, transcript accumulates across segments and is only emitted via onResult on session end
-	const accumulatedRef = useRef({ transcript: '', event: null })
-
 	const triggerCommandRef = useRef(triggerCommand)
 	triggerCommandRef.current = triggerCommand
 
@@ -103,26 +100,28 @@ const Vocal = ({
 	const _onSpeechEnd = useCallback(
 		(e) => {
 			startTimer()
+			// silenceTimeout fires stop() after N ms of silence following speech in continuous mode.
+			// Anchored on speechend because vocal 2.x intercepts intermediate result events in continuous mode,
+			// so _onResult only runs once on the aggregated end-of-session event.
+			if (continuousRef.current && silenceTimeoutRef.current > 0) startSilenceTimer()
 			propsRef.current.onSpeechEnd?.(e)
 		},
-		[startTimer]
+		[startTimer, startSilenceTimer]
 	)
 
 	const _onResult = useCallback(
 		(event, bestAlternative) => {
 			stopTimer()
-			if (continuousRef.current) {
-				// Accumulate — onResult fires once at session end, not after each segment
-				accumulatedRef.current.transcript = bestAlternative
-				accumulatedRef.current.event = event
-				if (silenceTimeoutRef.current > 0) startSilenceTimer()
-			} else {
+			// In continuous mode, vocal 2.x emits a single aggregated synthetic event just before 'end' —
+			// no need to accumulate. tryMatchCommand is skipped in continuous because commands are
+			// intentionally not evaluated against the full session transcript.
+			if (!continuousRef.current) {
 				tryMatchCommand(event?.results, triggerCommandRef.current)
 				stopRecognition()
-				propsRef.current.onResult?.(bestAlternative, event)
 			}
+			propsRef.current.onResult?.(bestAlternative, event)
 		},
-		[stopTimer, startSilenceTimer, stopRecognition]
+		[stopTimer, stopRecognition]
 	)
 
 	const _onError = useCallback(
@@ -149,11 +148,6 @@ const Vocal = ({
 			try {
 				stopRecognition()
 				unsubscribeAllRef.current?.()
-				if (continuousRef.current && accumulatedRef.current.transcript) {
-					propsRef.current.onResult?.(accumulatedRef.current.transcript, accumulatedRef.current.event)
-					accumulatedRef.current.transcript = ''
-					accumulatedRef.current.event = null
-				}
 			} finally {
 				propsRef.current.onEnd?.(e)
 			}
@@ -181,8 +175,6 @@ const Vocal = ({
 
 	const startRecognition = useCallback(() => {
 		try {
-			accumulatedRef.current.transcript = ''
-			accumulatedRef.current.event = null
 			stopSilenceTimer()
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn))
 			start({ signal })

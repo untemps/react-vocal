@@ -614,7 +614,7 @@ describe('Vocal', () => {
 	describe('Continuous sessions', () => {
 		it('keeps session active after first result without firing onResult', async () => {
 			const onResult = vi.fn()
-			const recognition = createVocal()
+			const recognition = createVocal({ continuous: true })
 			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, continuous: true }))
 
 			await act(async () => {
@@ -664,7 +664,7 @@ describe('Vocal', () => {
 
 		it('stops session on explicit button click while listening', async () => {
 			const onEnd = vi.fn()
-			const recognition = createVocal()
+			const recognition = createVocal({ continuous: true })
 			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd, continuous: true }))
 
 			await act(async () => {
@@ -687,7 +687,7 @@ describe('Vocal', () => {
 		it('does not evaluate commands in continuous mode', async () => {
 			const commandFn = vi.fn()
 			const onEnd = vi.fn()
-			const recognition = createVocal()
+			const recognition = createVocal({ continuous: true })
 			const { getByTestId } = render(
 				getInstance({ __rsInstance: recognition, commands: { rouge: commandFn }, onEnd, continuous: true })
 			)
@@ -713,7 +713,7 @@ describe('Vocal', () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const onResult = vi.fn()
-			const recognition = createVocal()
+			const recognition = createVocal({ continuous: true })
 			const { getByTestId } = render(
 				getInstance({ __rsInstance: recognition, onEnd, onResult, continuous: true, silenceTimeout: 5000 })
 			)
