@@ -17,7 +17,7 @@ Run a single test file:
 yarn vitest src/hooks/__tests__/useVocal.test.js
 ```
 
-Build formats defined in `vite.config.js` `build.lib`: `cjs` → `dist/index.js`, `es` → `dist/index.es.js`.
+Build formats defined in `vite.config.js` `build.lib`: `cjs` → `dist/index.cjs`, `es` → `dist/index.es.js`.
 
 ## Architecture
 
