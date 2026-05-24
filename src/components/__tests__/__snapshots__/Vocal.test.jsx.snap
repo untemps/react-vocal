@@ -9,6 +9,7 @@ exports[`Vocal > matches snapshot 1`] = `
     style="width: 24px; height: 24px; background-color: transparent; border: medium; padding: 0px; cursor: pointer;"
   >
     <svg
+      aria-hidden="true"
       data-testid="__icon-root__"
       height="100%"
       viewBox="0 0 24 24"
