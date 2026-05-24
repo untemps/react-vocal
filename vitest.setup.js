@@ -38,20 +38,19 @@ global.SpeechGrammarList = vi.fn(function () {
 	}
 })
 
-let currentSr = null
-global.__getSpeechRecognition = () => currentSr
-
+// Minimal SpeechRecognition mock used by tests that create a real `createVocal()`
+// instance (i.e. tests that don't inject a __rsInstance mock). Just enough to make
+// vocal 2.x's isSupported()/start() chain succeed and forward start/end events.
+// Tests that need to simulate speech results inject a createMockVocal() instance
+// instead — see src/components/__tests__/createMockVocal.js.
 global.SpeechRecognition = vi.fn(function () {
 	const handlers = {}
-	let accumulatedResults = []
-
 	const fire = (type, event) => {
 		const list = handlers[type]
 		if (!list) return
 		for (const cb of list.slice()) cb(event)
 	}
-
-	const sr = {
+	return {
 		addEventListener: vi.fn(function (type, callback) {
 			if (!handlers[type]) handlers[type] = []
 			handlers[type].push(callback)
@@ -67,7 +66,6 @@ global.SpeechRecognition = vi.fn(function () {
 		}),
 		dispatchEvent: vi.fn(),
 		start: vi.fn(function () {
-			accumulatedResults = []
 			fire('start', new Event('start'))
 		}),
 		stop: vi.fn(function () {
@@ -76,39 +74,5 @@ global.SpeechRecognition = vi.fn(function () {
 		abort: vi.fn(function () {
 			fire('end', new Event('end'))
 		}),
-		say: vi.fn(function (input) {
-			fire('speechstart', new Event('speechstart'))
-
-			const newSegments = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : []
-			const resultIndex = accumulatedResults.length
-			const segmentsWithFinal = newSegments.map((segment) => {
-				const arr = segment.slice()
-				Object.defineProperty(arr, 'isFinal', { value: true })
-				Object.defineProperty(arr, 'item', { value: (i) => arr[i] })
-				return arr
-			})
-			accumulatedResults = [...accumulatedResults, ...segmentsWithFinal]
-
-			const resultsArray = accumulatedResults.slice()
-			Object.defineProperty(resultsArray, 'item', { value: (i) => resultsArray[i] })
-
-			const resultEvent = new Event('result')
-			resultEvent.resultIndex = resultIndex
-			resultEvent.results = resultsArray
-			fire('speechend', new Event('speechend'))
-			if (input) {
-				fire('result', resultEvent)
-			} else {
-				fire('nomatch', new Event('nomatch'))
-			}
-		}),
-		end: vi.fn(function () {
-			fire('end', new Event('end'))
-		}),
-		error: vi.fn(function (err) {
-			fire('error', err)
-		}),
 	}
-	currentSr = sr
-	return sr
 })
