@@ -729,4 +729,28 @@ describe('Vocal', () => {
 			expect(onResult).toHaveBeenCalledWith('hello', expect.anything())
 		})
 	})
+
+	it('triggers onError handler when subscribe throws', async () => {
+		// Mock useVocal so subscribe() throws synchronously inside startRecognition.
+		// Scoped via vi.doMock + dynamic import so the rest of the suite uses the real hook.
+		vi.doMock('../../hooks/useVocal', () => ({
+			default: () => [
+				null,
+				{
+					subscribe: () => {
+						throw new Error('Foo')
+					},
+				},
+			],
+		}))
+		vi.resetModules()
+		const { default: VocalWithMockedUseVocal } = await import('../Vocal')
+		const onError = vi.fn()
+		const { queryByTestId } = render(<VocalWithMockedUseVocal onError={onError} />)
+		await act(async () => {
+			fireEvent.click(queryByTestId('__vocal-root__'))
+			await waitFor(() => expect(onError).toHaveBeenCalled())
+		})
+		vi.doUnmock('../../hooks/useVocal')
+	})
 })
