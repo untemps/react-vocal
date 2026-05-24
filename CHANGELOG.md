@@ -1,3 +1,15 @@
+# [2.0.0-beta.15](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.14...v2.0.0-beta.15) (2026-05-24)
+
+
+### chore
+
+* Migrate codebase to TypeScript ([#156](https://github.com/untemps/react-vocal/issues/156)) ([86c6e49](https://github.com/untemps/react-vocal/commit/86c6e49a82f599b60356afb91f34b59f63710a44))
+
+
+### BREAKING CHANGES
+
+* minimum supported Node.js version bumped from `^20.19.0 || >=22.12.0` to `>=22`, aligning with the underlying @untemps/vocal 2.x direct dependency
+
 # [2.0.0-beta.14](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.13...v2.0.0-beta.14) (2026-05-24)
 
 
