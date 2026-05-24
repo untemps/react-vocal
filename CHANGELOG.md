@@ -1,3 +1,10 @@
+# [2.0.0-beta.14](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.13...v2.0.0-beta.14) (2026-05-24)
+
+
+### Performance Improvements
+
+* Wrap _onFocus and _onBlur in useCallback ([#155](https://github.com/untemps/react-vocal/issues/155)) ([9a26840](https://github.com/untemps/react-vocal/commit/9a2684091252b784ea79f328536006f00ed9862b))
+
 # [2.0.0-beta.13](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.12...v2.0.0-beta.13) (2026-05-24)
 
 # [2.0.0-beta.12](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.11...v2.0.0-beta.12) (2026-05-24)
