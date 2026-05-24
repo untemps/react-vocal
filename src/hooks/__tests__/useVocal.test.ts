@@ -218,6 +218,28 @@ describe('useVocal', () => {
 			expect(mockOn).toHaveBeenCalled()
 		})
 
+		it('forwards the vocal 2.x result callback signature unchanged', () => {
+			// Locks the contract: a handler subscribed via subscribe('result', cb)
+			// receives (event, bestAlternative, alternatives) — matching
+			// @untemps/vocal's ResultEventHandler. The README examples for both
+			// useVocal and useCommands rely on this signature.
+			const handler = vi.fn()
+			const {
+				result: {
+					current: [, { subscribe }],
+				},
+			} = renderHook(() => useVocal())
+			subscribe('result', handler)
+			const registered = mockOn.mock.calls.find(([type]) => type === 'result')![1] as (
+				event: Event,
+				bestAlternative: string,
+				alternatives: string[]
+			) => void
+			const fakeEvent = new Event('result')
+			registered(fakeEvent, 'hello', ['hello'])
+			expect(handler).toHaveBeenCalledWith(fakeEvent, 'hello', ['hello'])
+		})
+
 		it('triggers unsubscribe function', () => {
 			const {
 				result: {

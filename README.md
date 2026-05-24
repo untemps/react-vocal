@@ -284,10 +284,10 @@ const App = () => {
 		setResult('')
 	}
 
-	const _onVocalResult = (result) => {
+	const _onVocalResult = (_event, bestAlternative) => {
 		setIsListening(false)
 
-		setResult(result)
+		setResult(bestAlternative)
 	}
 
 	const _onVocalError = (e) => {
@@ -360,6 +360,57 @@ setTimeout(() => controller.abort(), 2000)
 const [, { start }] = useVocal('en-US')
 start({ signal: controller.signal })
 ```
+
+### `useCommands` hook
+
+The `useCommands` hook is the same command-matching primitive used internally by the `Vocal` component. Export it directly when you build a custom UI on top of `useVocal` and want to reuse the matching logic instead of re-implementing it.
+
+#### Basic usage
+
+```javascript
+import { useVocal, useCommands } from '@untemps/react-vocal'
+
+const App = () => {
+	const commands = {
+		rouge: () => setBorderColor('red'),
+		bleu: () => setBorderColor('blue'),
+	}
+	const triggerCommand = useCommands(commands)
+
+	const [, { start, subscribe }] = useVocal('fr-FR')
+
+	const _onResult = (_event, bestAlternative) => {
+		triggerCommand(bestAlternative)
+	}
+
+	const _onClick = () => {
+		subscribe('result', _onResult)
+		start()
+	}
+
+	return <button onClick={_onClick}>Listen</button>
+}
+```
+
+#### Signature
+
+```
+useCommands(commands, precision)
+```
+
+| Args      | Type   | Default | Description                                                                                              |
+| --------- | ------ | ------- | -------------------------------------------------------------------------------------------------------- |
+| commands  | object | null    | A `{ key: callback }` map. Keys are lowercased internally. Callbacks receive `(rawInput, commandKey)`.   |
+| precision | number | 0.4     | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word keys use exact lookup. |
+
+#### Return value
+
+`useCommands` returns a `triggerCommand(rawInput)` function. Passing a transcript runs it against the commands map and invokes the matching callback if any, returning its result. Returns `null` when no command matches.
+
+Matching rules:
+
+- **Single-word keys** (e.g. `rouge`, `submit`): exact case-insensitive lookup, with each word of the input tried individually so a key fires even when embedded in a phrase (`je veux du rouge` triggers `rouge`).
+- **Phrase keys** (e.g. `change the background color`): Fuse.js fuzzy matching against the joined transcript, gated by `precision`. fuse.js is loaded lazily; if it's not installed, the hook falls back to substring matching.
 
 ### Browser support flag
 
