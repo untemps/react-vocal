@@ -9,7 +9,6 @@ import useCommands from '../hooks/useCommands'
 import Icon from './Icon'
 
 const tryMatchCommand = (results, trigger) => {
-	if (!results) return
 	for (const segment of results) {
 		for (const alt of segment) {
 			if (trigger(alt.transcript ?? '') !== null) return
@@ -118,7 +117,7 @@ const Vocal = ({
 			// no need to accumulate. tryMatchCommand is skipped in continuous because commands are
 			// intentionally not evaluated against the full session transcript.
 			if (!continuousRef.current) {
-				tryMatchCommand(event?.results, triggerCommandRef.current)
+				tryMatchCommand(event?.results ?? [], triggerCommandRef.current)
 				stopRecognition()
 			}
 			propsRef.current.onResult?.(bestAlternative, event)
