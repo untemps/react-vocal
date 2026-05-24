@@ -327,7 +327,7 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
 | abort       | func | Function to abort the recognition                    |
 | subscribe   | func | Function to subscribe to recognition events          |
 | unsubscribe | func | Function to unsubscribe to recognition events        |
-| clean       | func | Function to clean subscription to recognition events |
+| clean       | func | Function to remove all event listeners and clean up the recognition instance |
 | isRecording | bool | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
 
 #### Cancelling a start in flight
