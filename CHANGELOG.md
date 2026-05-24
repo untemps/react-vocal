@@ -1,3 +1,19 @@
+# [2.0.0-beta.17](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.16...v2.0.0-beta.17) (2026-05-24)
+
+
+### Features
+
+* Classify errors before forwarding to onError ([#159](https://github.com/untemps/react-vocal/issues/159)) ([d2ba4e1](https://github.com/untemps/react-vocal/commit/d2ba4e1b18252f7b638784e0f87eb113e3ae141c))
+
+
+### BREAKING CHANGES
+
+* the value passed to `onError` changes shape from the raw Error/SpeechRecognitionErrorEvent to a VocalError object.
+Migration:
+   - `err.message` keeps working (now sourced from the wrapper).
+   - New: `err.type` for discrimination.
+   - For consumers that read fields specific to the underlying value (e.g. `err.error` on SpeechRecognitionErrorEvent), switch to `err.original` to access the raw payload.
+
 # [2.0.0-beta.16](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.15...v2.0.0-beta.16) (2026-05-24)
 
 
