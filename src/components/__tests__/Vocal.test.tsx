@@ -15,11 +15,9 @@ vi.mock('@untemps/vocal', async (importOriginal) => {
 })
 
 const defaultProps: Partial<VocalProps> = {}
-// getInstance accepts `__rsInstance` for backwards compatibility with the
-// existing test suite — it is converted into a module-level
-// `vi.mocked(createVocal).mockReturnValue(...)` so the prop is not
-// actually forwarded to the component. The next commit removes the prop
-// from the public API entirely.
+// getInstance routes the test-only `__rsInstance` shorthand to
+// `vi.mocked(createVocal).mockReturnValue(...)` so test bodies stay concise.
+// `__rsInstance` is internal to this harness — not a prop of <Vocal>.
 const getInstance = (
 	props: (Partial<VocalProps> & { __rsInstance?: VocalInstance }) | null = {},
 	children: VocalProps['children'] = null
