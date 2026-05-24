@@ -1,10 +1,20 @@
 import { useEffect, useMemo, useRef } from 'react'
+import type Fuse from 'fuse.js'
 
-const useCommands = (commands, precision = 0.4) => {
-	const normalized = useMemo(
+export type CommandCallback = (rawInput: string, commandKey: string) => unknown
+
+export type CommandsMap = Record<string, CommandCallback>
+
+export type TriggerCommand = (rawInput: string) => unknown
+
+const useCommands = (commands?: CommandsMap | null, precision: number = 0.4): TriggerCommand => {
+	const normalized = useMemo<CommandsMap>(
 		() =>
-			!!commands
-				? Object.entries(commands).reduce((acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }), {})
+			commands
+				? Object.entries(commands).reduce<CommandsMap>(
+						(acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }),
+						{}
+					)
 				: {},
 		[commands]
 	)
@@ -16,7 +26,7 @@ const useCommands = (commands, precision = 0.4) => {
 	const hasPhraseKeys = useMemo(() => keys.some((k) => k.includes(' ')), [keys])
 
 	// Lazy-loaded so consumers using only single-word commands incur no bundle cost.
-	const fuseRef = useRef(null)
+	const fuseRef = useRef<Fuse<string> | null>(null)
 
 	useEffect(() => {
 		if (!hasPhraseKeys) {
@@ -30,8 +40,8 @@ const useCommands = (commands, precision = 0.4) => {
 		import('fuse.js')
 			.then((module) => {
 				if (cancelled) return
-				const Fuse = module.default ?? module
-				fuseRef.current = new Fuse(keys, { includeScore: true, ignoreLocation: true })
+				const FuseCtor = (module.default ?? module) as unknown as typeof Fuse
+				fuseRef.current = new FuseCtor(keys, { includeScore: true, ignoreLocation: true })
 			})
 			.catch(() => {
 				if (cancelled) return
@@ -47,7 +57,7 @@ const useCommands = (commands, precision = 0.4) => {
 		}
 	}, [hasPhraseKeys, keys])
 
-	const triggerCommand = (rawInput) => {
+	const triggerCommand: TriggerCommand = (rawInput) => {
 		if (!keys.length) return null
 
 		if (!hasPhraseKeys) {
@@ -62,9 +72,9 @@ const useCommands = (commands, precision = 0.4) => {
 
 		const fuse = fuseRef.current
 		if (fuse) {
-			const result = fuse.search(rawInput).filter((r) => r.score < precision)
+			const result = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
 			if (result?.length) {
-				const commandKey = result[0].item.toLowerCase()
+				const commandKey = (result[0].item as string).toLowerCase()
 				return normalized[commandKey]?.(rawInput, commandKey)
 			}
 		} else {

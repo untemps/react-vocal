@@ -1,18 +1,55 @@
-import { vi } from 'vitest'
+import { vi, type MockedFunction } from 'vitest'
+import type { VocalInstance } from '@untemps/vocal'
 
-const buildResultEvent = (segments) => {
-	const evt = new Event('result')
+interface Alternative {
+	transcript?: string
+	confidence?: number
+}
+
+type Segment = Alternative[]
+
+interface ResultEvent extends Event {
+	resultIndex?: number
+	results?: Segment[]
+}
+
+const buildResultEvent = (segments: Segment[]): ResultEvent => {
+	const evt: ResultEvent = new Event('result') as ResultEvent
 	evt.resultIndex = 0
 	evt.results = segments
 	return evt
 }
 
-const pickBest = (alternatives) => {
-	let best = alternatives[0]
+const pickBest = (alternatives: Segment): string => {
+	let best: Alternative = alternatives[0] ?? {}
 	for (const alt of alternatives) {
 		if ((alt.confidence ?? 0) > (best.confidence ?? 0)) best = alt
 	}
 	return best.transcript ?? ''
+}
+
+export interface MockVocalOptions {
+	continuous?: boolean
+}
+
+export type MockVocalInput = string | Segment[] | null | undefined
+
+// MockVocalInstance extends VocalInstance with test-only helpers (.say, .error,
+// .end, .fire). Production code consuming a VocalInstance MUST NOT call them —
+// they exist only to drive lifecycle events during tests. Lifecycle methods are
+// typed as MockedFunction so test bodies can call `.mockImplementation()` on
+// them when they need to override behavior.
+export interface MockVocalInstance extends Omit<VocalInstance, 'start' | 'stop' | 'abort' | 'on' | 'off' | 'cleanup'> {
+	start: MockedFunction<VocalInstance['start']>
+	stop: MockedFunction<VocalInstance['stop']>
+	abort: MockedFunction<VocalInstance['abort']>
+	on: MockedFunction<(type: string, cb: (...args: unknown[]) => void) => void>
+	off: MockedFunction<(type: string, cb?: (...args: unknown[]) => void) => void>
+	cleanup: MockedFunction<VocalInstance['cleanup']>
+	fire: (type: string, ...args: unknown[]) => void
+	say: (input: MockVocalInput) => void
+	error: (err: unknown) => void
+	end: () => void
 }
 
 // Mock VocalInstance for component tests — implements the contract of
@@ -29,22 +66,20 @@ const pickBest = (alternatives) => {
 //   useVocal is the same in both cases.
 // - The helpers (`say`, `error`, `end`, `fire`) live alongside the public
 //   VocalInstance API on the same object. They are test-only escape hatches;
-//   production code consuming a `VocalInstance` MUST NOT call them. The names
-//   were chosen to be unmistakable (`fire`) or short (`say`, `end`, `error`)
-//   for test readability — keep them off the typed VocalInstance interface.
-export const createMockVocal = (options = {}) => {
-	const handlers = {}
+//   production code consuming a `VocalInstance` MUST NOT call them.
+export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstance => {
+	const handlers: Record<string, Array<(...args: unknown[]) => void>> = {}
 	let isRecording = false
-	const accumulated = []
+	const accumulated: Segment[] = []
 	const continuous = !!options.continuous
 
-	const fire = (type, ...args) => {
+	const fire = (type: string, ...args: unknown[]) => {
 		const cbs = handlers[type]
 		if (!cbs) return
 		for (const cb of cbs.slice()) cb(...args)
 	}
 
-	const instance = {
+	const instance: MockVocalInstance = {
 		get isRecording() {
 			return isRecording
 		},
@@ -72,11 +107,11 @@ export const createMockVocal = (options = {}) => {
 			fire('end', new Event('end'))
 			isRecording = false
 		}),
-		on: vi.fn((type, cb) => {
+		on: vi.fn((type: string, cb: (...args: unknown[]) => void) => {
 			if (!handlers[type]) handlers[type] = []
 			handlers[type].push(cb)
 		}),
-		off: vi.fn((type, cb) => {
+		off: vi.fn((type: string, cb?: (...args: unknown[]) => void) => {
 			if (!handlers[type]) return
 			if (cb) {
 				handlers[type] = handlers[type].filter((h) => h !== cb)
@@ -89,9 +124,9 @@ export const createMockVocal = (options = {}) => {
 			for (const k of Object.keys(handlers)) delete handlers[k]
 		}),
 		fire,
-		say(input) {
+		say(input: MockVocalInput) {
 			fire('speechstart', new Event('speechstart'))
-			const segments = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : null
+			const segments: Segment[] | null = Array.isArray(input) ? input : input ? [[{ transcript: input }]] : null
 			fire('speechend', new Event('speechend'))
 			if (!segments) {
 				fire('nomatch', new Event('nomatch'))
@@ -109,7 +144,7 @@ export const createMockVocal = (options = {}) => {
 			const alts = firstSegment.map((a) => a.transcript ?? '')
 			fire('result', evt, bestAlt, alts)
 		},
-		error(err) {
+		error(err: unknown) {
 			fire('error', err)
 		},
 		end() {

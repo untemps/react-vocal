@@ -2,7 +2,7 @@ import { renderHook } from '@testing-library/react'
 
 import useTimeout from '../useTimeout'
 
-const wait = (delay) => {
+const wait = (delay: number): Promise<void> => {
 	return new Promise((resolve) => {
 		setTimeout(resolve, delay)
 	})
