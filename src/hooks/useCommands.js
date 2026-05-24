@@ -23,12 +23,18 @@ const useCommands = (commands, precision = 0.4) => {
 			fuseRef.current = null
 			return
 		}
+		// Race guard: if the effect re-runs (keys change) or unmounts before the dynamic
+		// import resolves, discard the .then()/.catch() result so a stale Fuse instance
+		// can't overwrite fuseRef.current.
+		let cancelled = false
 		import('fuse.js')
 			.then((module) => {
+				if (cancelled) return
 				const Fuse = module.default ?? module
 				fuseRef.current = new Fuse(keys, { includeScore: true, ignoreLocation: true })
 			})
 			.catch(() => {
+				if (cancelled) return
 				if (process.env.NODE_ENV !== 'production') {
 					console.warn(
 						'[react-vocal] fuse.js is not installed. Phrase command keys will fall back to exact matching. ' +
@@ -36,6 +42,9 @@ const useCommands = (commands, precision = 0.4) => {
 					)
 				}
 			})
+		return () => {
+			cancelled = true
+		}
 	}, [hasPhraseKeys, keys])
 
 	const triggerCommand = (rawInput) => {
