@@ -8,6 +8,7 @@ const Icon = ({ color = 'black', activeColor = 'red', isActive = false }) => {
 			width="100%"
 			height="100%"
 			viewBox="0 0 24 24"
+			aria-hidden="true"
 		>
 			<g>
 				<path
