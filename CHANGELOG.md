@@ -1,3 +1,16 @@
+# [2.0.0-beta.11](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.10...v2.0.0-beta.11) (2026-05-24)
+
+
+### chore
+
+* Align package.json with @untemps/vocal 2.x packaging shape ([#150](https://github.com/untemps/react-vocal/issues/150)) ([7701738](https://github.com/untemps/react-vocal/commit/770173880c3cfa32b6e572bd775b35333fbe0531))
+
+
+### BREAKING CHANGES
+
+* the CJS bundle is now published as `dist/index.cjs` instead of `dist/index.js`. Consumers using the standard package entry point (`require('@untemps/react-vocal')`) are not affected — the `main`/`exports.require` fields resolve to the new path automatically.
+Consumers that hard-coded a deep require to `@untemps/react-vocal/dist/index.js` must update the path to `@untemps/react-vocal/dist/index.cjs`, and bundlers that respect the `exports` map will reject sub-path imports outright — switch to the package entry import.
+
 # [2.0.0-beta.10](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.9...v2.0.0-beta.10) (2026-05-24)
 
 
