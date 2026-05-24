@@ -40,7 +40,7 @@
 		}
 	},
 	"engines": {
-		"node": "^20.19.0 || >=22.12.0"
+		"node": ">=22"
 	},
 	"devDependencies": {
 		"@commitlint/cli": "^20.5.3",
