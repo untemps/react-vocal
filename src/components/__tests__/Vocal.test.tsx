@@ -1,21 +1,45 @@
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
-import { isSupported } from '@untemps/vocal'
+import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
 
 import Vocal, { type VocalProps } from '../Vocal'
 import { createMockVocal } from './createMockVocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
 	const actual = (await importOriginal()) as typeof import('@untemps/vocal')
-	return { ...actual, isSupported: vi.fn(actual.isSupported) }
+	return {
+		...actual,
+		isSupported: vi.fn(actual.isSupported),
+		createVocal: vi.fn(actual.createVocal),
+	}
 })
 
 const defaultProps: Partial<VocalProps> = {}
-const getInstance = (props: Partial<VocalProps> | null = {}, children: VocalProps['children'] = null) => (
-	<Vocal {...defaultProps} {...(props ?? {})}>
-		{children}
-	</Vocal>
-)
+// getInstance accepts `__rsInstance` for backwards compatibility with the
+// existing test suite — it is converted into a module-level
+// `vi.mocked(createVocal).mockReturnValue(...)` so the prop is not
+// actually forwarded to the component. The next commit removes the prop
+// from the public API entirely.
+const getInstance = (
+	props: (Partial<VocalProps> & { __rsInstance?: VocalInstance }) | null = {},
+	children: VocalProps['children'] = null
+) => {
+	const merged = { ...defaultProps, ...(props ?? {}) }
+	if (merged.__rsInstance) {
+		vi.mocked(createVocal).mockReturnValue(merged.__rsInstance)
+	}
+	const { __rsInstance: _rs, ...componentProps } = merged
+	return <Vocal {...componentProps}>{children}</Vocal>
+}
+
+// vitest's `restoreMocks: true` resets `vi.fn(actual.createVocal)` to an empty
+// stub between tests, dropping the delegation to the real `createVocal`. Re-stub
+// the implementation before every test so the default path (no `__rsInstance`
+// injected) still uses the real vocal factory.
+beforeEach(async () => {
+	const actual = await vi.importActual<typeof import('@untemps/vocal')>('@untemps/vocal')
+	vi.mocked(createVocal).mockImplementation(actual.createVocal)
+})
 
 describe('Vocal', () => {
 	it('matches snapshot', () => {
