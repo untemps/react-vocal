@@ -1,3 +1,10 @@
+# [2.0.0-beta.10](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.9...v2.0.0-beta.10) (2026-05-24)
+
+
+### Bug Fixes
+
+* Add aria-hidden to decorative SVG in Icon component ([#148](https://github.com/untemps/react-vocal/issues/148)) ([5e00e34](https://github.com/untemps/react-vocal/commit/5e00e34e991b1a5c1a29a393ac885a76864c601c))
+
 # [2.0.0-beta.9](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.8...v2.0.0-beta.9) (2026-05-24)
 
 
