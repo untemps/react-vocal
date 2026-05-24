@@ -164,6 +164,17 @@ describe('useVocal', () => {
 			expect(mockStart).toHaveBeenCalledWith({ signal: controller.signal })
 		})
 
+		it('returns the promise from the vocal start() call', () => {
+			const startPromise = Promise.resolve()
+			mockStart.mockReturnValue(startPromise)
+			const {
+				result: {
+					current: [, { start }],
+				},
+			} = renderHook(() => useVocal())
+			expect(start()).toBe(startPromise)
+		})
+
 		it('triggers stop function', () => {
 			const {
 				result: {

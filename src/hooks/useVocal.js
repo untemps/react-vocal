@@ -29,12 +29,13 @@ const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuo
 	}, [lang, grammars, maxAlternatives, continuous, __rsInstance, supported])
 
 	const start = useCallback((options) => {
-		if (ref.current) {
-			// Optimistic update so the UI reacts immediately at click, before the
-			// async permission/getUserMedia chain resolves and fires the 'start' event.
-			setIsRecording(true)
-			ref.current.start(options)
-		}
+		if (!ref.current) return undefined
+		// Optimistic update so the UI reacts immediately at click, before the
+		// async permission/getUserMedia chain resolves and fires the 'start' event.
+		setIsRecording(true)
+		// vocal 2.x's start() returns a Promise that rejects on microphone/permission
+		// errors. Returning it lets consumers await or attach a .catch handler.
+		return ref.current.start(options)
 	}, [])
 
 	const stop = useCallback(() => {
