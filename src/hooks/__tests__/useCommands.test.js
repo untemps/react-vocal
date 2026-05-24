@@ -112,4 +112,22 @@ describe('useCommands', () => {
 		expect(triggerCommand('change color')).toBe('matched')
 		vi.doUnmock('fuse.js')
 	})
+
+	it('discards the dynamic fuse.js import result when the effect is cleaned up before it resolves', async () => {
+		// Without the cancellation guard, the .catch() branch would fire console.warn
+		// even after the component unmounted (stale effect). With the guard, the
+		// cleanup runs before the import settles and the .catch() is skipped.
+		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+		vi.doMock('fuse.js', () => {
+			throw new Error('fuse.js not installed')
+		})
+		const { default: useCommandsFresh } = await import('../useCommands')
+		const commands = { 'change color': () => 'matched' }
+		const { unmount } = renderHook(() => useCommandsFresh(commands))
+		unmount()
+		await act(async () => {})
+		expect(warnSpy).not.toHaveBeenCalled()
+		warnSpy.mockRestore()
+		vi.doUnmock('fuse.js')
+	})
 })
