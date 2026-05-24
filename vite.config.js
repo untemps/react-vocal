@@ -7,7 +7,7 @@ export default defineConfig({
 		lib: {
 			entry: 'src/index.js',
 			formats: ['es', 'cjs'],
-			fileName: (format) => ({ es: 'index.es.js', cjs: 'index.js' })[format],
+			fileName: (format) => ({ es: 'index.es.js', cjs: 'index.cjs' })[format],
 		},
 		rollupOptions: {
 			external: ['react', 'react-dom', 'fuse.js'],
