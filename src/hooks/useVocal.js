@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createVocal, isSupported } from '@untemps/vocal'
 
 const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuous = false, __rsInstance = null) => {
 	const ref = useRef(null)
 	const [isRecording, setIsRecording] = useState(false)
+	const supported = useMemo(() => isSupported(), [])
 
 	useEffect(() => {
-		if (isSupported()) {
+		if (supported) {
 			const instance = __rsInstance || createVocal({ lang, grammars, maxAlternatives, continuous })
 			ref.current = instance
 
@@ -25,7 +26,7 @@ const useVocal = (lang = 'en-US', grammars = null, maxAlternatives = 1, continuo
 				setIsRecording(false)
 			}
 		}
-	}, [lang, grammars, maxAlternatives, continuous, __rsInstance])
+	}, [lang, grammars, maxAlternatives, continuous, __rsInstance, supported])
 
 	const start = useCallback((options) => {
 		if (ref.current) {

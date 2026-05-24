@@ -1,5 +1,5 @@
 import React, { cloneElement, isValidElement, useCallback, useMemo, useRef } from 'react'
-import { isSupported } from '@untemps/vocal'
+import { isSupported as isSupportedFn } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
 import useVocal from '../hooks/useVocal'
@@ -42,6 +42,7 @@ const Vocal = ({
 	__rsInstance,
 }) => {
 	const buttonRef = useRef(null)
+	const isSupported = useMemo(() => isSupportedFn(), [])
 
 	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening }] = useVocal(
 		lang,
@@ -231,7 +232,7 @@ const Vocal = ({
 	)
 
 	const _renderChildren = () => {
-		if (isSupported()) {
+		if (isSupported) {
 			if (isFunction(children)) {
 				return children(startRecognition, stopRecognition, isListening)
 			} else if (isValidElement(children)) {
