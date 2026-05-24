@@ -17,6 +17,11 @@ describe('Icon', () => {
 		expect(queryByTestId('__icon-root__')).toBeInTheDocument()
 	})
 
+	it('hides the decorative SVG from the accessibility tree', () => {
+		const { queryByTestId } = render(getInstance())
+		expect(queryByTestId('__icon-root__')).toHaveAttribute('aria-hidden', 'true')
+	})
+
 	it('renders component color', () => {
 		const color = 'green'
 		const { queryByTestId } = render(getInstance({ color }))
