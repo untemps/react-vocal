@@ -1,3 +1,10 @@
+# [2.0.0-beta.9](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.8...v2.0.0-beta.9) (2026-05-24)
+
+
+### Bug Fixes
+
+* Prevent stale Fuse instance in useCommands after async fuse.js import ([#147](https://github.com/untemps/react-vocal/issues/147)) ([a83f06d](https://github.com/untemps/react-vocal/commit/a83f06d73644d1029e735b38dc06c8614470e19e))
+
 # [2.0.0-beta.8](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.7...v2.0.0-beta.8) (2026-05-24)
 
 
