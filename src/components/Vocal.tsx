@@ -62,10 +62,9 @@ export const classifyError = (err: unknown): VocalError => {
 	// DOMException from getUserMedia / permissions APIs is identified by `name`
 	if (err && typeof err === 'object' && 'name' in err && typeof (err as { name: unknown }).name === 'string') {
 		const e = err as Error
-		const type = DOM_EXCEPTION_NAME_TO_TYPE[e.name] ?? (err instanceof Error ? 'unknown' : 'unknown')
-		// Only classify by name if the name matched; otherwise fall through to message-based default
-		if (DOM_EXCEPTION_NAME_TO_TYPE[e.name]) {
-			return { type, message: e.message || e.name, original: err }
+		const knownType = DOM_EXCEPTION_NAME_TO_TYPE[e.name]
+		if (knownType) {
+			return { type: knownType, message: e.message || e.name, original: err }
 		}
 	}
 	if (err instanceof Error) {
