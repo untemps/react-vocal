@@ -24,11 +24,10 @@ const getInstance = (
 	props: (Partial<VocalProps> & { __rsInstance?: VocalInstance }) | null = {},
 	children: VocalProps['children'] = null
 ) => {
-	const merged = { ...defaultProps, ...(props ?? {}) }
-	if (merged.__rsInstance) {
-		vi.mocked(createVocal).mockReturnValue(merged.__rsInstance)
+	const { __rsInstance, ...componentProps } = { ...defaultProps, ...(props ?? {}) }
+	if (__rsInstance) {
+		vi.mocked(createVocal).mockReturnValue(__rsInstance)
 	}
-	const { __rsInstance: _rs, ...componentProps } = merged
 	return <Vocal {...componentProps}>{children}</Vocal>
 }
 
