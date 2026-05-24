@@ -755,6 +755,7 @@ describe('Vocal', () => {
 				recognition.say('hello')
 			})
 
+			expect(onResult).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledWith('hello', expect.anything())
 		})
 	})
