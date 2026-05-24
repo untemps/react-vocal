@@ -54,6 +54,21 @@ yarn add fuse.js
 
 Without fuse.js, phrase commands fall back to case-insensitive exact matching. Single-word commands always use exact matching and never require fuse.js.
 
+## TypeScript
+
+`@untemps/react-vocal` is written in TypeScript and ships full type declarations. The public surface is typed end-to-end:
+
+- `Vocal` component props (`VocalProps`, `OnResultCallback`)
+- `useVocal` hook signature, action tuple (`UseVocalActions`, `UseVocalReturn`)
+- `useCommands` shapes (`CommandCallback`, `CommandsMap`, `TriggerCommand`)
+- `isSupported` function (re-exported from `@untemps/vocal`)
+
+```typescript
+import Vocal, { useVocal, isSupported, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
+```
+
+TypeScript is listed as an optional peer dependency (`>=6.0.0`) — install it only if your project uses TS.
+
 ## Usage
 
 ### `Vocal` component
