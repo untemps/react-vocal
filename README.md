@@ -60,9 +60,10 @@ Without fuse.js, phrase commands fall back to case-insensitive exact matching. S
 
 `@untemps/react-vocal` is written in TypeScript and ships full type declarations. The public surface is typed end-to-end:
 
-- `Vocal` component props (`VocalProps`, `OnResultCallback`)
+- `Vocal` component props (`VocalProps`, `OnResultCallback`, `OnErrorCallback`)
 - `useVocal` hook signature, action tuple (`UseVocalActions`, `UseVocalReturn`)
 - `useCommands` shapes (`CommandCallback`, `CommandsMap`, `TriggerCommand`)
+- Error classification (`VocalError`, `VocalErrorType`, `classifyError`)
 - `isSupported` function (re-exported from `@untemps/vocal`)
 
 ```typescript
@@ -446,6 +447,48 @@ const App = () => {
 
 The process to grant microphone access permissions is automatically managed by the hook (internally used by the `Vocal`
 component).
+
+### Error classification
+
+`onError` receives a structured `VocalError` object so consumers can branch on the error category without parsing low-level error names or messages.
+
+```typescript
+interface VocalError {
+	type: 'permission-denied' | 'no-speech' | 'network' | 'audio-capture' | 'service-not-allowed' | 'aborted' | 'unknown'
+	message: string
+	original: unknown
+}
+```
+
+Mapping rules:
+
+| `type`                | Source                                                                              |
+| --------------------- | ----------------------------------------------------------------------------------- |
+| `permission-denied`   | `SpeechRecognitionErrorEvent` `not-allowed` or `DOMException` `NotAllowedError`     |
+| `no-speech`           | `SpeechRecognitionErrorEvent` `no-speech`                                           |
+| `network`             | `SpeechRecognitionErrorEvent` `network`                                             |
+| `audio-capture`       | `SpeechRecognitionErrorEvent` `audio-capture` or `DOMException` `NotFoundError` / `NotReadableError` |
+| `service-not-allowed` | `SpeechRecognitionErrorEvent` `service-not-allowed`                                 |
+| `aborted`             | `SpeechRecognitionErrorEvent` `aborted` or `DOMException` `AbortError`              |
+| `unknown`             | Anything else (generic Errors, non-Error values)                                    |
+
+Example:
+
+```javascript
+<Vocal
+	onError={(err) => {
+		if (err.type === 'permission-denied') {
+			showPermissionPrompt()
+		} else if (err.type === 'no-speech') {
+			hint('Try speaking louder')
+		} else {
+			console.error(err.original)
+		}
+	}}
+/>
+```
+
+The `classifyError` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `useVocal().start({ signal })` call site.
 
 ## Development
 
