@@ -17,7 +17,7 @@ export default defineConfig({
 			include: ['src/**/*.ts', 'src/**/*.tsx'],
 			exclude: ['src/**/__tests__/**', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
 			entryRoot: 'src',
-			insertTypesEntry: true,
+			bundleTypes: true,
 		}),
 	],
 	build: {
