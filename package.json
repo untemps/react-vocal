@@ -21,9 +21,9 @@
 		"access": "public"
 	},
 	"files": [
-		"dist/index.cjs",
-		"dist/index.es.js",
-		"dist/index.d.ts",
+		"dist/**/*.cjs",
+		"dist/**/*.js",
+		"dist/**/*.d.ts",
 		"CHANGELOG.md"
 	],
 	"type": "module",
