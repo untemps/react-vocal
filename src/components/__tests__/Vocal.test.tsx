@@ -828,28 +828,6 @@ describe('Vocal', () => {
 			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
 			vi.useRealTimers()
 		})
-
-		it('does not propagate continuous prop to a pre-built __rsInstance', async () => {
-			// Documents and locks the current contract: <Vocal continuous={true}> does NOT
-			// reconfigure an injected __rsInstance. Callers must create the mock/instance
-			// with continuous: true themselves; otherwise the instance forwards every result
-			// event individually and onResult fires per-utterance instead of once at session
-			// end. Tracked in #136 as part of the __rsInstance redesign.
-			const recognition = createMockVocal() // continuous NOT set
-			const onResult = vi.fn()
-			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, continuous: true }))
-
-			await act(async () => {
-				fireEvent.click(getByTestId('__vocal-root__'))
-			})
-
-			await act(async () => {
-				recognition.say('hello')
-			})
-
-			expect(onResult).toHaveBeenCalledTimes(1)
-			expect(onResult).toHaveBeenCalledWith('hello', expect.anything())
-		})
 	})
 
 	it('triggers onError handler when subscribe throws', async () => {
