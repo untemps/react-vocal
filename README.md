@@ -284,10 +284,10 @@ const App = () => {
 		setResult('')
 	}
 
-	const _onVocalResult = (result) => {
+	const _onVocalResult = (_event, bestAlternative) => {
 		setIsListening(false)
 
-		setResult(result)
+		setResult(bestAlternative)
 	}
 
 	const _onVocalError = (e) => {
