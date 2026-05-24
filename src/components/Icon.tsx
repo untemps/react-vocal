@@ -1,6 +1,10 @@
-import React from 'react'
+export interface IconProps {
+	color?: string
+	activeColor?: string
+	isActive?: boolean
+}
 
-const Icon = ({ color = 'black', activeColor = 'red', isActive = false }) => {
+const Icon = ({ color = 'black', activeColor = 'red', isActive = false }: IconProps) => {
 	return (
 		<svg
 			data-testid="__icon-root__"
