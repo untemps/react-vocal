@@ -19,6 +19,19 @@ const pickBest = (alternatives) => {
 // `createVocal()` from @untemps/vocal 2.x and exposes test helpers
 // (.say, .error, .end, .fire) to simulate the recognition lifecycle
 // without going through the global SpeechRecognition mock.
+//
+// Known limitations vs. the real vocal 2.x:
+// - `start(options)` accepts an options object but ignores `options.signal`.
+//   Tests that need to assert signal pass-through should inspect
+//   `instance.start.mock.calls` directly.
+// - `start` is `async`, so `fire('start', ...)` resolves in a microtask. The
+//   real vocal awaits getUserMediaStream first; the optimistic order in
+//   useVocal is the same in both cases.
+// - The helpers (`say`, `error`, `end`, `fire`) live alongside the public
+//   VocalInstance API on the same object. They are test-only escape hatches;
+//   production code consuming a `VocalInstance` MUST NOT call them. The names
+//   were chosen to be unmistakable (`fire`) or short (`say`, `end`, `error`)
+//   for test readability — keep them off the typed VocalInstance interface.
 export const createMockVocal = (options = {}) => {
 	const handlers = {}
 	let isRecording = false
