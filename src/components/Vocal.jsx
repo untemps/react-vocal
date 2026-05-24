@@ -192,17 +192,17 @@ const Vocal = ({
 		}
 	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError, signal])
 
-	const _onFocus = () => {
+	const _onFocus = useCallback(() => {
 		if (!className && outlineStyle) {
 			buttonRef.current.style.outline = outlineStyle
 		}
-	}
+	}, [className, outlineStyle])
 
-	const _onBlur = () => {
+	const _onBlur = useCallback(() => {
 		if (!className && outlineStyle) {
 			buttonRef.current.style.outline = 'none'
 		}
-	}
+	}, [className, outlineStyle])
 
 	const _renderDefault = () => (
 		<button
