@@ -680,6 +680,19 @@ describe('Vocal', () => {
 		expect(onStart).not.toHaveBeenCalled()
 	})
 
+	it('reverts aria-pressed to false when the signal prop is already aborted', async () => {
+		const controller = new AbortController()
+		controller.abort()
+		const { getByTestId } = render(getInstance({ signal: controller.signal }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await new Promise((r) => setTimeout(r, 50))
+		})
+
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
+	})
+
 	it('calls onEnd via the end event when stop is asynchronous', async () => {
 		const onEnd = vi.fn()
 		const recognition = createMockVocal()

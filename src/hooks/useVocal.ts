@@ -63,9 +63,32 @@ const useVocal = (
 		// Optimistic update so the UI reacts immediately at click, before the
 		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
-		// vocal 2.x's start() returns a Promise that rejects on microphone/permission
-		// errors. Returning it lets consumers await or attach a .catch handler.
-		return ref.current.start(options)
+		// vocal 2.x's start() can either reject (microphone/permission errors) or
+		// silently resolve without dispatching 'start' (AbortError on the signal —
+		// caught and swallowed internally). In both cases the instance never fires
+		// 'end'/'error', so the optimistic flag would stay stuck on `true`. Roll it
+		// back on rejection AND on silent abort, while preserving the original
+		// rejection so the caller's .catch still fires.
+		const signal = options?.signal
+		let promise: Promise<void> | undefined
+		try {
+			promise = ref.current.start(options)
+		} catch (err) {
+			setIsRecording(false)
+			throw err
+		}
+		if (promise && typeof promise.then === 'function') {
+			return promise.then(
+				() => {
+					if (signal?.aborted) setIsRecording(false)
+				},
+				(err) => {
+					setIsRecording(false)
+					throw err
+				}
+			)
+		}
+		return promise
 	}, [])
 
 	const stop = useCallback(() => {
