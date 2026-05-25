@@ -30,8 +30,7 @@ const useVocal = (
 	lang: string = 'en-US',
 	grammars: SpeechGrammarList | null = null,
 	maxAlternatives: number = 1,
-	continuous: boolean = false,
-	__rsInstance: VocalInstance | null = null
+	continuous: boolean = false
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
 	const [isRecording, setIsRecording] = useState(false)
@@ -39,7 +38,7 @@ const useVocal = (
 
 	useEffect(() => {
 		if (supported) {
-			const instance = __rsInstance || createVocal({ lang, grammars, maxAlternatives, continuous })
+			const instance = createVocal({ lang, grammars, maxAlternatives, continuous })
 			ref.current = instance
 
 			const handleStart = () => setIsRecording(true)
@@ -57,7 +56,7 @@ const useVocal = (
 				setIsRecording(false)
 			}
 		}
-	}, [lang, grammars, maxAlternatives, continuous, __rsInstance, supported])
+	}, [lang, grammars, maxAlternatives, continuous, supported])
 
 	const start = useCallback((options?: { signal?: AbortSignal }): Promise<void> | undefined => {
 		if (!ref.current) return undefined

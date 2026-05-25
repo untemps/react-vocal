@@ -136,16 +136,6 @@ describe('useVocal', () => {
 			})
 		})
 
-		it('uses custom SpeechRecognition instance', () => {
-			const foo = createVocal()
-			const {
-				result: {
-					current: [ref],
-				},
-			} = renderHook(() => useVocal(undefined, null, 1, false, foo))
-			expect(ref.current).toBe(foo)
-		})
-
 		it('triggers start function', () => {
 			const {
 				result: {
