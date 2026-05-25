@@ -8,6 +8,7 @@ node_modules/
 
 # Misc
 .DS_STORE
+CLAUDE.md
 
 # NPM
 npm-debug.log*
@@ -22,6 +23,3 @@ package-lock.json
 
 # Test artifacts
 coverage/
-
-# Agent instructions (kept locally, not tracked)
-CLAUDE.md
