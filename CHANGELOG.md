@@ -1,3 +1,32 @@
+# [2.0.0-beta.18](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.17...v2.0.0-beta.18) (2026-05-25)
+
+
+* feat!: Remove __rsInstance injection prop in favor of module-level mock ([#160](https://github.com/untemps/react-vocal/issues/160)) ([3f0e17c](https://github.com/untemps/react-vocal/commit/3f0e17c92b60ff7cca9dd073fb8b6b81789f816e))
+
+
+### BREAKING CHANGES
+
+* `<Vocal __rsInstance={...}>` and the 5th argument of `useVocal(lang, grammars, maxAlternatives, continuous, __rsInstance)` are removed.
+Migration:
+- Component-prop injection was undocumented and labeled internal/testing only; no production migration expected.
+- Test suites that injected a custom VocalInstance via these channels must switch to a module-level mock of `createVocal`:
+   // before
+   <Vocal __rsInstance={myMockInstance} />
+   // or
+   useVocal('en-US', null, 1, false, myMockInstance)
+   // after
+   import { createVocal } from '@untemps/vocal'
+   vi.mock('@untemps/vocal', async (importOriginal) => {
+      const actual = await importOriginal<typeof import('@untemps/vocal')>()
+         return { ...actual, createVocal: vi.fn(actual.createVocal) }
+      })
+      
+      it('...', () => {
+         vi.mocked(createVocal).mockReturnValue(myMockInstance)
+            render(<Vocal ... />)
+         })
+- See the new "Testing" section of the README for a complete `buildMockVocal` factory.
+
 # [2.0.0-beta.17](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.16...v2.0.0-beta.17) (2026-05-24)
 
 
