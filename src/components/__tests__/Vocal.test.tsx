@@ -1,21 +1,42 @@
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
-import { isSupported } from '@untemps/vocal'
+import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
 
 import Vocal, { type VocalProps } from '../Vocal'
 import { createMockVocal } from './createMockVocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
 	const actual = (await importOriginal()) as typeof import('@untemps/vocal')
-	return { ...actual, isSupported: vi.fn(actual.isSupported) }
+	return {
+		...actual,
+		isSupported: vi.fn(actual.isSupported),
+		createVocal: vi.fn(actual.createVocal),
+	}
 })
 
 const defaultProps: Partial<VocalProps> = {}
-const getInstance = (props: Partial<VocalProps> | null = {}, children: VocalProps['children'] = null) => (
-	<Vocal {...defaultProps} {...(props ?? {})}>
-		{children}
-	</Vocal>
-)
+// getInstance routes the test-only `__rsInstance` shorthand to
+// `vi.mocked(createVocal).mockReturnValue(...)` so test bodies stay concise.
+// `__rsInstance` is internal to this harness — not a prop of <Vocal>.
+const getInstance = (
+	props: (Partial<VocalProps> & { __rsInstance?: VocalInstance }) | null = {},
+	children: VocalProps['children'] = null
+) => {
+	const { __rsInstance, ...componentProps } = { ...defaultProps, ...(props ?? {}) }
+	if (__rsInstance) {
+		vi.mocked(createVocal).mockReturnValue(__rsInstance)
+	}
+	return <Vocal {...componentProps}>{children}</Vocal>
+}
+
+// vitest's `restoreMocks: true` resets `vi.fn(actual.createVocal)` to an empty
+// stub between tests, dropping the delegation to the real `createVocal`. Re-stub
+// the implementation before every test so the default path (no `__rsInstance`
+// injected) still uses the real vocal factory.
+beforeEach(async () => {
+	const actual = await vi.importActual<typeof import('@untemps/vocal')>('@untemps/vocal')
+	vi.mocked(createVocal).mockImplementation(actual.createVocal)
+})
 
 describe('Vocal', () => {
 	it('matches snapshot', () => {
@@ -803,28 +824,6 @@ describe('Vocal', () => {
 			expect(onResult).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
 			vi.useRealTimers()
-		})
-
-		it('does not propagate continuous prop to a pre-built __rsInstance', async () => {
-			// Documents and locks the current contract: <Vocal continuous={true}> does NOT
-			// reconfigure an injected __rsInstance. Callers must create the mock/instance
-			// with continuous: true themselves; otherwise the instance forwards every result
-			// event individually and onResult fires per-utterance instead of once at session
-			// end. Tracked in #136 as part of the __rsInstance redesign.
-			const recognition = createMockVocal() // continuous NOT set
-			const onResult = vi.fn()
-			const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, continuous: true }))
-
-			await act(async () => {
-				fireEvent.click(getByTestId('__vocal-root__'))
-			})
-
-			await act(async () => {
-				recognition.say('hello')
-			})
-
-			expect(onResult).toHaveBeenCalledTimes(1)
-			expect(onResult).toHaveBeenCalledWith('hello', expect.anything())
 		})
 	})
 

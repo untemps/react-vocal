@@ -51,11 +51,27 @@ Composes the three hooks above. Three render modes depending on `children`:
 
 All props have default values in the function signature (React 19: `defaultProps` no longer applied to function components). Prop shapes are enforced via the `VocalProps` interface.
 
-The `__rsInstance` prop (typed as `VocalInstance | null`, documented as internal/testing) injects a custom vocal instance, used exclusively in tests.
-
 ### Testing
 
-`vitest.setup.ts` globally mocks `SpeechRecognition`, `Permissions`, `MediaDevices`, and `SpeechGrammarList`. The mock keeps the minimal SR surface needed by tests that don't inject a `__rsInstance` (start/stop/abort + listener registration). Tests that need to drive speech events instead inject a `createMockVocal()` instance (see `src/components/__tests__/createMockVocal.ts`) — it implements the `VocalInstance` contract and exposes test-only helpers `.say`, `.error`, `.end`, `.fire`.
+`vitest.setup.ts` globally mocks `SpeechRecognition`, `Permissions`, `MediaDevices`, and `SpeechGrammarList` (start/stop/abort + listener registration). Most component tests inject a custom vocal instance by mocking `createVocal` at the module level:
+
+```ts
+import { createVocal } from '@untemps/vocal'
+
+vi.mock('@untemps/vocal', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@untemps/vocal')>()
+	return { ...actual, createVocal: vi.fn(actual.createVocal) }
+})
+
+it('does something', () => {
+	const recognition = createMockVocal()
+	vi.mocked(createVocal).mockReturnValue(recognition)
+	render(<Vocal ... />)
+	recognition.say('hello')
+})
+```
+
+`createMockVocal` (in `src/components/__tests__/createMockVocal.ts`) implements the `VocalInstance` contract and exposes test-only helpers `.say`, `.error`, `.end`, `.fire`.
 
 Vitest globals are enabled (`globals: true`) — `describe`, `it`, `expect`, `vi` available without imports in test files.
 
