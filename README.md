@@ -526,9 +526,10 @@ const buildMockVocal = () => {
 }
 
 it('reacts to a recognized command', async () => {
+	const setBorderRed = vi.fn()
 	const recognition = buildMockVocal()
 	vi.mocked(createVocal).mockReturnValue(recognition)
-	render(<Vocal commands={{ red: () => setBorderRed() }} />)
+	render(<Vocal commands={{ red: setBorderRed }} />)
 	// drive the recognition lifecycle via `recognition.fire('start', new Event('start'))`,
 	// `recognition.fire('result', evt, 'red', ['red'])`, etc., then assert as usual
 })
