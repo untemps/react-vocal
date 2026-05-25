@@ -22,3 +22,6 @@ package-lock.json
 
 # Test artifacts
 coverage/
+
+# Agent instructions (kept locally, not tracked)
+CLAUDE.md
