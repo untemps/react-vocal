@@ -18,10 +18,10 @@ Run a single test file:
 yarn vitest src/hooks/__tests__/useVocal.test.ts
 ```
 
-Build outputs defined in `vite.config.ts` (multi-entry library mode — `index` for the public API, `testing` for the optional mock factory):
-- `cjs` → `dist/index.cjs`, `dist/testing.cjs`
-- `es` → `dist/index.es.js`, `dist/testing.es.js`
-- TypeScript declarations → `dist/index.d.ts` and `dist/testing.d.ts` (each api-extractor-bundled)
+Build outputs defined in `vite.config.ts`:
+- `cjs` → `dist/index.cjs`
+- `es` → `dist/index.es.js`
+- TypeScript declarations → `dist/index.d.ts` (entry) + `dist/{hooks,components}/*.d.ts` (re-exported types)
 
 ## Architecture
 
@@ -71,7 +71,7 @@ it('does something', () => {
 })
 ```
 
-`createMockVocal` lives in `src/testing/createMockVocal.ts` and ships publicly under the `@untemps/react-vocal/testing` subpath (built as a separate library entry via `vite.config.ts`'s multi-entry `lib.entry`, with `vitest` declared as an optional peer dependency). It implements the `VocalInstance` contract and exposes test-only helpers `.say`, `.error`, `.end`, `.fire`. Internal tests import it via the source path `../../testing` to avoid round-tripping through the build output.
+`createMockVocal` (in `src/components/__tests__/createMockVocal.ts`) implements the `VocalInstance` contract and exposes test-only helpers `.say`, `.error`, `.end`, `.fire`.
 
 Vitest globals are enabled (`globals: true`) — `describe`, `it`, `expect`, `vi` available without imports in test files.
 

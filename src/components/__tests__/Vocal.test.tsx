@@ -3,7 +3,7 @@ import { act, fireEvent, render } from '@testing-library/react'
 import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
 
 import Vocal, { type VocalProps } from '../Vocal'
-import { createMockVocal } from '../../testing'
+import { createMockVocal } from './createMockVocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
 	const actual = (await importOriginal()) as typeof import('@untemps/vocal')

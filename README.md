@@ -492,13 +492,15 @@ The `classifyError` helper used internally is also exported for consumers who wa
 
 ### Testing
 
-The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking. A ready-to-use mock factory is published at `@untemps/react-vocal/testing`:
+The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking:
 
 ```typescript
 import { createVocal } from '@untemps/vocal'
 import { render } from '@testing-library/react'
 import Vocal from '@untemps/react-vocal'
-import { createMockVocal } from '@untemps/react-vocal/testing'
+// Reuse the project's createMockVocal helper for shaping the injected instance
+// (the helper is currently shipped only in the test suite — copy it into your
+// own test utilities, or build your own VocalInstance-shaped object).
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('@untemps/vocal')>()
@@ -509,16 +511,11 @@ it('reacts to a recognized command', async () => {
 	const recognition = createMockVocal()
 	vi.mocked(createVocal).mockReturnValue(recognition)
 	render(<Vocal commands={{ red: setBorderRed }} />)
-	recognition.say('red')
-	// assert as usual
+	// trigger and assert as usual
 })
 ```
 
-`createMockVocal()` returns a `MockVocalInstance` — a `VocalInstance`-shaped object with `vi.fn()` lifecycle methods and four test helpers: `say(input)`, `error(err)`, `end()`, and `fire(type, ...args)`. Pass `{ continuous: true }` to mirror vocal 2.x's continuous-mode aggregation behavior.
-
 The same pattern works for `useVocal`. There is no public prop or argument to swap the vocal instance — the module-level mock is the supported, stable entry point.
-
-> **Requirements:** the `/testing` subpath imports from `vitest`. Add `vitest` to your dev dependencies (it is declared as an optional peer of `@untemps/react-vocal`).
 
 ## Development
 
