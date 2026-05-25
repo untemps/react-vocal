@@ -492,26 +492,42 @@ The `classifyError` helper used internally is also exported for consumers who wa
 
 ### Testing
 
-The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking:
+The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking. Build a minimal `VocalInstance`-shaped object and return it from a mocked `createVocal`:
 
 ```typescript
-import { createVocal } from '@untemps/vocal'
+import { createVocal, type VocalInstance } from '@untemps/vocal'
 import { render } from '@testing-library/react'
 import Vocal from '@untemps/react-vocal'
-// Reuse the project's createMockVocal helper for shaping the injected instance
-// (the helper is currently shipped only in the test suite — copy it into your
-// own test utilities, or build your own VocalInstance-shaped object).
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('@untemps/vocal')>()
 	return { ...actual, createVocal: vi.fn(actual.createVocal) }
 })
 
+const buildMockVocal = (): VocalInstance => {
+	const handlers: Record<string, ((...args: unknown[]) => void)[]> = {}
+	return {
+		start: vi.fn(),
+		stop: vi.fn(),
+		abort: vi.fn(),
+		cleanup: vi.fn(),
+		on: vi.fn((type, cb) => {
+			handlers[type] = handlers[type] ?? []
+			handlers[type].push(cb as (...args: unknown[]) => void)
+		}),
+		off: vi.fn(),
+		get isRecording() {
+			return false
+		},
+	}
+}
+
 it('reacts to a recognized command', async () => {
-	const recognition = createMockVocal()
+	const recognition = buildMockVocal()
 	vi.mocked(createVocal).mockReturnValue(recognition)
-	render(<Vocal commands={{ red: setBorderRed }} />)
-	// trigger and assert as usual
+	render(<Vocal commands={{ red: () => setBorderRed() }} />)
+	// drive the recognition lifecycle by invoking the captured handlers,
+	// then assert as usual
 })
 ```
 
