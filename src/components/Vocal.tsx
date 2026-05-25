@@ -8,7 +8,7 @@ import {
 	type ReactElement,
 	type ReactNode,
 } from 'react'
-import { isSupported as isSupportedFn, type VocalInstance } from '@untemps/vocal'
+import { isSupported as isSupportedFn } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
 import useVocal from '../hooks/useVocal'
@@ -95,11 +95,6 @@ export interface VocalProps {
 	onError?: OnErrorCallback | null
 	onNoMatch?: ((event: Event) => void) | null
 	signal?: AbortSignal | null
-	/**
-	 * Internal/testing escape hatch. Injects a custom vocal instance. Not part of the
-	 * stable public API — see issue #136 for the redesign of this surface.
-	 */
-	__rsInstance?: VocalInstance | null
 }
 
 interface ResultSegmentLike {
@@ -136,7 +131,6 @@ const Vocal = ({
 	onError = null,
 	onNoMatch = null,
 	signal = null,
-	__rsInstance = null,
 }: VocalProps) => {
 	const buttonRef = useRef<HTMLButtonElement | null>(null)
 	const isSupported = useMemo(() => isSupportedFn(), [])
@@ -145,8 +139,7 @@ const Vocal = ({
 		lang,
 		grammars,
 		maxAlternatives,
-		continuous,
-		__rsInstance
+		continuous
 	)
 	const triggerCommand = useCommands(commands, precision)
 

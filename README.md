@@ -490,6 +490,53 @@ Example:
 
 The `classifyError` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `useVocal().start({ signal })` call site.
 
+### Testing
+
+The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking. Build a minimal `VocalInstance`-shaped object and return it from a mocked `createVocal`:
+
+```typescript
+import { createVocal, type VocalInstance } from '@untemps/vocal'
+import { render } from '@testing-library/react'
+import Vocal from '@untemps/react-vocal'
+
+vi.mock('@untemps/vocal', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('@untemps/vocal')>()
+	return { ...actual, createVocal: vi.fn(actual.createVocal) }
+})
+
+const buildMockVocal = () => {
+	const handlers: Record<string, ((...args: unknown[]) => void)[]> = {}
+	return {
+		start: vi.fn(),
+		stop: vi.fn(),
+		abort: vi.fn(),
+		cleanup: vi.fn(),
+		on: vi.fn((type: string, cb: (...args: unknown[]) => void) => {
+			handlers[type] = handlers[type] ?? []
+			handlers[type].push(cb)
+		}),
+		off: vi.fn(),
+		get isRecording() {
+			return false
+		},
+		fire(type: string, ...args: unknown[]) {
+			handlers[type]?.forEach((cb) => cb(...args))
+		},
+	} satisfies VocalInstance & { fire: (type: string, ...args: unknown[]) => void }
+}
+
+it('reacts to a recognized command', async () => {
+	const setBorderRed = vi.fn()
+	const recognition = buildMockVocal()
+	vi.mocked(createVocal).mockReturnValue(recognition)
+	render(<Vocal commands={{ red: setBorderRed }} />)
+	// drive the recognition lifecycle via `recognition.fire('start', new Event('start'))`,
+	// `recognition.fire('result', evt, 'red', ['red'])`, etc., then assert as usual
+})
+```
+
+The same pattern works for `useVocal`. There is no public prop or argument to swap the vocal instance — the module-level mock is the supported, stable entry point.
+
 ## Development
 
 The component can be served for development purpose on `http://localhost:10001/` using:
