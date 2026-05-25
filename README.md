@@ -504,30 +504,33 @@ vi.mock('@untemps/vocal', async (importOriginal) => {
 	return { ...actual, createVocal: vi.fn(actual.createVocal) }
 })
 
-const buildMockVocal = (): VocalInstance => {
+const buildMockVocal = () => {
 	const handlers: Record<string, ((...args: unknown[]) => void)[]> = {}
 	return {
 		start: vi.fn(),
 		stop: vi.fn(),
 		abort: vi.fn(),
 		cleanup: vi.fn(),
-		on: vi.fn((type, cb) => {
+		on: vi.fn((type: string, cb: (...args: unknown[]) => void) => {
 			handlers[type] = handlers[type] ?? []
-			handlers[type].push(cb as (...args: unknown[]) => void)
+			handlers[type].push(cb)
 		}),
 		off: vi.fn(),
 		get isRecording() {
 			return false
 		},
-	}
+		fire(type: string, ...args: unknown[]) {
+			handlers[type]?.forEach((cb) => cb(...args))
+		},
+	} satisfies VocalInstance & { fire: (type: string, ...args: unknown[]) => void }
 }
 
 it('reacts to a recognized command', async () => {
 	const recognition = buildMockVocal()
 	vi.mocked(createVocal).mockReturnValue(recognition)
 	render(<Vocal commands={{ red: () => setBorderRed() }} />)
-	// drive the recognition lifecycle by invoking the captured handlers,
-	// then assert as usual
+	// drive the recognition lifecycle via `recognition.fire('start', new Event('start'))`,
+	// `recognition.fire('result', evt, 'red', ['red'])`, etc., then assert as usual
 })
 ```
 
