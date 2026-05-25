@@ -8,6 +8,7 @@ node_modules/
 
 # Misc
 .DS_STORE
+CLAUDE.md
 
 # NPM
 npm-debug.log*
