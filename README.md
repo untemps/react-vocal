@@ -350,7 +350,7 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
 
 #### Cancelling a start in flight
 
-Both `<Vocal signal={...}>` and `useVocal().start({ signal })` accept an `AbortSignal`. Aborting the controller while the browser is still resolving microphone permission cancels the start cleanly — no `start` event is dispatched.
+Both `<Vocal signal={...}>` and `useVocal().start({ signal })` accept an `AbortSignal`. Aborting the controller while the browser is still resolving microphone permission cancels the start cleanly — no `start` event is dispatched and `isRecording` reverts to `false`.
 
 ```javascript
 const controller = new AbortController()
@@ -361,6 +361,8 @@ setTimeout(() => controller.abort(), 2000)
 const [, { start }] = useVocal('en-US')
 start({ signal: controller.signal })
 ```
+
+**Behavior note** — the underlying `@untemps/vocal` library currently swallows the `AbortError` internally: the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129)). `react-vocal` compensates by detecting `signal.aborted` after resolution and rolling `isRecording` back to `false`, so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must check `signal.aborted` yourself after `start()` resolves.
 
 ### `useCommands` hook
 

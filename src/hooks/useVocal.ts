@@ -9,7 +9,7 @@ import {
 } from '@untemps/vocal'
 
 export interface UseVocalActions {
-	start: (options?: { signal?: AbortSignal }) => Promise<void> | undefined
+	start: (options?: { signal?: AbortSignal }) => Promise<void>
 	stop: () => void
 	abort: () => void
 	subscribe: {
@@ -58,14 +58,32 @@ const useVocal = (
 		}
 	}, [lang, grammars, maxAlternatives, continuous, supported])
 
-	const start = useCallback((options?: { signal?: AbortSignal }): Promise<void> | undefined => {
-		if (!ref.current) return undefined
+	const start = useCallback(async (options?: { signal?: AbortSignal }): Promise<void> => {
+		const instance = ref.current
+		if (!instance) return
 		// Optimistic update so the UI reacts immediately at click, before the
 		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
-		// vocal 2.x's start() returns a Promise that rejects on microphone/permission
-		// errors. Returning it lets consumers await or attach a .catch handler.
-		return ref.current.start(options)
+		// vocal 2.x's start() can either reject (microphone/permission errors) or
+		// silently resolve without dispatching 'start' (AbortError on the signal —
+		// caught and swallowed internally). In both cases the instance never fires
+		// 'end'/'error', so the optimistic flag would stay stuck on `true`.
+		// Track the real 'start' event so a late signal abort that races a true
+		// success doesn't trigger a false rollback.
+		let startEventFired = false
+		const onStart = () => {
+			startEventFired = true
+		}
+		instance.on('start', onStart)
+		try {
+			await instance.start(options)
+			if (!startEventFired && options?.signal?.aborted) setIsRecording(false)
+		} catch (err) {
+			setIsRecording(false)
+			throw err
+		} finally {
+			instance.off('start', onStart)
+		}
 	}, [])
 
 	const stop = useCallback(() => {

@@ -94,12 +94,18 @@ describe('useVocal', () => {
 		})
 
 		beforeEach(() => {
-			mockStart.mockClear()
-			mockStop.mockClear()
-			mockAbort.mockClear()
-			mockOn.mockClear()
-			mockOff.mockClear()
-			mockCleanup.mockClear()
+			// mockReset clears both calls and any per-test implementation overrides
+			// (mockReturnValue / mockImplementation). mockClear would leak those overrides
+			// across tests — see the start() rejection / throw cases below.
+			mockStart.mockReset()
+			mockStop.mockReset()
+			mockAbort.mockReset()
+			mockOn.mockReset()
+			mockOff.mockReset()
+			mockCleanup.mockReset()
+			// vocal 2.x's start() always returns a Promise — default the mock to
+			// match the real contract so tests don't have to opt in every time.
+			mockStart.mockReturnValue(Promise.resolve())
 			vi.mocked(createVocal).mockImplementation(() => ({
 				start: mockStart,
 				stop: mockStop,
@@ -157,15 +163,113 @@ describe('useVocal', () => {
 			expect(mockStart).toHaveBeenCalledWith({ signal: controller.signal })
 		})
 
-		it('returns the promise from the vocal start() call', () => {
-			const startPromise = Promise.resolve()
-			mockStart.mockReturnValue(startPromise)
+		it('returns a promise that resolves with the vocal start() value', async () => {
+			mockStart.mockReturnValue(Promise.resolve())
 			const {
 				result: {
 					current: [, { start }],
 				},
 			} = renderHook(() => useVocal())
-			expect(start()).toBe(startPromise)
+			await expect(start()).resolves.toBeUndefined()
+		})
+
+		it('propagates the rejection from vocal start() to the caller', async () => {
+			const err = new Error('mic denied')
+			mockStart.mockReturnValue(Promise.reject(err))
+			const {
+				result: {
+					current: [, { start }],
+				},
+			} = renderHook(() => useVocal())
+			await expect(start()).rejects.toBe(err)
+		})
+
+		it('flips isRecording back to false when start() rejects asynchronously', async () => {
+			mockStart.mockReturnValue(Promise.reject(new Error('aborted')))
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start()?.catch(() => {})
+			})
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('flips isRecording back to false when start() silently resolves with an aborted signal', async () => {
+			// vocal 2.x swallows AbortError internally — start() resolves without
+			// dispatching 'start'. Detect the post-hoc abort and reset the flag.
+			mockStart.mockReturnValue(Promise.resolve())
+			const controller = new AbortController()
+			controller.abort()
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start({ signal: controller.signal })
+			})
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('flips isRecording back to false when vocal.start() throws synchronously', async () => {
+			// vocal.start() throwing synchronously is caught by the async wrapper
+			// and surfaces as a rejected promise — the rollback still applies.
+			mockStart.mockImplementation(() => {
+				throw new Error('boom')
+			})
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await expect(result.current[1].start()).rejects.toThrow('boom')
+			})
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('keeps isRecording true when start() resolves and the signal is not aborted', async () => {
+			// Guard against regression: the post-hoc abort detection must not fire
+			// on a normal successful start.
+			mockStart.mockReturnValue(Promise.resolve())
+			const controller = new AbortController() // not aborted
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start({ signal: controller.signal })
+			})
+			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('keeps isRecording true when the start event fires and the signal aborts late', async () => {
+			// Race scenario: vocal.start() succeeds (the real 'start' event has
+			// already been dispatched), then the consumer aborts the signal
+			// before the wrapper's .then microtask runs. The rollback must rely
+			// on whether 'start' actually fired, not just on signal.aborted, so
+			// the real-recording flag stays `true`.
+			let resolveStart: (() => void) | undefined
+			mockStart.mockReturnValue(
+				new Promise<void>((res) => {
+					resolveStart = res
+				})
+			)
+			const controller = new AbortController()
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				const p = result.current[1].start({ signal: controller.signal })
+				// Simulate vocal dispatching 'start' to every subscriber, including
+				// the wrapper's internal tracker.
+				mockOn.mock.calls
+					.filter(([type]) => type === 'start')
+					.forEach(([, handler]) => (handler as () => void)())
+				// Consumer aborts after recognition truly started.
+				controller.abort()
+				resolveStart?.()
+				await p
+			})
+			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('unsubscribes the internal start tracker once the promise settles', async () => {
+			// Each start() call adds a transient 'start' listener used for the
+			// silent-abort detection. It must be removed once the promise settles
+			// so repeated calls do not leak listeners on the vocal instance.
+			mockStart.mockReturnValue(Promise.resolve())
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start()
+			})
+			expect(mockOff).toHaveBeenCalledWith('start', expect.any(Function))
 		})
 
 		it('triggers stop function', () => {
