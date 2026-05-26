@@ -209,13 +209,21 @@ describe('useVocal', () => {
 			})
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
-				try {
-					result.current[1].start()
-				} catch {
-					/* swallow */
-				}
+				expect(() => result.current[1].start()).toThrow('boom')
 			})
 			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('keeps isRecording true when start() resolves and the signal is not aborted', async () => {
+			// Guard against regression: the post-hoc abort detection must not fire
+			// on a normal successful start.
+			mockStart.mockReturnValue(Promise.resolve())
+			const controller = new AbortController() // not aborted
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start({ signal: controller.signal })
+			})
+			expect(result.current[1].isRecording).toBe(true)
 		})
 
 		it('triggers stop function', () => {
