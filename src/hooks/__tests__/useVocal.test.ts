@@ -103,6 +103,9 @@ describe('useVocal', () => {
 			mockOn.mockReset()
 			mockOff.mockReset()
 			mockCleanup.mockReset()
+			// vocal 2.x's start() always returns a Promise — default the mock to
+			// match the real contract so tests don't have to opt in every time.
+			mockStart.mockReturnValue(Promise.resolve())
 			vi.mocked(createVocal).mockImplementation(() => ({
 				start: mockStart,
 				stop: mockStop,
@@ -224,6 +227,47 @@ describe('useVocal', () => {
 				await result.current[1].start({ signal: controller.signal })
 			})
 			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('keeps isRecording true when the start event fires and the signal aborts late', async () => {
+			// Race scenario: vocal.start() succeeds (the real 'start' event has
+			// already been dispatched), then the consumer aborts the signal
+			// before the wrapper's .then microtask runs. The rollback must rely
+			// on whether 'start' actually fired, not just on signal.aborted, so
+			// the real-recording flag stays `true`.
+			let resolveStart: (() => void) | undefined
+			mockStart.mockReturnValue(
+				new Promise<void>((res) => {
+					resolveStart = res
+				})
+			)
+			const controller = new AbortController()
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				const p = result.current[1].start({ signal: controller.signal })
+				// Simulate vocal dispatching 'start' to every subscriber, including
+				// the wrapper's internal tracker.
+				mockOn.mock.calls
+					.filter(([type]) => type === 'start')
+					.forEach(([, handler]) => (handler as () => void)())
+				// Consumer aborts after recognition truly started.
+				controller.abort()
+				resolveStart?.()
+				await p
+			})
+			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('unsubscribes the internal start tracker once the promise settles', async () => {
+			// Each start() call adds a transient 'start' listener used for the
+			// silent-abort detection. It must be removed once the promise settles
+			// so repeated calls do not leak listeners on the vocal instance.
+			mockStart.mockReturnValue(Promise.resolve())
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start()
+			})
+			expect(mockOff).toHaveBeenCalledWith('start', expect.any(Function))
 		})
 
 		it('triggers stop function', () => {

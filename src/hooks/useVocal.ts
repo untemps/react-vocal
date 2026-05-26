@@ -59,36 +59,45 @@ const useVocal = (
 	}, [lang, grammars, maxAlternatives, continuous, supported])
 
 	const start = useCallback((options?: { signal?: AbortSignal }): Promise<void> | undefined => {
-		if (!ref.current) return undefined
+		const instance = ref.current
+		if (!instance) return undefined
 		// Optimistic update so the UI reacts immediately at click, before the
 		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
 		// vocal 2.x's start() can either reject (microphone/permission errors) or
 		// silently resolve without dispatching 'start' (AbortError on the signal —
 		// caught and swallowed internally). In both cases the instance never fires
-		// 'end'/'error', so the optimistic flag would stay stuck on `true`. Roll it
-		// back on rejection AND on silent abort, while preserving the original
-		// rejection so the caller's .catch still fires.
+		// 'end'/'error', so the optimistic flag would stay stuck on `true`.
+		//
+		// To distinguish a silent abort from a late abort that races a real
+		// success (consumer aborts the controller after the recognition truly
+		// started), track whether 'start' actually fired before rolling back.
 		const signal = options?.signal
-		let promise: Promise<void> | undefined
+		let startEventFired = false
+		const onceStart = () => {
+			startEventFired = true
+		}
+		instance.on('start', onceStart)
+		const unbind = () => instance.off('start', onceStart)
+		let promise: Promise<void>
 		try {
-			promise = ref.current.start(options)
+			promise = instance.start(options)
 		} catch (err) {
+			unbind()
 			setIsRecording(false)
 			throw err
 		}
-		if (promise && typeof promise.then === 'function') {
-			return promise.then(
+		return promise
+			.then(
 				() => {
-					if (signal?.aborted) setIsRecording(false)
+					if (!startEventFired && signal?.aborted) setIsRecording(false)
 				},
 				(err) => {
 					setIsRecording(false)
 					throw err
 				}
 			)
-		}
-		return promise
+			.finally(unbind)
 	}, [])
 
 	const stop = useCallback(() => {
