@@ -819,8 +819,18 @@ describe('Vocal', () => {
 			const onEnd = vi.fn()
 			const onResult = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
+			// timeout bumped above silenceTimeout so the regular timer cannot fire first —
+			// both timers share stableTimerCb, so a shorter `timeout` would mask which one
+			// actually triggered _onEnd.
 			const { getByTestId } = render(
-				getInstance({ __rsInstance: recognition, onEnd, onResult, continuous: true, silenceTimeout: 5000 })
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					onResult,
+					continuous: true,
+					timeout: 10_000,
+					silenceTimeout: 5000,
+				})
 			)
 
 			await act(async () => {
@@ -833,8 +843,15 @@ describe('Vocal', () => {
 
 			expect(onEnd).not.toHaveBeenCalled()
 
+			// Just before the silence threshold — neither timer should have fired.
 			act(() => {
-				vi.advanceTimersByTime(5000)
+				vi.advanceTimersByTime(4999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			// Crossing the silenceTimeout boundary is what fires _onEnd.
+			act(() => {
+				vi.advanceTimersByTime(1)
 			})
 
 			expect(onEnd).toHaveBeenCalledTimes(1)
