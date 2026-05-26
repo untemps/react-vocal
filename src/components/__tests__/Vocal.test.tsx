@@ -859,6 +859,45 @@ describe('Vocal', () => {
 			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
 			vi.useRealTimers()
 		})
+
+		it('does not start the silence timer when continuous is false', async () => {
+			// Regression for #164: the silenceTimeout branch in _onSpeechEnd is gated on
+			// continuousRef.current. With continuous=false, providing silenceTimeout must
+			// not arm a silence timer — only the regular `timeout` is in effect.
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: false,
+					timeout: 10_000,
+					silenceTimeout: 5000,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			// Drive speechstart/speechend directly — a full say() would emit `result`,
+			// which in non-continuous mode calls stopRecognition() and fires `end`
+			// immediately, masking the silence-timer branch under test.
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			// Past silenceTimeout, before the regular timeout. If the silence timer
+			// had wrongly armed, _onEnd would fire here.
+			act(() => {
+				vi.advanceTimersByTime(5000)
+			})
+
+			expect(onEnd).not.toHaveBeenCalled()
+			vi.useRealTimers()
+		})
 	})
 
 	it('triggers onError handler when subscribe throws', async () => {
