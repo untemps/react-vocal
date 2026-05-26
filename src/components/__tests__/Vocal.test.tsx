@@ -843,13 +843,11 @@ describe('Vocal', () => {
 
 			expect(onEnd).not.toHaveBeenCalled()
 
-			// Just before the silence threshold — neither timer should have fired.
 			act(() => {
 				vi.advanceTimersByTime(4999)
 			})
 			expect(onEnd).not.toHaveBeenCalled()
 
-			// Crossing the silenceTimeout boundary is what fires _onEnd.
 			act(() => {
 				vi.advanceTimersByTime(1)
 			})
@@ -861,9 +859,6 @@ describe('Vocal', () => {
 		})
 
 		it('does not start the silence timer when continuous is false', async () => {
-			// Regression for #164: the silenceTimeout branch in _onSpeechEnd is gated on
-			// continuousRef.current. With continuous=false, providing silenceTimeout must
-			// not arm a silence timer — only the regular `timeout` is in effect.
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const recognition = createMockVocal()
@@ -889,8 +884,6 @@ describe('Vocal', () => {
 				recognition.fire('speechend', new Event('speechend'))
 			})
 
-			// Past silenceTimeout, before the regular timeout. If the silence timer
-			// had wrongly armed, _onEnd would fire here.
 			act(() => {
 				vi.advanceTimersByTime(5000)
 			})
