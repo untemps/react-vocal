@@ -680,6 +680,23 @@ describe('Vocal', () => {
 		expect(onStart).not.toHaveBeenCalled()
 	})
 
+	it('reverts aria-pressed to false when the signal prop is already aborted', async () => {
+		const onError = vi.fn()
+		const controller = new AbortController()
+		controller.abort()
+		const { getByTestId } = render(getInstance({ signal: controller.signal, onError }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await new Promise((r) => setTimeout(r, 50))
+		})
+
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
+		// Silent abort is not an error from the consumer's perspective —
+		// no error event should surface.
+		expect(onError).not.toHaveBeenCalled()
+	})
+
 	it('calls onEnd via the end event when stop is asynchronous', async () => {
 		const onEnd = vi.fn()
 		const recognition = createMockVocal()
