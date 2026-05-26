@@ -819,8 +819,18 @@ describe('Vocal', () => {
 			const onEnd = vi.fn()
 			const onResult = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
+			// timeout bumped above silenceTimeout so the regular timer cannot fire first —
+			// both timers share stableTimerCb, so a shorter `timeout` would mask which one
+			// actually triggered _onEnd.
 			const { getByTestId } = render(
-				getInstance({ __rsInstance: recognition, onEnd, onResult, continuous: true, silenceTimeout: 5000 })
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					onResult,
+					continuous: true,
+					timeout: 10_000,
+					silenceTimeout: 5000,
+				})
 			)
 
 			await act(async () => {
@@ -834,12 +844,51 @@ describe('Vocal', () => {
 			expect(onEnd).not.toHaveBeenCalled()
 
 			act(() => {
-				vi.advanceTimersByTime(5000)
+				vi.advanceTimersByTime(4999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(1)
 			})
 
 			expect(onEnd).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
+			vi.useRealTimers()
+		})
+
+		it('does not start the silence timer when continuous is false', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: false,
+					timeout: 10_000,
+					silenceTimeout: 5000,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			// Drive speechstart/speechend directly — a full say() would emit `result`,
+			// which in non-continuous mode calls stopRecognition() and fires `end`
+			// immediately, masking the silence-timer branch under test.
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				vi.advanceTimersByTime(5000)
+			})
+
+			expect(onEnd).not.toHaveBeenCalled()
 			vi.useRealTimers()
 		})
 	})
