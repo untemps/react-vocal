@@ -300,9 +300,9 @@ const Vocal = ({
 		try {
 			stopSilenceTimer()
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn as (e: Event) => void))
-			// vocal 2.x rejects on microphone/permission errors — catch the async
-			// rejection so it doesn't surface as an UnhandledPromiseRejection.
-			start({ signal: signal ?? undefined })?.catch?.(_onError)
+			// useVocal's start() rejects on microphone/permission errors — catch
+			// the async rejection so it doesn't surface as an UnhandledPromiseRejection.
+			start({ signal: signal ?? undefined }).catch(_onError)
 		} catch (error) {
 			_onError(error)
 		}
