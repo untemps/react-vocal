@@ -71,10 +71,10 @@ const useVocal = (
 		// Track the real 'start' event so a late signal abort that races a true
 		// success doesn't trigger a false rollback.
 		let startEventFired = false
-		const onceStart = () => {
+		const onStart = () => {
 			startEventFired = true
 		}
-		instance.on('start', onceStart)
+		instance.on('start', onStart)
 		try {
 			await instance.start(options)
 			if (!startEventFired && options?.signal?.aborted) setIsRecording(false)
@@ -82,7 +82,7 @@ const useVocal = (
 			setIsRecording(false)
 			throw err
 		} finally {
-			instance.off('start', onceStart)
+			instance.off('start', onStart)
 		}
 	}, [])
 
