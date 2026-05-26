@@ -9,7 +9,7 @@ import {
 } from '@untemps/vocal'
 
 export interface UseVocalActions {
-	start: (options?: { signal?: AbortSignal }) => Promise<void> | undefined
+	start: (options?: { signal?: AbortSignal }) => Promise<void>
 	stop: () => void
 	abort: () => void
 	subscribe: {
@@ -58,9 +58,9 @@ const useVocal = (
 		}
 	}, [lang, grammars, maxAlternatives, continuous, supported])
 
-	const start = useCallback((options?: { signal?: AbortSignal }): Promise<void> | undefined => {
+	const start = useCallback(async (options?: { signal?: AbortSignal }): Promise<void> => {
 		const instance = ref.current
-		if (!instance) return undefined
+		if (!instance) return
 		// Optimistic update so the UI reacts immediately at click, before the
 		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
@@ -68,36 +68,22 @@ const useVocal = (
 		// silently resolve without dispatching 'start' (AbortError on the signal —
 		// caught and swallowed internally). In both cases the instance never fires
 		// 'end'/'error', so the optimistic flag would stay stuck on `true`.
-		//
-		// To distinguish a silent abort from a late abort that races a real
-		// success (consumer aborts the controller after the recognition truly
-		// started), track whether 'start' actually fired before rolling back.
-		const signal = options?.signal
+		// Track the real 'start' event so a late signal abort that races a true
+		// success doesn't trigger a false rollback.
 		let startEventFired = false
 		const onceStart = () => {
 			startEventFired = true
 		}
 		instance.on('start', onceStart)
-		const unbind = () => instance.off('start', onceStart)
-		let promise: Promise<void>
 		try {
-			promise = instance.start(options)
+			await instance.start(options)
+			if (!startEventFired && options?.signal?.aborted) setIsRecording(false)
 		} catch (err) {
-			unbind()
 			setIsRecording(false)
 			throw err
+		} finally {
+			instance.off('start', onceStart)
 		}
-		return promise
-			.then(
-				() => {
-					if (!startEventFired && signal?.aborted) setIsRecording(false)
-				},
-				(err) => {
-					setIsRecording(false)
-					throw err
-				}
-			)
-			.finally(unbind)
 	}, [])
 
 	const stop = useCallback(() => {

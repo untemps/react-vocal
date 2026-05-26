@@ -206,13 +206,15 @@ describe('useVocal', () => {
 			expect(result.current[1].isRecording).toBe(false)
 		})
 
-		it('flips isRecording back to false when start() throws synchronously', async () => {
+		it('flips isRecording back to false when vocal.start() throws synchronously', async () => {
+			// vocal.start() throwing synchronously is caught by the async wrapper
+			// and surfaces as a rejected promise — the rollback still applies.
 			mockStart.mockImplementation(() => {
 				throw new Error('boom')
 			})
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
-				expect(() => result.current[1].start()).toThrow('boom')
+				await expect(result.current[1].start()).rejects.toThrow('boom')
 			})
 			expect(result.current[1].isRecording).toBe(false)
 		})
