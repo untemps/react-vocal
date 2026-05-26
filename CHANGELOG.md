@@ -1,3 +1,16 @@
+# [2.0.0-beta.20](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.19...v2.0.0-beta.20) (2026-05-26)
+
+
+### Bug Fixes
+
+* Reset isRecording when start() rejects or silently aborts ([#172](https://github.com/untemps/react-vocal/issues/172)) ([c3dbf59](https://github.com/untemps/react-vocal/commit/c3dbf5996a0ff49628205db39959bf32a1662a3b))
+
+
+### BREAKING CHANGES
+
+* useVocal().start() now always returns Promise<void> instead of Promise<void> | undefined. The unsupported branch (isSupported() === false) previously returned undefined synchronously and now returns a resolved Promise<undefined>. Callers using `await` or `.catch()` are unaffected; callers that compared the return value to undefined synchronously must be updated.
+* Synchronous throws from the underlying vocal.start() now surface as a rejected Promise rather than a synchronous exception, because the wrapper is now an async function. Callers wrapping start() in a synchronous try/catch must migrate to .catch() or await + try/catch.
+
 # [2.0.0-beta.19](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.18...v2.0.0-beta.19) (2026-05-25)
 
 # [2.0.0-beta.18](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.17...v2.0.0-beta.18) (2026-05-25)
