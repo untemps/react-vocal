@@ -1,3 +1,15 @@
+# [2.0.0-beta.22](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.21...v2.0.0-beta.22) (2026-05-27)
+
+
+### Code Refactoring
+
+* Switch to named-only exports ([#175](https://github.com/untemps/react-vocal/issues/175)) ([8fda310](https://github.com/untemps/react-vocal/commit/8fda310172a7e27f198b0724c808350e1b876eb1))
+
+
+### BREAKING CHANGES
+
+* `Vocal` is no longer the default export of `@untemps/react-vocal`. Replace `import Vocal from '@untemps/react-vocal'` with `import { Vocal } from '@untemps/react-vocal'`. CJS consumers using `const { default: Vocal } = require('@untemps/react-vocal')` must switch to `const { Vocal } = require('@untemps/react-vocal')`.
+
 # [2.0.0-beta.21](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.20...v2.0.0-beta.21) (2026-05-26)
 
 # [2.0.0-beta.20](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.19...v2.0.0-beta.20) (2026-05-26)
