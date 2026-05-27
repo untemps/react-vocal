@@ -1,3 +1,10 @@
+# [2.0.0-beta.25](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.24...v2.0.0-beta.25) (2026-05-27)
+
+
+### Bug Fixes
+
+* Memoize useCommands triggerCommand to stabilize hook identity ([#178](https://github.com/untemps/react-vocal/issues/178)) ([b69a2e9](https://github.com/untemps/react-vocal/commit/b69a2e9b5c555ed497400886e4339bfedbdbb329))
+
 # [2.0.0-beta.24](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.23...v2.0.0-beta.24) (2026-05-27)
 
 
