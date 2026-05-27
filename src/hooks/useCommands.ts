@@ -7,7 +7,7 @@ export type CommandsMap = Record<string, CommandCallback>
 
 export type TriggerCommand = (rawInput: string) => unknown
 
-const useCommands = (commands?: CommandsMap | null, precision: number = 0.4): TriggerCommand => {
+export const useCommands = (commands?: CommandsMap | null, precision: number = 0.4): TriggerCommand => {
 	const normalized = useMemo<CommandsMap>(
 		() =>
 			commands
@@ -90,5 +90,3 @@ const useCommands = (commands?: CommandsMap | null, precision: number = 0.4): Tr
 
 	return triggerCommand
 }
-
-export default useCommands

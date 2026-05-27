@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { createVocal, isSupported } from '@untemps/vocal'
 
-import useVocal from '../useVocal'
+import { useVocal } from '../useVocal'
 
 vi.mock('@untemps/vocal')
 

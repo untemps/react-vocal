@@ -897,7 +897,7 @@ describe('Vocal', () => {
 		// Mock useVocal so subscribe() throws synchronously inside startRecognition.
 		// Scoped via vi.doMock + dynamic import so the rest of the suite uses the real hook.
 		vi.doMock('../../hooks/useVocal', () => ({
-			default: () => [
+			useVocal: () => [
 				null,
 				{
 					subscribe: () => {

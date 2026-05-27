@@ -11,9 +11,9 @@ import {
 import { isSupported as isSupportedFn } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
-import useVocal from '../hooks/useVocal'
+import { useVocal } from '../hooks/useVocal'
 import useTimeout from '../hooks/useTimeout'
-import useCommands, { type CommandsMap, type TriggerCommand } from '../hooks/useCommands'
+import { useCommands, type CommandsMap, type TriggerCommand } from '../hooks/useCommands'
 
 import Icon from './Icon'
 
