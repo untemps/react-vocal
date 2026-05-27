@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import type Fuse from 'fuse.js'
 
 export type CommandCallback = (rawInput: string, commandKey: string) => unknown
@@ -57,36 +57,39 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 		}
 	}, [hasPhraseKeys, keys])
 
-	const triggerCommand: TriggerCommand = (rawInput) => {
-		if (!keys.length) return null
+	const triggerCommand = useCallback<TriggerCommand>(
+		(rawInput) => {
+			if (!keys.length) return null
 
-		if (!hasPhraseKeys) {
-			const words = rawInput.trim().split(/\s+/)
-			const targets = words.length > 1 ? words : [rawInput.trim()]
-			for (const w of targets) {
-				const commandKey = w.toLowerCase()
-				if (commandKey in normalized) return normalized[commandKey]?.(w, commandKey)
+			if (!hasPhraseKeys) {
+				const words = rawInput.trim().split(/\s+/)
+				const targets = words.length > 1 ? words : [rawInput.trim()]
+				for (const w of targets) {
+					const commandKey = w.toLowerCase()
+					if (commandKey in normalized) return normalized[commandKey]?.(w, commandKey)
+				}
+				return null
+			}
+
+			const fuse = fuseRef.current
+			if (fuse) {
+				const result = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
+				if (result?.length) {
+					const commandKey = (result[0].item as string).toLowerCase()
+					return normalized[commandKey]?.(rawInput, commandKey)
+				}
+			} else {
+				// `k.includes(lInput)` can produce false positives when input is short
+				// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
+				// only runs when fuse.js is absent, so degraded precision is expected.
+				const lInput = rawInput.toLowerCase()
+				const commandKey = keys.find((k) => lInput.includes(k) || k.includes(lInput))
+				if (commandKey) return normalized[commandKey]?.(rawInput, commandKey)
 			}
 			return null
-		}
-
-		const fuse = fuseRef.current
-		if (fuse) {
-			const result = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
-			if (result?.length) {
-				const commandKey = (result[0].item as string).toLowerCase()
-				return normalized[commandKey]?.(rawInput, commandKey)
-			}
-		} else {
-			// `k.includes(lInput)` can produce false positives when input is short
-			// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
-			// only runs when fuse.js is absent, so degraded precision is expected.
-			const lInput = rawInput.toLowerCase()
-			const commandKey = keys.find((k) => lInput.includes(k) || k.includes(lInput))
-			if (commandKey) return normalized[commandKey]?.(rawInput, commandKey)
-		}
-		return null
-	}
+		},
+		[keys, normalized, hasPhraseKeys, precision]
+	)
 
 	return triggerCommand
 }
