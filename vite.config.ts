@@ -27,7 +27,7 @@ export default defineConfig({
 			fileName: bundleFileName,
 		},
 		rollupOptions: {
-			external: ['react', 'react-dom', 'fuse.js'],
+			external: ['react', 'react-dom', 'fuse.js', '@untemps/vocal'],
 		},
 		sourcemap: true,
 	},
