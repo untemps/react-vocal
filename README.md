@@ -358,7 +358,7 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
 | Args        | Type | Description                                          |
 | ----------- | ---- | ---------------------------------------------------- |
 | ref         | Ref  | React ref to the underlying `@untemps/vocal` instance |
-| start       | func | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. Returns the underlying `vocal.start()` promise (resolves once the session starts, rejects on microphone/permission errors). |
+| start       | func | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. Returns a `Promise<void>` that resolves once the session starts and rejects with the original error on microphone/permission failures. |
 | stop        | func | Function to stop the recognition                     |
 | abort       | func | Function to abort the recognition                    |
 | subscribe   | func | Function to subscribe to recognition events          |
