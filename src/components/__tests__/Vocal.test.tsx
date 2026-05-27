@@ -2,7 +2,7 @@ import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
 
-import Vocal, { type VocalProps } from '../Vocal'
+import { Vocal, type VocalProps } from '../Vocal'
 import { createMockVocal } from './createMockVocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
@@ -897,7 +897,7 @@ describe('Vocal', () => {
 		// Mock useVocal so subscribe() throws synchronously inside startRecognition.
 		// Scoped via vi.doMock + dynamic import so the rest of the suite uses the real hook.
 		vi.doMock('../../hooks/useVocal', () => ({
-			default: () => [
+			useVocal: () => [
 				null,
 				{
 					subscribe: () => {
@@ -907,7 +907,7 @@ describe('Vocal', () => {
 			],
 		}))
 		vi.resetModules()
-		const { default: VocalWithMockedUseVocal } = await import('../Vocal')
+		const { Vocal: VocalWithMockedUseVocal } = await import('../Vocal')
 		const onError = vi.fn()
 		const { getByTestId } = render(<VocalWithMockedUseVocal onError={onError} />)
 		await act(async () => {

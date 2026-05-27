@@ -56,6 +56,24 @@ yarn add fuse.js
 
 Without fuse.js, phrase commands fall back to case-insensitive exact matching. Single-word commands always use exact matching and never require fuse.js.
 
+## Migration from 1.x
+
+`@untemps/react-vocal` 2.x exposes a single named-export surface — there is no longer a default export. Every entry point must be imported with braces:
+
+```diff
+- import Vocal from '@untemps/react-vocal'
++ import { Vocal } from '@untemps/react-vocal'
+```
+
+CJS consumers must update the destructuring accordingly:
+
+```diff
+- const { default: Vocal } = require('@untemps/react-vocal')
++ const { Vocal } = require('@untemps/react-vocal')
+```
+
+This removes the Rollup `MIXED_EXPORTS` warning from the build and aligns the ESM and CJS shapes — both now expose `Vocal`, `useVocal`, `useCommands`, `isSupported`, and `classifyError` as named exports.
+
 ## TypeScript
 
 `@untemps/react-vocal` is written in TypeScript and ships full type declarations. The public surface is typed end-to-end:
@@ -67,7 +85,7 @@ Without fuse.js, phrase commands fall back to case-insensitive exact matching. S
 - `isSupported` function (re-exported from `@untemps/vocal`)
 
 ```typescript
-import Vocal, { useVocal, isSupported, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
+import { Vocal, useVocal, isSupported, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
 ```
 
 TypeScript is listed as an optional peer dependency (`>=6.0.0`) — install it only if your project uses TS.
@@ -79,7 +97,7 @@ TypeScript is listed as an optional peer dependency (`>=6.0.0`) — install it o
 #### Basic usage
 
 ```javascript
-import Vocal from '@untemps/react-vocal'
+import { Vocal } from '@untemps/react-vocal'
 
 const App = () => {
 	const [result, setResult] = useState('')
@@ -123,7 +141,7 @@ But you can provide your own component.
 -   With a simple React element:
 
 ```javascript
-import Vocal from '@untemps/react-vocal'
+import { Vocal } from '@untemps/react-vocal'
 
 const App = () => {
 	return (
@@ -141,7 +159,7 @@ hierarchy, use the function syntax below.
 -   With a function that returns a React element:
 
 ```javascript
-import Vocal from '@untemps/react-vocal'
+import { Vocal } from '@untemps/react-vocal'
 
 const Play = () => (
 	<div
@@ -422,7 +440,7 @@ Matching rules:
 `isSupported` is a function that returns `true` when the browser supports the Web Speech API (along with the Permissions and MediaDevices APIs that `@untemps/vocal` relies on). It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
 
 ```javascript
-import Vocal, { isSupported } from '@untemps/react-vocal'
+import { Vocal, isSupported } from '@untemps/react-vocal'
 
 const App = () => {
 	return isSupported() ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
@@ -499,7 +517,7 @@ The library has no dedicated injection prop — tests inject a custom vocal inst
 ```typescript
 import { createVocal, type VocalInstance } from '@untemps/vocal'
 import { render } from '@testing-library/react'
-import Vocal from '@untemps/react-vocal'
+import { Vocal } from '@untemps/react-vocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
 	const actual = await importOriginal<typeof import('@untemps/vocal')>()

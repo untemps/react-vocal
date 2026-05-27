@@ -26,7 +26,7 @@ export interface UseVocalActions {
 
 export type UseVocalReturn = [RefObject<VocalInstance | null>, UseVocalActions]
 
-const useVocal = (
+export const useVocal = (
 	lang: string = 'en-US',
 	grammars: SpeechGrammarList | null = null,
 	maxAlternatives: number = 1,
@@ -124,5 +124,3 @@ const useVocal = (
 
 	return [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
 }
-
-export default useVocal

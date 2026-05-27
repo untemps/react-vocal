@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-const useTimeout = (handler: () => void, timeout: number = 0): [start: () => void, stop: () => void] => {
+export const useTimeout = (handler: () => void, timeout: number = 0): [start: () => void, stop: () => void] => {
 	const ref = useRef<ReturnType<typeof setTimeout> | number>(-1)
 
 	const stop = useCallback(() => {
@@ -17,5 +17,3 @@ const useTimeout = (handler: () => void, timeout: number = 0): [start: () => voi
 
 	return [start, stop]
 }
-
-export default useTimeout

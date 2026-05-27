@@ -11,11 +11,11 @@ import {
 import { isSupported as isSupportedFn } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
-import useVocal from '../hooks/useVocal'
-import useTimeout from '../hooks/useTimeout'
-import useCommands, { type CommandsMap, type TriggerCommand } from '../hooks/useCommands'
+import { useVocal } from '../hooks/useVocal'
+import { useTimeout } from '../hooks/useTimeout'
+import { useCommands, type CommandsMap, type TriggerCommand } from '../hooks/useCommands'
 
-import Icon from './Icon'
+import { Icon } from './Icon'
 
 export type OnResultCallback = (bestAlternative: string, event: SpeechRecognitionEvent | Event) => void
 
@@ -109,7 +109,7 @@ const tryMatchCommand = (results: Iterable<Iterable<ResultSegmentLike>>, trigger
 	}
 }
 
-const Vocal = ({
+export const Vocal = ({
 	children,
 	commands = null,
 	lang = 'en-US',
@@ -369,5 +369,3 @@ const Vocal = ({
 
 	return _renderChildren()
 }
-
-export default Vocal
