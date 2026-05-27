@@ -1,3 +1,10 @@
+# [2.0.0-beta.24](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.23...v2.0.0-beta.24) (2026-05-27)
+
+
+### Bug Fixes
+
+* Keep continuous session alive on nomatch ([#177](https://github.com/untemps/react-vocal/issues/177)) ([64a1d64](https://github.com/untemps/react-vocal/commit/64a1d647bdc6054835f25511fc1ffc3dab65c8b9))
+
 # [2.0.0-beta.23](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.22...v2.0.0-beta.23) (2026-05-27)
 
 # [2.0.0-beta.22](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.21...v2.0.0-beta.22) (2026-05-27)
