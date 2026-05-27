@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 
-import useTimeout from '../useTimeout'
+import { useTimeout } from '../useTimeout'
 
 const wait = (delay: number): Promise<void> => {
 	return new Promise((resolve) => {
