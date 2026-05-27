@@ -109,7 +109,7 @@ const tryMatchCommand = (results: Iterable<Iterable<ResultSegmentLike>>, trigger
 	}
 }
 
-const Vocal = ({
+export const Vocal = ({
 	children,
 	commands = null,
 	lang = 'en-US',
@@ -369,5 +369,3 @@ const Vocal = ({
 
 	return _renderChildren()
 }
-
-export default Vocal
