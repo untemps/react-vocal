@@ -12,10 +12,10 @@ import { isSupported as isSupportedFn } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
 import { useVocal } from '../hooks/useVocal'
-import useTimeout from '../hooks/useTimeout'
+import { useTimeout } from '../hooks/useTimeout'
 import { useCommands, type CommandsMap, type TriggerCommand } from '../hooks/useCommands'
 
-import Icon from './Icon'
+import { Icon } from './Icon'
 
 export type OnResultCallback = (bestAlternative: string, event: SpeechRecognitionEvent | Event) => void
 
