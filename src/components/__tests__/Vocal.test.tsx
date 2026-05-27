@@ -734,6 +734,28 @@ describe('Vocal', () => {
 			expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
 		})
 
+		it('keeps session active on nomatch instead of stopping recognition', async () => {
+			const onEnd = vi.fn()
+			const onNoMatch = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId } = render(
+				getInstance({ __rsInstance: recognition, onEnd, onNoMatch, continuous: true })
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			await act(async () => {
+				// say(null) dispatches speechstart → speechend → nomatch
+				recognition.say(null)
+			})
+
+			expect(onNoMatch).toHaveBeenCalledTimes(1)
+			expect(onEnd).not.toHaveBeenCalled()
+			expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
+		})
+
 		it('fires onResult once at session end with full accumulated transcript', async () => {
 			const onResult = vi.fn()
 			const onEnd = vi.fn()
