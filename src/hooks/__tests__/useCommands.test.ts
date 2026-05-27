@@ -18,6 +18,27 @@ describe('useCommands', () => {
 		expect(triggerCommand).toBeDefined()
 	})
 
+	it('returns a stable triggerCommand across renders when commands prop is referentially equal', () => {
+		const commands = { foo: () => 'bar' }
+		const { result, rerender } = renderHook(({ c }: { c: typeof commands }) => useCommands(c), {
+			initialProps: { c: commands },
+		})
+		const first = result.current
+		rerender({ c: commands })
+		expect(result.current).toBe(first)
+	})
+
+	it('returns a new triggerCommand when the commands prop identity changes', () => {
+		const a = { foo: () => 'bar' }
+		const b = { foo: () => 'bar' }
+		const { result, rerender } = renderHook(({ c }: { c: typeof a }) => useCommands(c), {
+			initialProps: { c: a },
+		})
+		const first = result.current
+		rerender({ c: b })
+		expect(result.current).not.toBe(first)
+	})
+
 	it('triggers callback mapped to the exact input', () => {
 		const commands = {
 			foo: () => 'bar',
