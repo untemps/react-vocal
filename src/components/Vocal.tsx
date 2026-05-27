@@ -251,7 +251,9 @@ export const Vocal = ({
 	const _onNoMatch = useCallback(
 		(e: Event) => {
 			stopTimer()
-			stopRecognition()
+			// In continuous mode an unrecognized segment must not end the session — the
+			// contract is "keep listening across segments". Mirrors the gate in _onResult.
+			if (!continuousRef.current) stopRecognition()
 			propsRef.current.onNoMatch?.(e)
 		},
 		[stopTimer, stopRecognition]
