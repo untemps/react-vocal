@@ -4,7 +4,7 @@ export interface IconProps {
 	isActive?: boolean
 }
 
-const Icon = ({ color = 'black', activeColor = 'red', isActive = false }: IconProps) => {
+export const Icon = ({ color = 'black', activeColor = 'red', isActive = false }: IconProps) => {
 	return (
 		<svg
 			data-testid="__icon-root__"
@@ -25,5 +25,3 @@ const Icon = ({ color = 'black', activeColor = 'red', isActive = false }: IconPr
 		</svg>
 	)
 }
-
-export default Icon

@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 
-import useCommands from '../useCommands'
+import { useCommands } from '../useCommands'
 
 // Static import anchors fuse.js in the module graph so vi.mock intercepts the
 // dynamic import('fuse.js') inside the hook. Without it the dynamic import resolves
@@ -103,7 +103,7 @@ describe('useCommands', () => {
 		vi.doMock('fuse.js', () => {
 			throw new Error('fuse.js not installed')
 		})
-		const { default: useCommandsWithoutFuse } = await import('../useCommands')
+		const { useCommands: useCommandsWithoutFuse } = await import('../useCommands')
 		const commands = { 'change color': () => 'matched' }
 		const {
 			result: { current: triggerCommand },
@@ -121,7 +121,7 @@ describe('useCommands', () => {
 		vi.doMock('fuse.js', () => {
 			throw new Error('fuse.js not installed')
 		})
-		const { default: useCommandsFresh } = await import('../useCommands')
+		const { useCommands: useCommandsFresh } = await import('../useCommands')
 		const commands = { 'change color': () => 'matched' }
 		const { unmount } = renderHook(() => useCommandsFresh(commands))
 		unmount()
