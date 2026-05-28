@@ -204,9 +204,10 @@ export const Vocal = ({
 	const _onSpeechStart = useCallback(
 		(e: Event) => {
 			stopTimer()
+			stopSilenceTimer()
 			propsRef.current.onSpeechStart?.(e)
 		},
-		[stopTimer]
+		[stopTimer, stopSilenceTimer]
 	)
 
 	const _onSpeechEnd = useCallback(
