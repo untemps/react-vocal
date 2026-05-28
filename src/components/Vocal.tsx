@@ -204,9 +204,12 @@ export const Vocal = ({
 	const _onSpeechStart = useCallback(
 		(e: Event) => {
 			stopTimer()
+			// In continuous mode _onSpeechEnd arms the silence timer; cancel it here so resumed
+			// speech rearms it on the next speechend instead of ticking through ongoing speech.
+			stopSilenceTimer()
 			propsRef.current.onSpeechStart?.(e)
 		},
-		[stopTimer]
+		[stopTimer, stopSilenceTimer]
 	)
 
 	const _onSpeechEnd = useCallback(
