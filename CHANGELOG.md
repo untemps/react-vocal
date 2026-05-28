@@ -1,3 +1,10 @@
+# [2.0.0-beta.27](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.26...v2.0.0-beta.27) (2026-05-28)
+
+
+### Bug Fixes
+
+* Cancel silence timer on speechstart in continuous mode ([#188](https://github.com/untemps/react-vocal/issues/188)) ([d9cca51](https://github.com/untemps/react-vocal/commit/d9cca51acc7c4c5758a5ca09f88c0827463b029e))
+
 # [2.0.0-beta.26](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.25...v2.0.0-beta.26) (2026-05-28)
 
 # [2.0.0-beta.25](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.24...v2.0.0-beta.25) (2026-05-27)
