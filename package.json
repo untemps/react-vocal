@@ -141,7 +141,7 @@
 		"test": "vitest",
 		"test:ci": "vitest run --coverage",
 		"typecheck": "tsc --noEmit",
-		"lint": "eslint src vitest.setup.ts",
+		"lint": "eslint src vitest.setup.ts dev/src",
 		"build": "vite build",
 		"prepare": "husky",
 		"prettier": "prettier \"*/**/*.{js,ts,tsx}\" --ignore-path ./.prettierignore --write && git add -u && git status"
