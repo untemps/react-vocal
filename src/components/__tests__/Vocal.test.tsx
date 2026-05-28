@@ -880,7 +880,7 @@ describe('Vocal', () => {
 			vi.useRealTimers()
 		})
 
-		it('cancels the silence timer when speech resumes before it elapses', async () => {
+		it('cancels then rearms the silence timer when speech resumes', async () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
@@ -904,60 +904,30 @@ describe('Vocal', () => {
 				recognition.fire('speechend', new Event('speechend'))
 			})
 
-			// User resumes speaking at t=3000, before the 5000ms silence threshold:
-			// the new speechstart must cancel the pending silence timer.
+			// Speech resumes at t=3000, before the threshold: the new speechstart cancels the timer.
 			act(() => {
 				vi.advanceTimersByTime(3000)
 				recognition.fire('speechstart', new Event('speechstart'))
 			})
 
-			// Past the original silence deadline (t=5001): the session must still be alive.
+			// Past the original deadline (t=5001): cancellation held, session still alive.
 			act(() => {
 				vi.advanceTimersByTime(2001)
 			})
-
 			expect(onEnd).not.toHaveBeenCalled()
-			vi.useRealTimers()
-		})
 
-		it('rearms the silence timer on the next speechend after speech resumes', async () => {
-			vi.useFakeTimers()
-			const onEnd = vi.fn()
-			const recognition = createMockVocal({ continuous: true })
-			const { getByTestId } = render(
-				getInstance({
-					__rsInstance: recognition,
-					onEnd,
-					continuous: true,
-					timeout: 10_000,
-					silenceTimeout: 5000,
-				})
-			)
-
-			await act(async () => {
-				fireEvent.click(getByTestId('__vocal-root__'))
-			})
-
-			// speechstart → speechend arms the silence timer at t=0.
+			// speechend rearms the silence timer at t=5001 (fires at t=10001).
 			act(() => {
-				recognition.fire('speechstart', new Event('speechstart'))
 				recognition.fire('speechend', new Event('speechend'))
 			})
 
-			// At t=3000 speech resumes (cancels) then ends again, rearming the timer to fire at t=8000.
-			act(() => {
-				vi.advanceTimersByTime(3000)
-				recognition.fire('speechstart', new Event('speechstart'))
-				recognition.fire('speechend', new Event('speechend'))
-			})
-
-			// Just before the rearmed deadline (t=7999): still alive.
+			// Just before the rearmed deadline (t=10000): still alive.
 			act(() => {
 				vi.advanceTimersByTime(4999)
 			})
 			expect(onEnd).not.toHaveBeenCalled()
 
-			// Rearmed silence timer elapses at t=8000.
+			// Rearmed silence timer elapses at t=10001.
 			act(() => {
 				vi.advanceTimersByTime(1)
 			})
