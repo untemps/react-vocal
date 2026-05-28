@@ -20,11 +20,8 @@ const MediaDevicesMock = vi.fn(function () {
 	}
 })
 
-Object.defineProperty(globalThis, 'navigator', {
-	value: { userAgent: 'node.js' },
-	writable: true,
-	configurable: true,
-})
+// Augment jsdom's real navigator rather than replacing it: only permissions and
+// mediaDevices need mocking (vocal's isSupported reads them); userAgent is left untouched.
 Object.defineProperty(globalThis.navigator, 'permissions', {
 	value: new (PermissionsMock as unknown as new () => unknown)(),
 	writable: true,
