@@ -920,6 +920,51 @@ describe('Vocal', () => {
 			vi.useRealTimers()
 		})
 
+		it('rearms the silence timer on the next speechend after speech resumes', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: true,
+					timeout: 10_000,
+					silenceTimeout: 5000,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			// speechstart → speechend arms the silence timer at t=0.
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			// At t=3000 speech resumes (cancels) then ends again, rearming the timer to fire at t=8000.
+			act(() => {
+				vi.advanceTimersByTime(3000)
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			// Just before the rearmed deadline (t=7999): still alive.
+			act(() => {
+				vi.advanceTimersByTime(4999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			// Rearmed silence timer elapses at t=8000.
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
+		})
+
 		it('does not start the silence timer when continuous is false', async () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
