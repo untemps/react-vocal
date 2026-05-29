@@ -275,6 +275,8 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | onNoMatch     | func              | null                 | Handler called when no result can be recognized                                                 |
 | signal        | AbortSignal       | null                 | Optional `AbortSignal` propagated to the underlying `start()` call. Aborting it cancels the in-flight start (e.g. while waiting for microphone permission). |
 
+> :warning: **Memoize non-primitive props.** A non-memoized `grammars` (constructed inline, e.g. `<Vocal grammars={new SpeechGrammarList()} />`) gets a new identity on every render and tears down and rebuilds the recognition instance each time — aborting in-flight sessions and churning microphone permissions. A non-memoized `commands` object similarly forces `useCommands` to re-normalize and re-index its fuzzy matcher on every render. Wrap such props in `useMemo` so their reference stays stable.
+
 ### `useVocal` hook
 
 #### Basic usage
@@ -346,6 +348,8 @@ useVocal(lang, grammars, maxAlternatives, continuous)
 | grammars        | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
 | maxAlternatives | number            | 1       | Maximum number of recognition alternatives per segment                                          |
 | continuous      | boolean           | false   | Keep the recognition session open after each result                                             |
+
+> :warning: **Memoize non-primitive arguments.** `useVocal` rebuilds its recognition instance whenever an argument changes identity. `grammars` is non-primitive, so passing a fresh value each render — `useVocal(lang, new SpeechGrammarList())` — triggers a teardown/rebuild cycle on every render. Wrap such arguments in `useMemo` to keep their identity stable across renders.
 
 ---
 
