@@ -295,21 +295,19 @@ export const Vocal = ({
 		[_onStart, _onEnd, _onSpeechStart, _onSpeechEnd, _onResult, _onError, _onNoMatch]
 	)
 
-	// Assigned inline (not in useEffect) so it's ready before any event fires
-	unsubscribeAllRef.current = () =>
-		Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe?.(event, fn as (e: Event) => void))
-
 	const startRecognition = useCallback(() => {
 		try {
 			stopSilenceTimer()
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn as (e: Event) => void))
+			unsubscribeAllRef.current = () =>
+				Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe(event, fn as (e: Event) => void))
 			// useVocal's start() rejects on microphone/permission errors — catch
 			// the async rejection so it doesn't surface as an UnhandledPromiseRejection.
 			start({ signal: signal ?? undefined }).catch(_onError)
 		} catch (error) {
 			_onError(error)
 		}
-	}, [HANDLERS, subscribe, start, stopSilenceTimer, _onError, signal])
+	}, [HANDLERS, subscribe, unsubscribe, start, stopSilenceTimer, _onError, signal])
 
 	const _onFocus = useCallback(() => {
 		if (!className && outlineStyle && buttonRef.current) {

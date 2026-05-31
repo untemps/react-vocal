@@ -716,6 +716,106 @@ describe('Vocal', () => {
 		expect(onError).not.toHaveBeenCalled()
 	})
 
+	it('does not leak listeners when timeout changes during an active session', async () => {
+		const onEnd = vi.fn()
+		const onResult = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId, rerender } = render(
+			getInstance({ __rsInstance: recognition, onEnd, onResult, timeout: 1000 })
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onEnd, onResult, timeout: 2000 }))
+		})
+
+		await act(async () => {
+			recognition.say('Foo')
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(1))
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			recognition.say('Bar')
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(2))
+		})
+
+		expect(onEnd).toHaveBeenCalledTimes(2)
+		expect(onResult).toHaveBeenCalledTimes(2)
+		expect(onResult).toHaveBeenNthCalledWith(1, 'Foo', expect.anything())
+		expect(onResult).toHaveBeenNthCalledWith(2, 'Bar', expect.anything())
+	})
+
+	it('does not leak listeners when silenceTimeout changes during an active continuous session', async () => {
+		const onEnd = vi.fn()
+		const onResult = vi.fn()
+		const recognition = createMockVocal({ continuous: true })
+		const { getByTestId, rerender } = render(
+			getInstance({
+				__rsInstance: recognition,
+				onEnd,
+				onResult,
+				continuous: true,
+				timeout: 10_000,
+				silenceTimeout: 5000,
+			})
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			rerender(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					onResult,
+					continuous: true,
+					timeout: 10_000,
+					silenceTimeout: 7000,
+				})
+			)
+		})
+
+		await act(async () => {
+			recognition.say('Hello')
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(1))
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			recognition.say('World')
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(2))
+		})
+
+		expect(onEnd).toHaveBeenCalledTimes(2)
+		expect(onResult).toHaveBeenCalledTimes(2)
+		expect(onResult).toHaveBeenNthCalledWith(1, 'Hello', expect.anything())
+		expect(onResult).toHaveBeenNthCalledWith(2, 'World', expect.anything())
+	})
+
 	it('calls onEnd via the end event when stop is asynchronous', async () => {
 		const onEnd = vi.fn()
 		const recognition = createMockVocal()
