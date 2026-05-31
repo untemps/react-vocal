@@ -1,3 +1,10 @@
+# [2.0.0-beta.32](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.31...v2.0.0-beta.32) (2026-05-31)
+
+
+### Features
+
+* Preserve consumer onClick on element-as-child and let consumer preventDefault cancel the recognition toggle ([#207](https://github.com/untemps/react-vocal/issues/207)) ([6026d2c](https://github.com/untemps/react-vocal/commit/6026d2c7d0529acc91e09b541cba2c0daca7f96d))
+
 # [2.0.0-beta.31](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.30...v2.0.0-beta.31) (2026-05-31)
 
 
