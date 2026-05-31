@@ -908,6 +908,8 @@ describe('Vocal', () => {
 				silenceTimeout: 5000,
 			})
 		)
+		// useVocal subscribes a few internal listeners on mount — snapshot the baseline
+		// AFTER render so we only measure what the click adds and the end-of-session removes.
 		const baseline = recognition.handlerCount()
 
 		await act(async () => {
