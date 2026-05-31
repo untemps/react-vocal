@@ -1,3 +1,4 @@
+import { type MouseEvent as ReactMouseEvent } from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
@@ -103,7 +104,7 @@ describe('Vocal', () => {
 	it('cancels the recognition toggle when the consumer onClick calls preventDefault', async () => {
 		const onStart = vi.fn()
 		const onEnd = vi.fn()
-		const consumerOnClick = vi.fn((e: { preventDefault: () => void }) => e.preventDefault())
+		const consumerOnClick = vi.fn((e: ReactMouseEvent) => e.preventDefault())
 		const recognition = createMockVocal()
 		const { getByTestId } = render(
 			getInstance(
