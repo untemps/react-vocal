@@ -1,3 +1,10 @@
+# [2.0.0-beta.33](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.32...v2.0.0-beta.33) (2026-05-31)
+
+
+### Bug Fixes
+
+* Coalesce empty-string input to 'unknown' message in classifyError ([#208](https://github.com/untemps/react-vocal/issues/208)) ([feb246a](https://github.com/untemps/react-vocal/commit/feb246a955332e466715eee4a3a56620e36a639f))
+
 # [2.0.0-beta.32](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.31...v2.0.0-beta.32) (2026-05-31)
 
 
