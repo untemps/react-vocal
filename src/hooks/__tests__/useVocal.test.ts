@@ -379,5 +379,51 @@ describe('useVocal', () => {
 			await act(async () => result.current[1].start())
 			expect(result.current[1].isRecording).toBe(true)
 		})
+
+		it('runs cleanup on unmount: removes listeners, aborts, and cleans up the instance', () => {
+			const { unmount } = renderHook(() => useVocal())
+			expect(createVocal).toHaveBeenCalledTimes(1)
+			unmount()
+			expect(mockOff).toHaveBeenCalledWith('start', expect.any(Function))
+			expect(mockOff).toHaveBeenCalledWith('end', expect.any(Function))
+			expect(mockOff).toHaveBeenCalledWith('error', expect.any(Function))
+			expect(mockAbort).toHaveBeenCalledTimes(1)
+			expect(mockCleanup).toHaveBeenCalledTimes(1)
+		})
+
+		it('tears down and recreates the instance when lang changes', () => {
+			const { rerender } = renderHook(({ lang }) => useVocal(lang), {
+				initialProps: { lang: 'en-US' },
+			})
+			expect(createVocal).toHaveBeenCalledTimes(1)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ lang: 'en-US' }))
+
+			const offCallsBefore = mockOff.mock.calls.length
+
+			rerender({ lang: 'fr-FR' })
+
+			expect(createVocal).toHaveBeenCalledTimes(2)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ lang: 'fr-FR' }))
+			expect(mockOff.mock.calls.length).toBe(offCallsBefore + 3)
+			expect(mockAbort).toHaveBeenCalledTimes(1)
+			expect(mockCleanup).toHaveBeenCalledTimes(1)
+		})
+
+		it('tears down and recreates the instance when grammars identity changes', () => {
+			const g1 = {} as SpeechGrammarList
+			const g2 = {} as SpeechGrammarList
+			const { rerender } = renderHook(({ grammars }) => useVocal('en-US', grammars), {
+				initialProps: { grammars: g1 },
+			})
+			expect(createVocal).toHaveBeenCalledTimes(1)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ grammars: g1 }))
+
+			rerender({ grammars: g2 })
+
+			expect(createVocal).toHaveBeenCalledTimes(2)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ grammars: g2 }))
+			expect(mockAbort).toHaveBeenCalledTimes(1)
+			expect(mockCleanup).toHaveBeenCalledTimes(1)
+		})
 	})
 })
