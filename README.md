@@ -164,6 +164,10 @@ toggle.
 To cancel the toggle (e.g. require a confirmation, block while the user is unauthenticated), call
 `event.preventDefault()` inside your handler — the recognition will not start or stop for that click.
 
+For accessibility parity with the default button, `aria-pressed` is also injected on the cloned child to reflect
+the listening state, and `aria-label` falls back to the `ariaLabel` prop of `<Vocal>` when the child does not
+declare one of its own.
+
 -   With a function that returns a React element:
 
 ```javascript

@@ -359,14 +359,21 @@ export const Vocal = ({
 					isListening
 				)
 			} else if (isValidElement(children)) {
-				const typed = children as ReactElement<{ onClick?: (e: ReactMouseEvent) => void }>
+				const typed = children as ReactElement<{
+					onClick?: (e: ReactMouseEvent) => void
+					'aria-pressed'?: boolean
+					'aria-label'?: string
+				}>
 				const childOnClick = typed.props.onClick
+				const childAriaLabel = typed.props['aria-label']
 				return cloneElement(typed, {
 					onClick: (e: ReactMouseEvent) => {
 						childOnClick?.(e)
 						if (e.defaultPrevented) return
 						;(isListening ? stopRecognition : startRecognition)()
 					},
+					'aria-pressed': isListening,
+					'aria-label': childAriaLabel ?? ariaLabel,
 				})
 			} else {
 				return _renderDefault()
