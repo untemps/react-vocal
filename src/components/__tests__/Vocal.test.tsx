@@ -864,6 +864,86 @@ describe('Vocal', () => {
 		expect(onResult).toHaveBeenNthCalledWith(2, 'World', expect.anything())
 	})
 
+	it('releases all listeners after a single session when timeout changes mid-session', async () => {
+		const onEnd = vi.fn()
+		const onResult = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId, rerender } = render(
+			getInstance({ __rsInstance: recognition, onEnd, onResult, timeout: 1000 })
+		)
+		// useVocal subscribes a few internal listeners on mount — snapshot the baseline
+		// AFTER render so we only measure what the click adds and the end-of-session removes.
+		const baseline = recognition.handlerCount()
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			rerender(getInstance({ __rsInstance: recognition, onEnd, onResult, timeout: 2000 }))
+		})
+
+		await act(async () => {
+			recognition.say('Foo')
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(1))
+		})
+
+		expect(onEnd).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledTimes(1)
+		expect(recognition.handlerCount()).toBe(baseline)
+	})
+
+	it('releases all listeners after a single session when silenceTimeout changes mid-session', async () => {
+		const onEnd = vi.fn()
+		const onResult = vi.fn()
+		const recognition = createMockVocal({ continuous: true })
+		const { getByTestId, rerender } = render(
+			getInstance({
+				__rsInstance: recognition,
+				onEnd,
+				onResult,
+				continuous: true,
+				timeout: 10_000,
+				silenceTimeout: 5000,
+			})
+		)
+		// useVocal subscribes a few internal listeners on mount — snapshot the baseline
+		// AFTER render so we only measure what the click adds and the end-of-session removes.
+		const baseline = recognition.handlerCount()
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			rerender(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					onResult,
+					continuous: true,
+					timeout: 10_000,
+					silenceTimeout: 7000,
+				})
+			)
+		})
+
+		await act(async () => {
+			recognition.say('Hello')
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(1))
+		})
+
+		expect(onEnd).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledTimes(1)
+		expect(recognition.handlerCount()).toBe(baseline)
+	})
+
 	it('calls onEnd via the end event when stop is asynchronous', async () => {
 		const onEnd = vi.fn()
 		const recognition = createMockVocal()
