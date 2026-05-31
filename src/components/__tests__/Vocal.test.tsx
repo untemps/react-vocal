@@ -122,6 +122,51 @@ describe('Vocal', () => {
 		expect(onEnd).not.toHaveBeenCalled()
 	})
 
+	it('propagates aria-pressed=false on the cloned child while idle', () => {
+		const { getByTestId } = render(getInstance(null, <button data-testid="__vocal-custom-root__" />))
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'false')
+	})
+
+	it('flips aria-pressed on the cloned child between idle, listening and end of session', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId } = render(
+			getInstance({ __rsInstance: recognition, onStart, onEnd }, <button data-testid="__vocal-custom-root__" />)
+		)
+
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'false')
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'true')
+
+		await act(async () => {
+			recognition.say('Foo')
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'false')
+	})
+
+	it('falls back to the ariaLabel prop on the cloned child when the child has no aria-label', () => {
+		const { getByTestId } = render(
+			getInstance({ ariaLabel: 'start mic' }, <button data-testid="__vocal-custom-root__" />)
+		)
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-label', 'start mic')
+	})
+
+	it("preserves the child's own aria-label over the ariaLabel prop on the cloned child", () => {
+		const { getByTestId } = render(
+			getInstance(
+				{ ariaLabel: 'start mic' },
+				<button data-testid="__vocal-custom-root__" aria-label="custom label" />
+			)
+		)
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-label', 'custom label')
+	})
+
 	it('renders no children element if SpeechRecognition is not supported', () => {
 		vi.mocked(isSupported).mockReturnValueOnce(false)
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
