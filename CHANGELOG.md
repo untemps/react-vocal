@@ -1,3 +1,10 @@
+# [2.0.0-beta.35](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.34...v2.0.0-beta.35) (2026-05-31)
+
+
+### Bug Fixes
+
+* Keep pointer cursor while listening in non-continuous mode ([#212](https://github.com/untemps/react-vocal/issues/212)) ([a4eb06b](https://github.com/untemps/react-vocal/commit/a4eb06b603d6e67deba1af127ad8a238cb5d7dbd))
+
 # [2.0.0-beta.34](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.33...v2.0.0-beta.34) (2026-05-31)
 
 
