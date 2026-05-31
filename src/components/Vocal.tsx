@@ -298,10 +298,9 @@ export const Vocal = ({
 	const startRecognition = useCallback(() => {
 		try {
 			stopSilenceTimer()
-			const handlers = HANDLERS
-			Object.entries(handlers).forEach(([event, fn]) => subscribe(event, fn as (e: Event) => void))
+			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn as (e: Event) => void))
 			unsubscribeAllRef.current = () =>
-				Object.entries(handlers).forEach(([event, fn]) => unsubscribe?.(event, fn as (e: Event) => void))
+				Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe(event, fn as (e: Event) => void))
 			// useVocal's start() rejects on microphone/permission errors — catch
 			// the async rejection so it doesn't surface as an UnhandledPromiseRejection.
 			start({ signal: signal ?? undefined }).catch(_onError)
