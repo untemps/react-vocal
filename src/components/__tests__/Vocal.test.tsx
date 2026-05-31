@@ -232,20 +232,13 @@ describe('Vocal', () => {
 		})
 	})
 
-	it('renders pointer cursor when idle', () => {
-		const { getByTestId } = render(getInstance())
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
-	})
-
-	it('renders pointer cursor when listening in non-continuous mode', () => {
-		const { getByTestId } = render(getInstance())
-		fireEvent.click(getByTestId('__vocal-root__'))
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
-	})
-
-	it('renders pointer cursor when listening in continuous mode', () => {
-		const { getByTestId } = render(getInstance({ continuous: true }))
-		fireEvent.click(getByTestId('__vocal-root__'))
+	it.each<[label: string, continuous: boolean, clickToListen: boolean]>([
+		['idle', false, false],
+		['listening in non-continuous mode', false, true],
+		['listening in continuous mode', true, true],
+	])('renders pointer cursor when %s', (_label, continuous, clickToListen) => {
+		const { getByTestId } = render(getInstance({ continuous }))
+		if (clickToListen) fireEvent.click(getByTestId('__vocal-root__'))
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
 	})
 
