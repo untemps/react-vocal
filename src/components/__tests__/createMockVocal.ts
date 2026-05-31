@@ -35,10 +35,11 @@ export interface MockVocalOptions {
 export type MockVocalInput = string | Segment[] | null | undefined
 
 // MockVocalInstance extends VocalInstance with test-only helpers (.say, .error,
-// .end, .fire). Production code consuming a VocalInstance MUST NOT call them —
-// they exist only to drive lifecycle events during tests. Lifecycle methods are
-// typed as MockedFunction so test bodies can call `.mockImplementation()` on
-// them when they need to override behavior.
+// .end, .fire, .handlerCount). Production code consuming a VocalInstance MUST
+// NOT call them — they exist only to drive lifecycle events during tests and
+// inspect the listener map. Lifecycle methods are typed as MockedFunction so
+// test bodies can call `.mockImplementation()` on them when they need to
+// override behavior.
 export interface MockVocalInstance extends Omit<VocalInstance, 'start' | 'stop' | 'abort' | 'on' | 'off' | 'cleanup'> {
 	start: MockedFunction<VocalInstance['start']>
 	stop: MockedFunction<VocalInstance['stop']>
@@ -50,6 +51,7 @@ export interface MockVocalInstance extends Omit<VocalInstance, 'start' | 'stop' 
 	say: (input: MockVocalInput) => void
 	error: (err: unknown) => void
 	end: () => void
+	handlerCount: () => number
 }
 
 // Mock VocalInstance for component tests — implements the contract of
@@ -149,6 +151,9 @@ export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstan
 		},
 		end() {
 			fire('end', new Event('end'))
+		},
+		handlerCount() {
+			return Object.values(handlers).reduce((sum, arr) => sum + arr.length, 0)
 		},
 	}
 	return instance
