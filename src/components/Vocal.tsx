@@ -337,7 +337,7 @@ export const Vocal = ({
 							backgroundColor: 'transparent', // `background: none` shorthand resets all sub-properties; jsdom 29 + jest-dom v6 don't reflect that correctly via getComputedStyle
 							border: 'none',
 							padding: 0,
-							cursor: !continuous && isListening ? 'default' : 'pointer',
+							cursor: 'pointer',
 							...(style ?? {}),
 						}
 			}
