@@ -71,7 +71,7 @@ export const classifyError = (err: unknown): VocalError => {
 	if (err instanceof Error) {
 		return { type: 'unknown', message: err.message || 'unknown', original: err }
 	}
-	return { type: 'unknown', message: typeof err === 'string' ? err : 'unknown', original: err }
+	return { type: 'unknown', message: typeof err === 'string' && err ? err : 'unknown', original: err }
 }
 
 export interface VocalProps {
