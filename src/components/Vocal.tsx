@@ -5,6 +5,7 @@ import {
 	useMemo,
 	useRef,
 	type CSSProperties,
+	type MouseEvent as ReactMouseEvent,
 	type ReactElement,
 	type ReactNode,
 } from 'react'
@@ -358,8 +359,13 @@ export const Vocal = ({
 					isListening
 				)
 			} else if (isValidElement(children)) {
-				return cloneElement(children as ReactElement<{ onClick?: () => void }>, {
-					onClick: isListening ? stopRecognition : startRecognition,
+				const typed = children as ReactElement<{ onClick?: (e: ReactMouseEvent) => void }>
+				const childOnClick = typed.props.onClick
+				return cloneElement(typed, {
+					onClick: (e: ReactMouseEvent) => {
+						childOnClick?.(e)
+						;(isListening ? stopRecognition : startRecognition)()
+					},
 				})
 			} else {
 				return _renderDefault()

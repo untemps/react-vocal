@@ -74,6 +74,32 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('preserves consumer onClick when toggling recognition with a child element', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const consumerOnClick = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId } = render(
+			getInstance(
+				{ __rsInstance: recognition, onStart, onEnd },
+				<button data-testid="__vocal-custom-root__" onClick={consumerOnClick} />
+			)
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+		expect(consumerOnClick).toHaveBeenCalledTimes(1)
+		expect(consumerOnClick).toHaveBeenNthCalledWith(1, expect.objectContaining({ type: 'click' }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+		expect(consumerOnClick).toHaveBeenCalledTimes(2)
+	})
+
 	it('renders no children element if SpeechRecognition is not supported', () => {
 		vi.mocked(isSupported).mockReturnValueOnce(false)
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
