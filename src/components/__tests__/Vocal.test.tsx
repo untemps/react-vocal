@@ -1,3 +1,4 @@
+import { type MouseEvent as ReactMouseEvent } from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
@@ -72,6 +73,53 @@ describe('Vocal', () => {
 			fireEvent.click(getByTestId('__vocal-custom-root__'))
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
 		})
+	})
+
+	it('preserves consumer onClick when toggling recognition with a child element', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const consumerOnClick = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId } = render(
+			getInstance(
+				{ __rsInstance: recognition, onStart, onEnd },
+				<button data-testid="__vocal-custom-root__" onClick={consumerOnClick} />
+			)
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+		expect(consumerOnClick).toHaveBeenCalledTimes(1)
+		expect(consumerOnClick).toHaveBeenNthCalledWith(1, expect.objectContaining({ type: 'click' }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+		expect(consumerOnClick).toHaveBeenCalledTimes(2)
+	})
+
+	it('cancels the recognition toggle when the consumer onClick calls preventDefault', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const consumerOnClick = vi.fn((e: ReactMouseEvent) => e.preventDefault())
+		const recognition = createMockVocal()
+		const { getByTestId } = render(
+			getInstance(
+				{ __rsInstance: recognition, onStart, onEnd },
+				<button data-testid="__vocal-custom-root__" onClick={consumerOnClick} />
+			)
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+		})
+
+		expect(consumerOnClick).toHaveBeenCalledTimes(1)
+		expect(onStart).not.toHaveBeenCalled()
+		expect(onEnd).not.toHaveBeenCalled()
 	})
 
 	it('renders no children element if SpeechRecognition is not supported', () => {
