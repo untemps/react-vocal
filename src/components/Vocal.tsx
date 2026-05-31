@@ -361,7 +361,7 @@ export const Vocal = ({
 				)
 			} else if (isValidElement(children)) {
 				return cloneElement(children as ReactElement<{ onClick?: () => void }>, {
-					...(!isListening && { onClick: startRecognition }),
+					onClick: isListening ? stopRecognition : startRecognition,
 				})
 			} else {
 				return _renderDefault()
