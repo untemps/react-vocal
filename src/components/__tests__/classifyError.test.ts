@@ -92,7 +92,7 @@ describe('classifyError', () => {
 			})
 		})
 
-		it.each([null, undefined, 42, true, { foo: 'bar' }])(
+		it.each([null, undefined, 42, true, { foo: 'bar' }, ''])(
 			'classifies non-Error value %p as "unknown" with fallback message',
 			(value) => {
 				expect(classifyError(value)).toEqual({
