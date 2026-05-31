@@ -157,6 +157,10 @@ In this case, an `onClick` handler is automatically attached to the component to
 Only the first direct descendant of Vocal will receive the `onClick` handler. If you want to use a more complex
 hierarchy, use the function syntax below.
 
+If the child element already declares its own `onClick`, it is preserved: your handler runs first, then the
+recognition toggle. This lets you attach analytics or any other behavior to the same element without losing the
+toggle.
+
 -   With a function that returns a React element:
 
 ```javascript
