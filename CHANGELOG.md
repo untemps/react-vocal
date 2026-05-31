@@ -1,3 +1,10 @@
+# [2.0.0-beta.30](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.29...v2.0.0-beta.30) (2026-05-31)
+
+
+### Bug Fixes
+
+* Toggle element-as-child onClick between start and stop ([#196](https://github.com/untemps/react-vocal/issues/196)) ([5f98aef](https://github.com/untemps/react-vocal/commit/5f98aef2adbefd9789d1a7e8d8d1dddac3654ae8))
+
 # [2.0.0-beta.29](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.28...v2.0.0-beta.29) (2026-05-28)
 
 # [2.0.0-beta.28](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.27...v2.0.0-beta.28) (2026-05-28)
