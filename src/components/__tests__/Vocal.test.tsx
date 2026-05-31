@@ -55,6 +55,25 @@ describe('Vocal', () => {
 		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
 	})
 
+	it('toggles recognition with custom children element (start then stop)', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId } = render(
+			getInstance({ __rsInstance: recognition, onStart, onEnd }, <button data-testid="__vocal-custom-root__" />)
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+	})
+
 	it('renders no children element if SpeechRecognition is not supported', () => {
 		vi.mocked(isSupported).mockReturnValueOnce(false)
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
