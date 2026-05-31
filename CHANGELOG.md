@@ -1,3 +1,10 @@
+# [2.0.0-beta.34](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.33...v2.0.0-beta.34) (2026-05-31)
+
+
+### Bug Fixes
+
+* Propagate aria-pressed and aria-label to cloned-element children ([#210](https://github.com/untemps/react-vocal/issues/210)) ([44b298f](https://github.com/untemps/react-vocal/commit/44b298ff89773e5e9d8cbf07ad1eda6161ad0708))
+
 # [2.0.0-beta.33](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.32...v2.0.0-beta.33) (2026-05-31)
 
 
