@@ -1,3 +1,10 @@
+# [2.0.0-beta.31](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.30...v2.0.0-beta.31) (2026-05-31)
+
+
+### Bug Fixes
+
+* Snapshot handler identities to prevent listener leaks on prop changes ([#206](https://github.com/untemps/react-vocal/issues/206)) ([ac67509](https://github.com/untemps/react-vocal/commit/ac6750918f9e8569a4267f5299af8b1d599a764a))
+
 # [2.0.0-beta.30](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.29...v2.0.0-beta.30) (2026-05-31)
 
 
