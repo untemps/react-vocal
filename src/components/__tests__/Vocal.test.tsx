@@ -100,6 +100,27 @@ describe('Vocal', () => {
 		expect(consumerOnClick).toHaveBeenCalledTimes(2)
 	})
 
+	it('cancels the recognition toggle when the consumer onClick calls preventDefault', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const consumerOnClick = vi.fn((e: { preventDefault: () => void }) => e.preventDefault())
+		const recognition = createMockVocal()
+		const { getByTestId } = render(
+			getInstance(
+				{ __rsInstance: recognition, onStart, onEnd },
+				<button data-testid="__vocal-custom-root__" onClick={consumerOnClick} />
+			)
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+		})
+
+		expect(consumerOnClick).toHaveBeenCalledTimes(1)
+		expect(onStart).not.toHaveBeenCalled()
+		expect(onEnd).not.toHaveBeenCalled()
+	})
+
 	it('renders no children element if SpeechRecognition is not supported', () => {
 		vi.mocked(isSupported).mockReturnValueOnce(false)
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))

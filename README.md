@@ -161,6 +161,9 @@ If the child element already declares its own `onClick`, it is preserved: your h
 recognition toggle. This lets you attach analytics or any other behavior to the same element without losing the
 toggle.
 
+To cancel the toggle (e.g. require a confirmation, block while the user is unauthenticated), call
+`event.preventDefault()` inside your handler — the recognition will not start or stop for that click.
+
 -   With a function that returns a React element:
 
 ```javascript

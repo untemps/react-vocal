@@ -364,6 +364,7 @@ export const Vocal = ({
 				return cloneElement(typed, {
 					onClick: (e: ReactMouseEvent) => {
 						childOnClick?.(e)
+						if (e.defaultPrevented) return
 						;(isListening ? stopRecognition : startRecognition)()
 					},
 				})
