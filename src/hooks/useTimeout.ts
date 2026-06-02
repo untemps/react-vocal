@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 export const useTimeout = (handler: () => void, timeout: number = 0): [start: () => void, stop: () => void] => {
-	const ref = useRef<ReturnType<typeof setTimeout> | number>(-1)
+	const ref = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	const stop = useCallback(() => {
-		clearTimeout(ref.current as ReturnType<typeof setTimeout>)
-		ref.current = -1
+		if (ref.current !== null) {
+			clearTimeout(ref.current)
+			ref.current = null
+		}
 	}, [])
 
 	const start = useCallback(() => {
