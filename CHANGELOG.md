@@ -1,3 +1,10 @@
+# [2.0.0-beta.37](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.36...v2.0.0-beta.37) (2026-06-02)
+
+
+### Bug Fixes
+
+* Roll back isRecording whenever the start event does not fire ([#229](https://github.com/untemps/react-vocal/issues/229)) ([257088d](https://github.com/untemps/react-vocal/commit/257088d648afd5bfdc6c062798ffadaa7d8b0fff))
+
 # [2.0.0-beta.36](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.35...v2.0.0-beta.36) (2026-06-02)
 
 # [2.0.0-beta.35](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.34...v2.0.0-beta.35) (2026-05-31)
