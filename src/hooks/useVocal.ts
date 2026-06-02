@@ -66,10 +66,11 @@ export const useVocal = (
 		setIsRecording(true)
 		// vocal 2.x's start() can either reject (microphone/permission errors) or
 		// silently resolve without dispatching 'start' (AbortError on the signal —
-		// caught and swallowed internally). In both cases the instance never fires
-		// 'end'/'error', so the optimistic flag would stay stuck on `true`.
-		// Track the real 'start' event so a late signal abort that races a true
-		// success doesn't trigger a false rollback.
+		// caught and swallowed internally, or any other no-op resolution). In both
+		// cases the instance never fires 'end'/'error', so the optimistic flag would
+		// stay stuck on `true`. Track the real 'start' event so we can detect any
+		// silent resolution — independent of whether a signal was provided — while
+		// a late signal abort that races a true success does not trigger a false rollback.
 		let startEventFired = false
 		const onStart = () => {
 			startEventFired = true
@@ -77,7 +78,7 @@ export const useVocal = (
 		instance.on('start', onStart)
 		try {
 			await instance.start(options)
-			if (!startEventFired && options?.signal?.aborted) setIsRecording(false)
+			if (!startEventFired) setIsRecording(false)
 		} catch (err) {
 			setIsRecording(false)
 			throw err
