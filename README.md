@@ -396,7 +396,7 @@ const [, { start }] = useVocal('en-US')
 start({ signal: controller.signal })
 ```
 
-**Behavior note** — the underlying `@untemps/vocal` library currently swallows the `AbortError` internally: the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129)). `react-vocal` compensates by detecting `signal.aborted` after resolution and rolling `isRecording` back to `false`, so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must check `signal.aborted` yourself after `start()` resolves.
+**Behavior note** — the underlying `@untemps/vocal` library currently swallows the `AbortError` internally: the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129)). `react-vocal` compensates by tracking whether the `start` event actually fired during the call and rolling `isRecording` back to `false` whenever it did not — regardless of whether a signal was provided — so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must observe the `start` event yourself to know when recognition truly began.
 
 ### `useCommands` hook
 

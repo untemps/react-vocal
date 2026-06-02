@@ -206,6 +206,17 @@ describe('useVocal', () => {
 			expect(result.current[1].isRecording).toBe(false)
 		})
 
+		it('flips isRecording back to false when start() silently resolves without firing start (no signal)', async () => {
+			// Even without a signal, an absent 'start' event means the session did not begin —
+			// the optimistic flag must be rolled back so the UI does not stay stuck on listening.
+			mockStart.mockReturnValue(Promise.resolve())
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start()
+			})
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
 		it('flips isRecording back to false when vocal.start() throws synchronously', async () => {
 			// vocal.start() throwing synchronously is caught by the async wrapper
 			// and surfaces as a rejected promise — the rollback still applies.
@@ -220,9 +231,14 @@ describe('useVocal', () => {
 		})
 
 		it('keeps isRecording true when start() resolves and the signal is not aborted', async () => {
-			// Guard against regression: the post-hoc abort detection must not fire
-			// on a normal successful start.
-			mockStart.mockReturnValue(Promise.resolve())
+			// Guard against regression: the silent-resolve rollback must not fire
+			// on a normal successful start. Simulate vocal's real contract by
+			// dispatching 'start' from inside start() before resolution.
+			mockStart.mockImplementation(async () => {
+				mockOn.mock.calls
+					.filter(([type]) => type === 'start')
+					.forEach(([, handler]) => (handler as () => void)())
+			})
 			const controller = new AbortController() // not aborted
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
@@ -375,6 +391,12 @@ describe('useVocal', () => {
 		})
 
 		it('optimistically flips isRecording to true when start() is called', async () => {
+			// Simulate vocal's real contract: 'start' fires before start() resolves.
+			mockStart.mockImplementation(async () => {
+				mockOn.mock.calls
+					.filter(([type]) => type === 'start')
+					.forEach(([, handler]) => (handler as () => void)())
+			})
 			const { result } = renderHook(() => useVocal())
 			await act(async () => result.current[1].start())
 			expect(result.current[1].isRecording).toBe(true)
