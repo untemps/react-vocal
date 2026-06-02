@@ -235,9 +235,9 @@ export const Vocal = ({
 						? Array.from((event as SpeechRecognitionEvent).results, (segment) => Array.from(segment))
 						: []
 				tryMatchCommand(results, triggerCommandRef.current)
-				stopRecognition()
 			}
 			propsRef.current.onResult?.(bestAlternative, event)
+			if (!continuousRef.current) stopRecognition()
 		},
 		[stopTimer, stopRecognition]
 	)

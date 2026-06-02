@@ -381,6 +381,56 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('fires onResult before onEnd in single-shot mode', async () => {
+		const calls: string[] = []
+		const onResult = vi.fn(() => {
+			calls.push('result')
+		})
+		const onEnd = vi.fn(() => {
+			calls.push('end')
+		})
+		const recognition = createMockVocal()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, onEnd }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+		})
+
+		await act(async () => {
+			recognition.say('Foo')
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+
+		expect(calls).toEqual(['result', 'end'])
+	})
+
+	it('fires onResult before onEnd in continuous mode', async () => {
+		const calls: string[] = []
+		const onResult = vi.fn(() => {
+			calls.push('result')
+		})
+		const onEnd = vi.fn(() => {
+			calls.push('end')
+		})
+		const recognition = createMockVocal({ continuous: true })
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, onEnd, continuous: true }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+		})
+
+		await act(async () => {
+			recognition.say('Hello')
+		})
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+
+		expect(calls).toEqual(['result', 'end'])
+	})
+
 	it('calls the updated onEnd prop after a re-render during an active session', async () => {
 		const onEndV1 = vi.fn()
 		const onEndV2 = vi.fn()
