@@ -16,7 +16,10 @@ const PermissionsMock = vi.fn(function () {
 })
 const MediaDevicesMock = vi.fn(function () {
 	return {
-		getUserMedia: vi.fn().mockResolvedValue('foo'),
+		getUserMedia: vi.fn().mockResolvedValue({
+			getTracks: () => [],
+			getAudioTracks: () => [],
+		}),
 	}
 })
 
