@@ -33,7 +33,7 @@ timeout elapses.
 Some browsers support the `SpeechRecognition` API but not all the related APIs.  
 For example, on iOS 14.5, browsers do not support the `SpeechGrammar`, `SpeechGrammarList`, and `Permissions` APIs.
 
-Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlaying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
+Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
 
 ## Installation
 
