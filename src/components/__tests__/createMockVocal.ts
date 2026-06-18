@@ -30,6 +30,7 @@ const pickBest = (alternatives: Segment): string => {
 
 export interface MockVocalOptions {
 	continuous?: boolean
+	initialPermission?: PermissionState
 }
 
 export type MockVocalInput = string | Segment[] | null | undefined
@@ -51,8 +52,12 @@ export interface MockVocalInstance extends Omit<VocalInstance, 'start' | 'stop' 
 	say: (input: MockVocalInput) => void
 	error: (err: unknown) => void
 	end: () => void
+	permission: (state: PermissionState) => void
 	handlerCount: () => number
 }
+
+const buildPermissionEvent = (state: PermissionState): Event & { state: PermissionState } =>
+	Object.assign(new Event('permission'), { state })
 
 // Mock VocalInstance for component tests — implements the contract of
 // `createVocal()` from @untemps/vocal 2.x and exposes test helpers
@@ -74,6 +79,7 @@ export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstan
 	let isRecording = false
 	const accumulated: Segment[] = []
 	const continuous = !!options.continuous
+	const { initialPermission } = options
 
 	const fire = (type: string, ...args: unknown[]) => {
 		const cbs = handlers[type]
@@ -112,6 +118,9 @@ export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstan
 		on: vi.fn((type: string, cb: (...args: unknown[]) => void) => {
 			if (!handlers[type]) handlers[type] = []
 			handlers[type].push(cb)
+			if (type === 'permission' && initialPermission !== undefined) {
+				cb(buildPermissionEvent(initialPermission), initialPermission)
+			}
 		}),
 		off: vi.fn((type: string, cb?: (...args: unknown[]) => void) => {
 			if (!handlers[type]) return
@@ -151,6 +160,9 @@ export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstan
 		},
 		end() {
 			fire('end', new Event('end'))
+		},
+		permission(state: PermissionState) {
+			fire('permission', buildPermissionEvent(state), state)
 		},
 		handlerCount() {
 			return Object.values(handlers).reduce((sum, arr) => sum + arr.length, 0)

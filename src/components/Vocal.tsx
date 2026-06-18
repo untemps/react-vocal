@@ -2,6 +2,7 @@ import {
 	cloneElement,
 	isValidElement,
 	useCallback,
+	useEffect,
 	useMemo,
 	useRef,
 	type CSSProperties,
@@ -75,7 +76,14 @@ export const classifyError = (err: unknown): VocalError => {
 }
 
 export interface VocalProps {
-	children?: ReactNode | ((start: () => void, stop: () => void, isStarted: boolean) => ReactElement | null)
+	children?:
+		| ReactNode
+		| ((
+				start: () => void,
+				stop: () => void,
+				isStarted: boolean,
+				permissionState: PermissionState | null
+		  ) => ReactElement | null)
 	commands?: CommandsMap | null
 	lang?: string
 	grammars?: SpeechGrammarList | null
@@ -95,6 +103,7 @@ export interface VocalProps {
 	onResult?: OnResultCallback | null
 	onError?: OnErrorCallback | null
 	onNoMatch?: ((event: Event) => void) | null
+	onPermission?: ((state: PermissionState) => void) | null
 	signal?: AbortSignal | null
 }
 
@@ -131,12 +140,13 @@ export const Vocal = ({
 	onResult = null,
 	onError = null,
 	onNoMatch = null,
+	onPermission = null,
 	signal = null,
 }: VocalProps) => {
 	const buttonRef = useRef<HTMLButtonElement | null>(null)
 	const isSupported = useMemo(() => isSupportedFn(), [])
 
-	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening }] = useVocal(
+	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening, permissionState }] = useVocal(
 		lang,
 		grammars,
 		maxAlternatives,
@@ -152,6 +162,7 @@ export const Vocal = ({
 		onResult: VocalProps['onResult']
 		onError: VocalProps['onError']
 		onNoMatch: VocalProps['onNoMatch']
+		onPermission: VocalProps['onPermission']
 	}>({
 		onStart: null,
 		onEnd: null,
@@ -160,8 +171,13 @@ export const Vocal = ({
 		onResult: null,
 		onError: null,
 		onNoMatch: null,
+		onPermission: null,
 	})
-	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch }
+	propsRef.current = { onStart, onEnd, onSpeechStart, onSpeechEnd, onResult, onError, onNoMatch, onPermission }
+
+	useEffect(() => {
+		if (permissionState !== null) propsRef.current.onPermission?.(permissionState)
+	}, [permissionState])
 
 	const fireError = useCallback((err: unknown) => {
 		propsRef.current.onError?.(classifyError(err))
@@ -353,11 +369,14 @@ export const Vocal = ({
 	const _renderChildren = () => {
 		if (isSupported) {
 			if (isFunction(children)) {
-				return (children as (start: () => void, stop: () => void, isStarted: boolean) => ReactElement | null)(
-					startRecognition,
-					stopRecognition,
-					isListening
-				)
+				return (
+					children as (
+						start: () => void,
+						stop: () => void,
+						isStarted: boolean,
+						permissionState: PermissionState | null
+					) => ReactElement | null
+				)(startRecognition, stopRecognition, isListening, permissionState)
 			} else if (isValidElement(children)) {
 				const typed = children as ReactElement<{
 					onClick?: (e: ReactMouseEvent) => void

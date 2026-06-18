@@ -7,6 +7,7 @@ const PermissionStatusMock = vi.fn(function () {
 	return {
 		state: 'granted',
 		addEventListener: vi.fn(),
+		removeEventListener: vi.fn(),
 	}
 })
 const PermissionsMock = vi.fn(function () {
