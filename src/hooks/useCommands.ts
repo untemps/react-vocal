@@ -11,10 +11,7 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 	const normalized = useMemo<CommandsMap>(
 		() =>
 			commands
-				? Object.entries(commands).reduce<CommandsMap>(
-						(acc, [key, value]) => ({ ...acc, [key.toLowerCase()]: value }),
-						{}
-					)
+				? Object.fromEntries(Object.entries(commands).map(([key, value]) => [key.toLowerCase(), value]))
 				: {},
 		[commands]
 	)
