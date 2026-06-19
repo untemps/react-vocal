@@ -627,7 +627,3 @@ Contributions are warmly welcomed:
 -   Commit your changes
     using [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
 -   Submit a Pull Request
-
-## Roadmap
-
--   Add a connector management to plug external speech-to-text services in
