@@ -1,3 +1,10 @@
+# [2.0.0-beta.39](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.38...v2.0.0-beta.39) (2026-06-19)
+
+
+### Performance Improvements
+
+* Replace O(n²) spread reducer with Object.fromEntries in useCommands ([#235](https://github.com/untemps/react-vocal/issues/235)) ([a7eeaee](https://github.com/untemps/react-vocal/commit/a7eeaeeacbfe6e3efda962b8da816c1857d9c64b))
+
 # [2.0.0-beta.38](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.37...v2.0.0-beta.38) (2026-06-19)
 
 
