@@ -409,8 +409,29 @@ describe('useVocal', () => {
 			expect(mockOff).toHaveBeenCalledWith('start', expect.any(Function))
 			expect(mockOff).toHaveBeenCalledWith('end', expect.any(Function))
 			expect(mockOff).toHaveBeenCalledWith('error', expect.any(Function))
+			expect(mockOff).toHaveBeenCalledWith('permission', expect.any(Function))
 			expect(mockAbort).toHaveBeenCalledTimes(1)
 			expect(mockCleanup).toHaveBeenCalledTimes(1)
+		})
+
+		it('subscribes to the permission event on mount', () => {
+			renderHook(() => useVocal())
+			expect(mockOn).toHaveBeenCalledWith('permission', expect.any(Function))
+		})
+
+		it('exposes permissionState as null initially', () => {
+			const { result } = renderHook(() => useVocal())
+			expect(result.current[1].permissionState).toBeNull()
+		})
+
+		it('updates permissionState when the permission event fires', async () => {
+			const { result } = renderHook(() => useVocal())
+			const permissionCallback = mockOn.mock.calls.find(([type]) => type === 'permission')![1] as (
+				event: Event,
+				state: PermissionState
+			) => void
+			await act(async () => permissionCallback(new Event('permission'), 'denied'))
+			expect(result.current[1].permissionState).toBe('denied')
 		})
 
 		it('tears down and recreates the instance when lang changes', () => {
@@ -426,7 +447,7 @@ describe('useVocal', () => {
 
 			expect(createVocal).toHaveBeenCalledTimes(2)
 			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ lang: 'fr-FR' }))
-			expect(mockOff.mock.calls.length).toBe(offCallsBefore + 3)
+			expect(mockOff.mock.calls.length).toBe(offCallsBefore + 4)
 			expect(mockAbort).toHaveBeenCalledTimes(1)
 			expect(mockCleanup).toHaveBeenCalledTimes(1)
 		})

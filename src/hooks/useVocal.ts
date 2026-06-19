@@ -22,6 +22,7 @@ export interface UseVocalActions {
 	}
 	clean: () => void
 	isRecording: boolean
+	permissionState: PermissionState | null
 }
 
 export type UseVocalReturn = [RefObject<VocalInstance | null>, UseVocalActions]
@@ -34,6 +35,7 @@ export const useVocal = (
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
 	const [isRecording, setIsRecording] = useState(false)
+	const [permissionState, setPermissionState] = useState<PermissionState | null>(null)
 	const supported = useMemo(() => isSupported(), [])
 
 	useEffect(() => {
@@ -47,13 +49,18 @@ export const useVocal = (
 			instance.on('end', handleStop)
 			instance.on('error', handleStop)
 
+			const handlePermission: EventHandlerFor<'permission'> = (_event, state) => setPermissionState(state)
+			instance.on('permission', handlePermission)
+
 			return () => {
 				instance.off('start', handleStart)
 				instance.off('end', handleStop)
 				instance.off('error', handleStop)
+				instance.off('permission', handlePermission)
 				instance.abort()
 				instance.cleanup()
 				setIsRecording(false)
+				setPermissionState(null)
 			}
 		}
 	}, [lang, grammars, maxAlternatives, continuous, supported])
@@ -123,5 +130,5 @@ export const useVocal = (
 		}
 	}, [])
 
-	return [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
+	return [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, permissionState }]
 }
