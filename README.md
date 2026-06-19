@@ -579,7 +579,7 @@ vi.mock('@untemps/vocal', async (importOriginal) => {
 const buildMockVocal = () => {
 	const handlers: Record<string, ((...args: unknown[]) => void)[]> = {}
 	return {
-		start: vi.fn(),
+		start: vi.fn(async () => {}),
 		stop: vi.fn(),
 		abort: vi.fn(),
 		cleanup: vi.fn(),
