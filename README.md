@@ -296,37 +296,41 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 #### Basic usage
 
 ```javascript
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useVocal } from '@untemps/react-vocal'
 import Icon from './Icon'
 
 const App = () => {
-	const [isListening, setIsListening] = useState(false)
 	const [result, setResult] = useState('')
 
-	const [, { start, subscribe }] = useVocal('fr-FR')
+	const [, { start, subscribe, unsubscribe, isRecording }] = useVocal('fr-FR')
 
-	const _onButtonClick = () => {
-		setIsListening(true)
+	useEffect(() => {
+		const _onVocalStart = () => {
+			setResult('')
+		}
+
+		const _onVocalResult = (_event, bestAlternative) => {
+			setResult(bestAlternative)
+		}
+
+		const _onVocalError = (e) => {
+			console.error(e)
+		}
 
 		subscribe('speechstart', _onVocalStart)
 		subscribe('result', _onVocalResult)
 		subscribe('error', _onVocalError)
+
+		return () => {
+			unsubscribe('speechstart', _onVocalStart)
+			unsubscribe('result', _onVocalResult)
+			unsubscribe('error', _onVocalError)
+		}
+	}, [subscribe, unsubscribe])
+
+	const _onButtonClick = () => {
 		start()
-	}
-
-	const _onVocalStart = () => {
-		setResult('')
-	}
-
-	const _onVocalResult = (_event, bestAlternative) => {
-		setIsListening(false)
-
-		setResult(bestAlternative)
-	}
-
-	const _onVocalError = (e) => {
-		console.error(e)
 	}
 
 	return (
@@ -339,7 +343,7 @@ const App = () => {
 					style={{ width: 16, position: 'absolute', right: 10, top: 2 }}
 					onClick={_onButtonClick}
 				>
-					<Icon color={isListening ? 'red' : 'blue'} />
+					<Icon color={isRecording ? 'red' : 'blue'} />
 				</div>
 				<input defaultValue={result} style={{ width: 300, height: 40 }} />
 			</span>
