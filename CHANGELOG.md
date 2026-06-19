@@ -1,3 +1,10 @@
+# [2.0.0-beta.38](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.37...v2.0.0-beta.38) (2026-06-19)
+
+
+### Features
+
+* Update @untemps/vocal to 2.2.0 and expose microphone permission state ([#234](https://github.com/untemps/react-vocal/issues/234)) ([1659550](https://github.com/untemps/react-vocal/commit/165955068862ce101e76536e75ff85a97993979a))
+
 # [2.0.0-beta.37](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.36...v2.0.0-beta.37) (2026-06-02)
 
 
