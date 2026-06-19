@@ -85,6 +85,16 @@ describe('useCommands', () => {
 		})
 	})
 
+	it('normalizes command keys to lowercase so mixed-case keys match lowercase input', () => {
+		const commands = {
+			Foo: () => 'bar',
+		}
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommands(commands))
+		expect(triggerCommand('foo')).toBe('bar')
+	})
+
 	it('returns null as no command is mapped to the input', () => {
 		const commands = {
 			foo: () => 'bar',
