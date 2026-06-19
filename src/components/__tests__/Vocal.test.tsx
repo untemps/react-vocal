@@ -232,6 +232,35 @@ describe('Vocal', () => {
 		})
 	})
 
+	describe('Microphone permission', () => {
+		it('fires onPermission with the current state on mount, without starting recognition', async () => {
+			const onPermission = vi.fn()
+			const recognition = createMockVocal({ initialPermission: 'granted' })
+			render(getInstance({ __rsInstance: recognition, onPermission }))
+			await waitFor(() => expect(onPermission).toHaveBeenCalledWith('granted'))
+			expect(recognition.start).not.toHaveBeenCalled()
+		})
+
+		it('fires onPermission again when the permission state changes', async () => {
+			const onPermission = vi.fn()
+			const recognition = createMockVocal({ initialPermission: 'prompt' })
+			render(getInstance({ __rsInstance: recognition, onPermission }))
+			await waitFor(() => expect(onPermission).toHaveBeenCalledWith('prompt'))
+			await act(async () => recognition.permission('denied'))
+			expect(onPermission).toHaveBeenLastCalledWith('denied')
+		})
+
+		it('passes the permission state as the fourth argument of the children function', async () => {
+			const recognition = createMockVocal({ initialPermission: 'denied' })
+			const { queryByText } = render(
+				getInstance({ __rsInstance: recognition }, (_start, _stop, _isStarted, permissionState) => (
+					<div>{permissionState ?? 'unknown'}</div>
+				))
+			)
+			await waitFor(() => expect(queryByText('denied')).toBeInTheDocument())
+		})
+	})
+
 	it.each<[label: string, continuous: boolean, clickToListen: boolean]>([
 		['idle', false, false],
 		['listening in non-continuous mode', false, true],

@@ -14,6 +14,7 @@ const App = () => {
 	const [logs, setLogs] = useState('')
 	const [borderColor, setBorderColor] = useState()
 	const [continuous, setContinuous] = useState(false)
+	const [permission, setPermission] = useState(null)
 
 	const _log = (value) => setLogs((prev) => `${prev}${prev.length > 0 ? '\n' : ''} ----- ${value}`)
 
@@ -42,8 +43,15 @@ const App = () => {
 				onEnd={() => _log('end')}
 				onResult={(result) => _log(`transcript: "${result}"`)}
 				onError={(e) => _log(`error: ${e.message}`)}
+				onPermission={(state) => {
+					setPermission(state)
+					_log(`permission: ${state}`)
+				}}
 				maxAlternatives={3}
 			/>
+			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
+				Permission micro : <code>{permission ?? 'inconnue'}</code>
+			</p>
             <p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />

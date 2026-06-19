@@ -89,7 +89,7 @@
 		}
 	},
 	"dependencies": {
-		"@untemps/vocal": "^2.0.1"
+		"@untemps/vocal": "^2.2.0"
 	},
 	"release": {
 		"branches": [

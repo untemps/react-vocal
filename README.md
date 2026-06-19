@@ -211,11 +211,12 @@ const App = () => {
 
 The following parameters are passed to the function:
 
-| Arguments | Type | Description                                                     |
-| --------- | ---- | --------------------------------------------------------------- |
-| start     | func | The function used to start the recognition                      |
-| stop      | func | The function used to stop the recognition                       |
-| isStarted | bool | A flag that indicates whether the recognition is started or not |
+| Arguments       | Type                       | Description                                                                                                   |
+| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| start           | func                       | The function used to start the recognition                                                                    |
+| stop            | func                       | The function used to stop the recognition                                                                     |
+| isStarted       | bool                       | A flag that indicates whether the recognition is started or not                                               |
+| permissionState | `PermissionState \| null` | Current microphone permission (`'granted'`/`'denied'`/`'prompt'`), tracked without starting a session. `null` until known or when the Permissions API is unavailable. See [Microphone permission](#microphone-permission). |
 
 ---
 
@@ -285,6 +286,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | onResult      | func              | null                 | Handler called when a result is recognized                                                      |
 | onError       | func              | null                 | Handler called when an error occurs                                                             |
 | onNoMatch     | func              | null                 | Handler called when no result can be recognized                                                 |
+| onPermission  | func              | null                 | Handler called with the microphone `PermissionState` (`'granted'`/`'denied'`/`'prompt'`). Fires with the current state on mount — no `start()` needed — and again on every change. See [Microphone permission](#microphone-permission). |
 | signal        | AbortSignal       | null                 | Optional `AbortSignal` propagated to the underlying `start()` call. Aborting it cancels the in-flight start (e.g. while waiting for microphone permission). |
 
 > :warning: **Memoize non-primitive props.** A non-memoized `grammars` (constructed inline, e.g. `<Vocal grammars={new SpeechGrammarList()} />`) gets a new identity on every render and tears down and rebuilds the recognition instance each time — aborting in-flight sessions and churning microphone permissions. A non-memoized `commands` object similarly forces `useCommands` to re-normalize and re-index its fuzzy matcher on every render. Wrap such props in `useMemo` so their reference stays stable.
@@ -368,19 +370,20 @@ useVocal(lang, grammars, maxAlternatives, continuous)
 #### Return value
 
 ```
-const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording }]
+const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, permissionState }]
 ```
 
-| Args        | Type | Description                                          |
-| ----------- | ---- | ---------------------------------------------------- |
-| ref         | Ref  | React ref to the underlying `@untemps/vocal` instance |
-| start       | func | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. Returns a `Promise<void>` that resolves once the session starts and rejects with the original error on microphone/permission failures. |
-| stop        | func | Function to stop the recognition                     |
-| abort       | func | Function to abort the recognition                    |
-| subscribe   | func | Function to subscribe to recognition events          |
-| unsubscribe | func | Function to unsubscribe to recognition events        |
-| clean       | func | Function to remove all event listeners and clean up the recognition instance |
-| isRecording | bool | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
+| Args            | Type                       | Description                                          |
+| --------------- | -------------------------- | ---------------------------------------------------- |
+| ref             | Ref                        | React ref to the underlying `@untemps/vocal` instance |
+| start           | func                       | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. Returns a `Promise<void>` that resolves once the session starts and rejects with the original error on microphone/permission failures. |
+| stop            | func                       | Function to stop the recognition                     |
+| abort           | func                       | Function to abort the recognition                    |
+| subscribe       | func                       | Function to subscribe to recognition events          |
+| unsubscribe     | func                       | Function to unsubscribe to recognition events        |
+| clean           | func                       | Function to remove all event listeners and clean up the recognition instance |
+| isRecording     | bool                       | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
+| permissionState | `PermissionState \| null` | Reactive microphone permission state. See [Microphone permission](#microphone-permission). |
 
 #### Cancelling a start in flight
 
@@ -396,7 +399,7 @@ const [, { start }] = useVocal('en-US')
 start({ signal: controller.signal })
 ```
 
-**Behavior note** — the underlying `@untemps/vocal` library currently swallows the `AbortError` internally: the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129)). `react-vocal` compensates by tracking whether the `start` event actually fired during the call and rolling `isRecording` back to `false` whenever it did not — regardless of whether a signal was provided — so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must observe the `start` event yourself to know when recognition truly began.
+**Behavior note** — the underlying `@untemps/vocal` library still swallows the `AbortError` internally (as of 2.2.0): the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129), where the reject-on-abort fix is targeted for the next major, 3.0.0). `react-vocal` compensates by tracking whether the `start` event actually fired during the call and rolling `isRecording` back to `false` whenever it did not — regardless of whether a signal was provided — so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must observe the `start` event yourself to know when recognition truly began.
 
 ### `useCommands` hook
 
@@ -472,12 +475,41 @@ const App = () => {
 | end         | Fired when the recognition service has disconnected                                       |
 | error       | Fired when a recognition error occurs                                                     |
 | nomatch     | Fired when the recognition service returns a final result with no significant recognition |
+| permission  | Fired with the current microphone `PermissionState` when first observed and on every change. The handler receives `(event, state)` where `state` is `'granted'`/`'denied'`/`'prompt'`. See [Microphone permission](#microphone-permission). |
 | result      | Fired when the recognition service returns a result                                       |
 | soundend    | Fired when any sound — recognisable or not — has stopped being detected                   |
 | soundstart  | Fired when any sound — recognisable or not — has been detected                            |
 | speechend   | Fired when speech recognized by the recognition service has stopped being detected        |
 | speechstart | Fired when sound recognized by the recognition service as speech has been detected        |
 | start       | fired when the recognition service has begun listening to incoming audio                  |
+
+### Microphone permission
+
+Since `@untemps/vocal` 2.2, `react-vocal` surfaces the microphone permission state **without starting a recognition session** (no `getUserMedia` prompt). `useVocal` begins watching `navigator.permissions` at mount and exposes the result reactively as `permissionState` — and the `Vocal` component forwards it through the `onPermission` prop and the fourth argument of the children function. The value is `'granted'`, `'denied'`, `'prompt'`, or `null` while still unknown (or when the Permissions API is unavailable, e.g. some browsers or SSR).
+
+Use it to gate the UI before the user ever clicks — for example, to hide the button or show guidance when access is already denied:
+
+```javascript
+import { Vocal } from '@untemps/react-vocal'
+
+const App = () => (
+	<Vocal onPermission={(state) => console.log('microphone permission:', state)}>
+		{(start, stop, isStarted, permissionState) =>
+			permissionState === 'denied' ? (
+				<p>Microphone access is blocked — enable it in your browser settings.</p>
+			) : (
+				<button onClick={isStarted ? stop : start}>{isStarted ? 'Stop' : 'Start'}</button>
+			)
+		}
+	</Vocal>
+)
+```
+
+With the `useVocal` hook the same state is available directly:
+
+```javascript
+const [, { start, permissionState }] = useVocal('en-US')
+```
 
 ### Notes
 
