@@ -166,7 +166,9 @@ To cancel the toggle (e.g. require a confirmation, block while the user is unaut
 
 For accessibility parity with the default button, `aria-pressed` is also injected on the cloned child to reflect
 the listening state, and `aria-label` falls back to the `ariaLabel` prop of `<Vocal>` when the child does not
-declare one of its own.
+declare one of its own. `aria-busy` is injected as well: it switches to `"true"` for the pending window between
+the click and the `start` event — while the browser resolves the microphone permission — so assistive tech
+announces that the click was registered before recognition actually begins.
 
 -   With a function that returns a React element:
 
@@ -374,7 +376,7 @@ useVocal(lang, grammars, maxAlternatives, continuous)
 #### Return value
 
 ```
-const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, permissionState }]
+const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, isStarting, permissionState }]
 ```
 
 | Args            | Type                       | Description                                          |
@@ -387,6 +389,7 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, pe
 | unsubscribe     | func                       | Function to unsubscribe to recognition events        |
 | clean           | func                       | Function to remove all event listeners and clean up the recognition instance |
 | isRecording     | bool                       | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
+| isStarting      | bool                       | Reactive flag for the pending window between `start()` and the real `start` event — while the browser resolves the microphone permission (`getUserMedia`). `true` from the click until `start` fires, then `false`; also cleared if the start is aborted or rejected. Use it to surface a busy/spinner state distinct from the active `isRecording` listening state. |
 | permissionState | `PermissionState \| null` | Reactive microphone permission state. See [Microphone permission](#microphone-permission). |
 
 #### Cancelling a start in flight
