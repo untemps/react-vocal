@@ -440,6 +440,32 @@ describe('useVocal', () => {
 			expect(result.current[1].isStarting).toBe(false)
 		})
 
+		it('clears isStarting on the end event', async () => {
+			// Keep start() pending so the optimistic flag stays true while we fire 'end'.
+			mockStart.mockReturnValue(new Promise<void>(() => {}))
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				result.current[1].start()
+			})
+			expect(result.current[1].isStarting).toBe(true)
+			const endCallback = mockOn.mock.calls.find(([type]) => type === 'end')![1]
+			await act(async () => endCallback(new Event('end')))
+			expect(result.current[1].isStarting).toBe(false)
+		})
+
+		it('clears isStarting on the error event', async () => {
+			// Keep start() pending so the optimistic flag stays true while we fire 'error'.
+			mockStart.mockReturnValue(new Promise<void>(() => {}))
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				result.current[1].start()
+			})
+			expect(result.current[1].isStarting).toBe(true)
+			const errorCallback = mockOn.mock.calls.find(([type]) => type === 'error')![1]
+			await act(async () => errorCallback(new Event('error')))
+			expect(result.current[1].isStarting).toBe(false)
+		})
+
 		it('optimistically flips isRecording to true when start() is called', async () => {
 			// Simulate vocal's real contract: 'start' fires before start() resolves.
 			mockStart.mockImplementation(async () => {

@@ -338,12 +338,18 @@ export const Vocal = ({
 		}
 	}, [className, outlineStyle])
 
+	// aria-pressed reflects the *real* listening state. During the optimistic
+	// start window (isStarting) the button is busy resolving the microphone
+	// permission and is not pressed yet, so we hold it false until 'start' fires
+	// — otherwise it would announce as pressed before recognition has begun.
+	const isPressed = isListening && !isStarting
+
 	const _renderDefault = () => (
 		<button
 			data-testid="__vocal-root__"
 			ref={buttonRef}
 			aria-label={ariaLabel}
-			aria-pressed={isListening}
+			aria-pressed={isPressed}
 			aria-busy={isStarting}
 			style={
 				className
@@ -393,7 +399,7 @@ export const Vocal = ({
 						if (e.defaultPrevented) return
 						;(isListening ? stopRecognition : startRecognition)()
 					},
-					'aria-pressed': isListening,
+					'aria-pressed': isPressed,
 					'aria-busy': isStarting,
 					'aria-label': childAriaLabel ?? ariaLabel,
 				})

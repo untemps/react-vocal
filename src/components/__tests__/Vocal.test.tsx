@@ -166,6 +166,8 @@ describe('Vocal', () => {
 			fireEvent.click(getByTestId('__vocal-custom-root__'))
 		})
 		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-busy', 'true')
+		// pressed is gated on the real listening state, not the optimistic start window
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'false')
 
 		await act(async () => {
 			recognition.fire('start', new Event('start'))
@@ -295,9 +297,14 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ cursor: 'pointer' })
 	})
 
-	it('sets aria-pressed when listening', () => {
-		const { getByTestId } = render(getInstance())
-		fireEvent.click(getByTestId('__vocal-root__'))
+	it('sets aria-pressed when listening', async () => {
+		// aria-pressed is gated on the real 'start' event, not the optimistic click,
+		// so drive a mock that actually fires 'start' to reach the listening state.
+		const recognition = createMockVocal()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition }))
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+		})
 		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
 	})
 
@@ -315,6 +322,8 @@ describe('Vocal', () => {
 			fireEvent.click(getByTestId('__vocal-root__'))
 		})
 		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-busy', 'true')
+		// pressed is gated on the real listening state, not the optimistic start window
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
 
 		await act(async () => {
 			recognition.fire('start', new Event('start'))

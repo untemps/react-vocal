@@ -168,7 +168,9 @@ For accessibility parity with the default button, `aria-pressed` is also injecte
 the listening state, and `aria-label` falls back to the `ariaLabel` prop of `<Vocal>` when the child does not
 declare one of its own. `aria-busy` is injected as well: it switches to `"true"` for the pending window between
 the click and the `start` event — while the browser resolves the microphone permission — so assistive tech
-announces that the click was registered before recognition actually begins.
+announces that the click was registered before recognition actually begins. During that pending window
+`aria-pressed` stays `"false"` and only flips to `"true"` once the `start` event fires, so the pressed state
+reflects real listening rather than the optimistic pending state.
 
 -   With a function that returns a React element:
 
