@@ -146,7 +146,7 @@ export const Vocal = ({
 	const buttonRef = useRef<HTMLButtonElement | null>(null)
 	const isSupported = useMemo(() => isSupportedFn(), [])
 
-	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening, permissionState }] = useVocal(
+	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening, isStarting, permissionState }] = useVocal(
 		lang,
 		grammars,
 		maxAlternatives,
@@ -344,6 +344,7 @@ export const Vocal = ({
 			ref={buttonRef}
 			aria-label={ariaLabel}
 			aria-pressed={isListening}
+			aria-busy={isStarting}
 			style={
 				className
 					? undefined
@@ -381,6 +382,7 @@ export const Vocal = ({
 				const typed = children as ReactElement<{
 					onClick?: (e: ReactMouseEvent) => void
 					'aria-pressed'?: boolean
+					'aria-busy'?: boolean
 					'aria-label'?: string
 				}>
 				const childOnClick = typed.props.onClick
@@ -392,6 +394,7 @@ export const Vocal = ({
 						;(isListening ? stopRecognition : startRecognition)()
 					},
 					'aria-pressed': isListening,
+					'aria-busy': isStarting,
 					'aria-label': childAriaLabel ?? ariaLabel,
 				})
 			} else {

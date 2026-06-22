@@ -150,6 +150,30 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'false')
 	})
 
+	it('propagates aria-busy=false on the cloned child while idle', () => {
+		const { getByTestId } = render(getInstance(null, <button data-testid="__vocal-custom-root__" />))
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-busy', 'false')
+	})
+
+	it('sets aria-busy on the cloned child while the start is pending, then clears it once recognition starts', async () => {
+		const recognition = createMockVocal()
+		recognition.start.mockImplementation(() => new Promise<void>(() => {}))
+		const { getByTestId } = render(
+			getInstance({ __rsInstance: recognition }, <button data-testid="__vocal-custom-root__" />)
+		)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-custom-root__'))
+		})
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-busy', 'true')
+
+		await act(async () => {
+			recognition.fire('start', new Event('start'))
+		})
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-busy', 'false')
+		expect(getByTestId('__vocal-custom-root__')).toHaveAttribute('aria-pressed', 'true')
+	})
+
 	it('falls back to the ariaLabel prop on the cloned child when the child has no aria-label', () => {
 		const { getByTestId } = render(
 			getInstance({ ariaLabel: 'start mic' }, <button data-testid="__vocal-custom-root__" />)
@@ -274,6 +298,28 @@ describe('Vocal', () => {
 	it('sets aria-pressed when listening', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.click(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
+	})
+
+	it('renders aria-busy=false on the default button while idle', () => {
+		const { getByTestId } = render(getInstance())
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-busy', 'false')
+	})
+
+	it('sets aria-busy on the default button while the start is pending, then clears it once recognition starts', async () => {
+		const recognition = createMockVocal()
+		recognition.start.mockImplementation(() => new Promise<void>(() => {}))
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+		})
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-busy', 'true')
+
+		await act(async () => {
+			recognition.fire('start', new Event('start'))
+		})
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-busy', 'false')
 		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
 	})
 

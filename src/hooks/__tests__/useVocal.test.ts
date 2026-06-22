@@ -390,6 +390,56 @@ describe('useVocal', () => {
 			expect(result.current[1].isRecording).toBe(false)
 		})
 
+		it('exposes isStarting as false initially', () => {
+			const { result } = renderHook(() => useVocal())
+			expect(result.current[1].isStarting).toBe(false)
+		})
+
+		it('optimistically flips isStarting to true on start(), then clears it once the start event fires', async () => {
+			let resolveStart: (() => void) | undefined
+			mockStart.mockReturnValue(
+				new Promise<void>((res) => {
+					resolveStart = res
+				})
+			)
+			const { result } = renderHook(() => useVocal())
+			let startPromise: Promise<void> | undefined
+			await act(async () => {
+				startPromise = result.current[1].start()
+			})
+			expect(result.current[1].isStarting).toBe(true)
+			expect(result.current[1].isRecording).toBe(true)
+
+			await act(async () => {
+				mockOn.mock.calls
+					.filter(([type]) => type === 'start')
+					.forEach(([, handler]) => (handler as () => void)())
+				resolveStart?.()
+				await startPromise
+			})
+			expect(result.current[1].isStarting).toBe(false)
+			expect(result.current[1].isRecording).toBe(true)
+		})
+
+		it('clears isStarting when start() silently resolves without firing start', async () => {
+			mockStart.mockReturnValue(Promise.resolve())
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start()
+			})
+			expect(result.current[1].isStarting).toBe(false)
+			expect(result.current[1].isRecording).toBe(false)
+		})
+
+		it('clears isStarting when start() rejects', async () => {
+			mockStart.mockReturnValue(Promise.reject(new Error('mic denied')))
+			const { result } = renderHook(() => useVocal())
+			await act(async () => {
+				await result.current[1].start()?.catch(() => {})
+			})
+			expect(result.current[1].isStarting).toBe(false)
+		})
+
 		it('optimistically flips isRecording to true when start() is called', async () => {
 			// Simulate vocal's real contract: 'start' fires before start() resolves.
 			mockStart.mockImplementation(async () => {

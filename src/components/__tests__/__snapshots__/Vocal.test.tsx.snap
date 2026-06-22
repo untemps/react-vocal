@@ -3,6 +3,7 @@
 exports[`Vocal > matches snapshot 1`] = `
 <DocumentFragment>
   <button
+    aria-busy="false"
     aria-label="start recognition"
     aria-pressed="false"
     data-testid="__vocal-root__"

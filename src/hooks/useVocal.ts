@@ -22,6 +22,7 @@ export interface UseVocalActions {
 	}
 	clean: () => void
 	isRecording: boolean
+	isStarting: boolean
 	permissionState: PermissionState | null
 }
 
@@ -35,6 +36,7 @@ export const useVocal = (
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
 	const [isRecording, setIsRecording] = useState(false)
+	const [isStarting, setIsStarting] = useState(false)
 	const [permissionState, setPermissionState] = useState<PermissionState | null>(null)
 	const supported = useMemo(() => isSupported(), [])
 
@@ -43,8 +45,14 @@ export const useVocal = (
 			const instance = createVocal({ lang, grammars, maxAlternatives, continuous })
 			ref.current = instance
 
-			const handleStart = () => setIsRecording(true)
-			const handleStop = () => setIsRecording(false)
+			const handleStart = () => {
+				setIsRecording(true)
+				setIsStarting(false)
+			}
+			const handleStop = () => {
+				setIsRecording(false)
+				setIsStarting(false)
+			}
 			instance.on('start', handleStart)
 			instance.on('end', handleStop)
 			instance.on('error', handleStop)
@@ -60,6 +68,7 @@ export const useVocal = (
 				instance.abort()
 				instance.cleanup()
 				setIsRecording(false)
+				setIsStarting(false)
 				setPermissionState(null)
 			}
 		}
@@ -71,6 +80,7 @@ export const useVocal = (
 		// Optimistic update so the UI reacts immediately at click, before the
 		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
+		setIsStarting(true)
 		// vocal 2.x's start() can either reject (microphone/permission errors) or
 		// silently resolve without dispatching 'start' (AbortError on the signal —
 		// caught and swallowed internally, or any other no-op resolution). In both
@@ -85,9 +95,13 @@ export const useVocal = (
 		instance.on('start', onStart)
 		try {
 			await instance.start(options)
-			if (!startEventFired) setIsRecording(false)
+			if (!startEventFired) {
+				setIsRecording(false)
+				setIsStarting(false)
+			}
 		} catch (err) {
 			setIsRecording(false)
+			setIsStarting(false)
 			throw err
 		} finally {
 			instance.off('start', onStart)
@@ -130,5 +144,5 @@ export const useVocal = (
 		}
 	}, [])
 
-	return [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, permissionState }]
+	return [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, isStarting, permissionState }]
 }
