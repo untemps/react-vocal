@@ -625,5 +625,5 @@ Contributions are warmly welcomed:
 -   Create a feature branch (preferred name convention: `[feature type]_[imperative verb]-[description of the feature]`)
 -   Develop the feature AND write the tests (or write the tests AND develop the feature)
 -   Commit your changes
-    using [Angular Git Commit Guidelines](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
+    using [Conventional Commits](https://www.conventionalcommits.org/)
 -   Submit a Pull Request
