@@ -5,6 +5,7 @@ import {
 	useEffect,
 	useMemo,
 	useRef,
+	useState,
 	type CSSProperties,
 	type MouseEvent as ReactMouseEvent,
 	type ReactElement,
@@ -119,6 +120,8 @@ const tryMatchCommand = (results: Iterable<Iterable<ResultSegmentLike>>, trigger
 	}
 }
 
+export const DEFAULT_OUTLINE_STYLE = '2px solid'
+
 export const Vocal = ({
 	children,
 	commands = null,
@@ -132,7 +135,7 @@ export const Vocal = ({
 	ariaLabel = 'start recognition',
 	style = null,
 	className = null,
-	outlineStyle = '2px solid',
+	outlineStyle = DEFAULT_OUTLINE_STYLE,
 	onStart = null,
 	onEnd = null,
 	onSpeechStart = null,
@@ -143,7 +146,7 @@ export const Vocal = ({
 	onPermission = null,
 	signal = null,
 }: VocalProps) => {
-	const buttonRef = useRef<HTMLButtonElement | null>(null)
+	const [isFocused, setIsFocused] = useState(false)
 	const isSupported = useMemo(() => isSupportedFn(), [])
 
 	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening, permissionState }] = useVocal(
@@ -326,22 +329,9 @@ export const Vocal = ({
 		}
 	}, [HANDLERS, subscribe, unsubscribe, start, stopSilenceTimer, _onError, signal])
 
-	const _onFocus = useCallback(() => {
-		if (!className && outlineStyle && buttonRef.current) {
-			buttonRef.current.style.outline = outlineStyle
-		}
-	}, [className, outlineStyle])
-
-	const _onBlur = useCallback(() => {
-		if (!className && outlineStyle && buttonRef.current) {
-			buttonRef.current.style.outline = 'none'
-		}
-	}, [className, outlineStyle])
-
 	const _renderDefault = () => (
 		<button
 			data-testid="__vocal-root__"
-			ref={buttonRef}
 			aria-label={ariaLabel}
 			aria-pressed={isListening}
 			style={
@@ -355,11 +345,12 @@ export const Vocal = ({
 							padding: 0,
 							cursor: 'pointer',
 							...(style ?? {}),
+							outline: isFocused && outlineStyle ? outlineStyle : 'none',
 						}
 			}
 			className={className ?? undefined}
-			onFocus={_onFocus}
-			onBlur={_onBlur}
+			onFocus={() => setIsFocused(true)}
+			onBlur={() => setIsFocused(false)}
 			onClick={isListening ? stopRecognition : startRecognition}
 		>
 			<Icon isActive={isListening} color="#aaa" />
