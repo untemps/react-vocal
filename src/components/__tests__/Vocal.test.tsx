@@ -3,7 +3,7 @@ import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
 
-import { Vocal, type VocalProps } from '../Vocal'
+import { DEFAULT_OUTLINE_STYLE, Vocal, type VocalProps } from '../Vocal'
 import { createMockVocal } from './createMockVocal'
 
 vi.mock('@untemps/vocal', async (importOriginal) => {
@@ -277,16 +277,28 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
 	})
 
-	it('renders outline when focused', () => {
+	it('renders the default outline when focused', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.focus(getByTestId('__vocal-root__'))
-		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: '2px solid' })
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: DEFAULT_OUTLINE_STYLE })
 	})
 
 	it('remove outline when blurred', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.blur(getByTestId('__vocal-root__'))
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: 'none' })
+	})
+
+	it('renders no outline before any focus', () => {
+		const { getByTestId } = render(getInstance())
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: 'none' })
+	})
+
+	it('applies a custom outlineStyle on focus', () => {
+		const outlineStyle = '3px dashed red'
+		const { getByTestId } = render(getInstance({ outlineStyle }))
+		fireEvent.focus(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: outlineStyle })
 	})
 
 	it('not uses style when className is set', () => {
