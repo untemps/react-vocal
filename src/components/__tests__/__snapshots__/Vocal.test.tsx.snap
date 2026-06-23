@@ -6,7 +6,7 @@ exports[`Vocal > matches snapshot 1`] = `
     aria-label="start recognition"
     aria-pressed="false"
     data-testid="__vocal-root__"
-    style="width: 24px; height: 24px; background-color: transparent; border: medium; padding: 0px; cursor: pointer;"
+    style="width: 24px; height: 24px; background-color: transparent; border: medium; padding: 0px; cursor: pointer; outline: none;"
   >
     <svg
       aria-hidden="true"
