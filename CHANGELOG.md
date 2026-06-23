@@ -1,3 +1,15 @@
+# [2.0.0-beta.40](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.39...v2.0.0-beta.40) (2026-06-23)
+
+
+### Code Refactoring
+
+* Drive default button outline from focus state instead of DOM mutation ([#245](https://github.com/untemps/react-vocal/issues/245)) ([026e310](https://github.com/untemps/react-vocal/commit/026e310887390e38bc6b4ac34be4583fbf326e94))
+
+
+### BREAKING CHANGES
+
+* the default button renders `outline: none` at rest and now overrides any consumer-supplied `style.outline` with its focus outline.
+
 # [2.0.0-beta.39](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.38...v2.0.0-beta.39) (2026-06-19)
 
 
