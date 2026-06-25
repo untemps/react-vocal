@@ -215,7 +215,10 @@ export const Vocal = ({
 
 	const _onStart = useCallback(
 		(e: Event) => {
-			startTimer()
+			// The regular timeout discards a session that yields no speech. In continuous mode it
+			// must not run at all — an always-on session ends only on an explicit stop or
+			// silenceTimeout — otherwise it would kill the session ~timeout ms after start.
+			if (!continuousRef.current) startTimer()
 			propsRef.current.onStart?.(e)
 		},
 		[startTimer]
@@ -232,11 +235,16 @@ export const Vocal = ({
 
 	const _onSpeechEnd = useCallback(
 		(e: Event) => {
-			startTimer()
-			// silenceTimeout fires stop() after N ms of silence following speech in continuous mode.
-			// Anchored on speechend because vocal 2.x intercepts intermediate result events in continuous mode,
-			// so _onResult only runs once on the aggregated end-of-session event.
-			if (continuousRef.current && (silenceTimeoutRef.current ?? 0) > 0) startSilenceTimer()
+			if (continuousRef.current) {
+				// Continuous sessions are governed only by silenceTimeout (or an explicit stop),
+				// never by the regular timeout — re-arming it here would race silenceTimeout and
+				// auto-stop the always-on session. silenceTimeout is anchored on speechend because
+				// vocal 2.x intercepts intermediate result events in continuous mode, so _onResult
+				// only runs once on the aggregated end-of-session event.
+				if ((silenceTimeoutRef.current ?? 0) > 0) startSilenceTimer()
+			} else {
+				startTimer()
+			}
 			propsRef.current.onSpeechEnd?.(e)
 		},
 		[startTimer, startSilenceTimer]
