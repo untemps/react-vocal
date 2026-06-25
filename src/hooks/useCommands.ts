@@ -58,13 +58,18 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			if (!keys.length) return null
 
 			const trimmed = rawInput.trim()
+			const isMultiWord = /\s/.test(trimmed)
 
-			if (singleWordKeys.length && !trimmed.includes(' ')) {
-				const commandKey = trimmed.toLowerCase()
-				if (Object.hasOwn(normalized, commandKey)) {
-					const result = normalized[commandKey]?.(trimmed, commandKey)
-					if (result !== null) return result
-				}
+			// Returns null when `word` is not a registered single-word key, so the caller
+			// falls through to the next tier (a null callback result is also "no match").
+			const matchSingleWord = (word: string) => {
+				const commandKey = word.toLowerCase()
+				return Object.hasOwn(normalized, commandKey) ? normalized[commandKey]?.(word, commandKey) : null
+			}
+
+			if (singleWordKeys.length && !isMultiWord) {
+				const result = matchSingleWord(trimmed)
+				if (result !== null) return result
 			}
 
 			if (phraseKeys.length) {
@@ -72,7 +77,7 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 				if (fuse) {
 					const matches = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
 					if (matches.length) {
-						const commandKey = (matches[0].item as string).toLowerCase()
+						const commandKey = matches[0].item as string
 						const result = normalized[commandKey]?.(rawInput, commandKey)
 						if (result !== null) return result
 					}
@@ -91,13 +96,10 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 				}
 			}
 
-			if (singleWordKeys.length && trimmed.includes(' ')) {
+			if (singleWordKeys.length && isMultiWord) {
 				for (const w of trimmed.split(/\s+/)) {
-					const commandKey = w.toLowerCase()
-					if (Object.hasOwn(normalized, commandKey)) {
-						const result = normalized[commandKey]?.(w, commandKey)
-						if (result !== null) return result
-					}
+					const result = matchSingleWord(w)
+					if (result !== null) return result
 				}
 			}
 

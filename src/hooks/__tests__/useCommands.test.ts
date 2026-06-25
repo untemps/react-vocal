@@ -130,6 +130,18 @@ describe('useCommands', () => {
 		expect(triggerCommand('vert')).toBe('green')
 	})
 
+	it('matches an embedded single-word command when words are separated by non-space whitespace', () => {
+		const red = vi.fn(() => 'red')
+		const commands = { red, blue: () => 'blue' }
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommands(commands))
+		// Recognition may join segments with tabs/newlines, not only spaces; each word is still scanned.
+		expect(triggerCommand('red\tblue')).toBe('red')
+		expect(triggerCommand('please\nred')).toBe('red')
+		expect(red).toHaveBeenCalledWith('red', 'red')
+	})
+
 	describe('Mixed command map', () => {
 		it('fires a single-word command embedded in a phrase even when a phrase key also exists', async () => {
 			const red = vi.fn(() => 'red')
