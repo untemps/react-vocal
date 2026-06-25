@@ -61,7 +61,7 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 
 			if (singleWordKeys.length && !trimmed.includes(' ')) {
 				const commandKey = trimmed.toLowerCase()
-				if (commandKey in normalized) {
+				if (Object.hasOwn(normalized, commandKey)) {
 					const result = normalized[commandKey]?.(trimmed, commandKey)
 					if (result !== null) return result
 				}
@@ -76,11 +76,13 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 						const result = normalized[commandKey]?.(rawInput, commandKey)
 						if (result !== null) return result
 					}
-				} else {
+				} else if (trimmed) {
 					// `k.includes(lInput)` can produce false positives when input is short
 					// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
 					// only runs when fuse.js is absent, so degraded precision is expected.
-					const lInput = rawInput.toLowerCase()
+					// The `trimmed` guard keeps an empty/whitespace-only transcript from matching
+					// every phrase key via `k.includes('')`.
+					const lInput = trimmed.toLowerCase()
 					const commandKey = phraseKeys.find((k) => lInput.includes(k) || k.includes(lInput))
 					if (commandKey) {
 						const result = normalized[commandKey]?.(rawInput, commandKey)
@@ -92,7 +94,7 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			if (singleWordKeys.length && trimmed.includes(' ')) {
 				for (const w of trimmed.split(/\s+/)) {
 					const commandKey = w.toLowerCase()
-					if (commandKey in normalized) {
+					if (Object.hasOwn(normalized, commandKey)) {
 						const result = normalized[commandKey]?.(w, commandKey)
 						if (result !== null) return result
 					}
