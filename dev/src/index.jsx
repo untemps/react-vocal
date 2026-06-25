@@ -4,10 +4,11 @@ import { createRoot } from 'react-dom/client'
 import { Vocal } from '../../src'
 
 const COMMANDS = {
-	rouge: 'red',
-	bleu: 'blue',
-	vert: 'green',
-	jaune: 'yellow',
+	red: 'red',
+	blue: 'blue',
+	green: 'green',
+	yellow: 'yellow',
+	'change the border to orange': 'orange',
 }
 
 const App = () => {
@@ -36,7 +37,7 @@ const App = () => {
 	return (
 		<>
 			<Vocal
-				lang="fr"
+				lang="en-US"
 				commands={commands}
 				continuous={continuous}
 				onStart={() => _log('start')}
@@ -50,20 +51,24 @@ const App = () => {
 				maxAlternatives={3}
 			/>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
-				Permission micro : <code>{permission ?? 'inconnue'}</code>
+				Microphone permission: <code>{permission ?? 'unknown'}</code>
 			</p>
-            <p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
-                Mode continu
-              </label>
-            </p>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
-				Commandes :{' '}
+				<label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+					<input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
+					Continuous mode
+				</label>
+			</p>
+			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
+				Commands:{' '}
 				{Object.keys(COMMANDS).map((k, i) => (
-					<span key={k}>{i > 0 && ', '}<code>{k}</code></span>
-				))}
-				{' '}— ou dans une phrase (ex : «&nbsp;je veux du vert&nbsp;»)
+					<span key={k}>
+						{i > 0 && ', '}
+						<code>{k}</code>
+					</span>
+				))}{' '}
+				— single words fire even inside a sentence (e.g. “I want some red”), and the phrase command tolerates
+				approximations
 			</p>
 			<textarea value={logs} rows={30} disabled style={{ width: '100%', borderColor }} />
 		</>
