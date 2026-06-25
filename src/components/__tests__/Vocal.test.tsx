@@ -1167,9 +1167,6 @@ describe('Vocal', () => {
 			const onEnd = vi.fn()
 			const onResult = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
-			// Regular timeout (3000) is deliberately SHORTER than silenceTimeout (5000): in
-			// continuous mode the regular timer must never arm, so the session has to survive
-			// past t=3000 and end only when silenceTimeout elapses at t=5000.
 			const { getByTestId } = render(
 				getInstance({
 					__rsInstance: recognition,
@@ -1185,26 +1182,21 @@ describe('Vocal', () => {
 				fireEvent.click(getByTestId('__vocal-root__'))
 			})
 
-			// speechend arms the silence timer at t=0 (fires at t=5000).
 			act(() => {
 				recognition.say('Hello')
 			})
 			expect(onEnd).not.toHaveBeenCalled()
 
-			// Past the regular timeout deadline (t=3000): with the bug the regular timer would
-			// have ended the session here. It must still be alive.
 			act(() => {
 				vi.advanceTimersByTime(3000)
 			})
 			expect(onEnd).not.toHaveBeenCalled()
 
-			// Just before the silence deadline (t=4999): still alive.
 			act(() => {
 				vi.advanceTimersByTime(1999)
 			})
 			expect(onEnd).not.toHaveBeenCalled()
 
-			// silenceTimeout elapses at t=5000.
 			act(() => {
 				vi.advanceTimersByTime(1)
 			})
@@ -1218,9 +1210,6 @@ describe('Vocal', () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
-			// Default config: silenceTimeout disabled, so only an explicit stop ends the session.
-			// _onStart must not arm the regular timer in continuous mode, otherwise the session
-			// would die ~timeout ms after start even though the user never spoke.
 			const { getByTestId } = render(
 				getInstance({
 					__rsInstance: recognition,
@@ -1234,7 +1223,6 @@ describe('Vocal', () => {
 				fireEvent.click(getByTestId('__vocal-root__'))
 			})
 
-			// Well past the regular timeout deadline with no speech: the session stays open.
 			act(() => {
 				vi.advanceTimersByTime(10_000)
 			})
@@ -1247,9 +1235,6 @@ describe('Vocal', () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
-			// Regular timeout (3000) stays below the silence deadlines on purpose: in continuous
-			// mode it must never arm, so it can elapse during the windows below without ending
-			// the session — only the silence timer drives auto-stop.
 			const { getByTestId } = render(
 				getInstance({
 					__rsInstance: recognition,
