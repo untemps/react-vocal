@@ -257,6 +257,8 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 
 **Phrase command keys** (e.g. `'Change the background color'`) use [fuse.js](https://fusejs.io/) fuzzy matching. The `precision` prop controls the Fuse.js score threshold (default `0.4` — lower is stricter).
 
+**Mixing single-word and phrase keys** is fully supported — a phrase key never disables single-word matching. For each transcript the hook tries, in order: (1) an exact match of the whole utterance against a single-word key, (2) fuzzy matching against the phrase keys, then (3) each word of the utterance against the single-word keys. The first command whose callback returns a non-`null` value wins (returning `null` is treated as "no match" and falls through to the next step). So an exact phrase like _"change the background color"_ fires the phrase even when a single-word key (`color`) appears inside it, while an embedded single word like _"je veux du rouge"_ still fires `rouge` when no phrase matches.
+
 **Homophone tolerance** is achieved via `maxAlternatives`: by setting it to 3–5, the speech engine returns several transcription candidates per segment. The correct word (e.g. _vert_) may appear as a secondary alternative when the primary is a homophone (e.g. _verre_), and will still trigger the command.
 
 **At most one command fires per utterance.** Alternatives and segments are scanned in order and matching stops at the first hit, so a single recognition event can trigger at most one command callback.
@@ -455,6 +457,7 @@ Matching rules:
 
 - **Single-word keys** (e.g. `rouge`, `submit`): exact case-insensitive lookup, with each word of the input tried individually so a key fires even when embedded in a phrase (`je veux du rouge` triggers `rouge`).
 - **Phrase keys** (e.g. `change the background color`): Fuse.js fuzzy matching against the joined transcript, gated by `precision`. fuse.js is loaded lazily; if it's not installed, the hook falls back to substring matching.
+- **Precedence** (mixed maps): an exact single-word utterance is tried first, then phrase fuzzy matching, then single words embedded in a multi-word transcript. The first command whose callback returns a non-`null` value wins; a `null` return is treated as no-match and falls through.
 
 ### Browser support flag
 
