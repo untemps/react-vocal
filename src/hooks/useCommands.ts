@@ -18,15 +18,14 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 
 	const keys = useMemo(() => Object.keys(normalized), [normalized])
 
-	// Fuzzy matching is only needed for phrase command keys.
-	// Single-word keys use exact case-insensitive lookup — simpler and no false positives.
-	const hasPhraseKeys = useMemo(() => keys.some((k) => k.includes(' ')), [keys])
+	const singleWordKeys = useMemo(() => keys.filter((k) => !k.includes(' ')), [keys])
+	const phraseKeys = useMemo(() => keys.filter((k) => k.includes(' ')), [keys])
 
 	// Lazy-loaded so consumers using only single-word commands incur no bundle cost.
 	const fuseRef = useRef<Fuse<string> | null>(null)
 
 	useEffect(() => {
-		if (!hasPhraseKeys) {
+		if (!phraseKeys.length) {
 			fuseRef.current = null
 			return
 		}
@@ -38,7 +37,7 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			.then((module) => {
 				if (cancelled) return
 				const FuseCtor = (module.default ?? module) as unknown as typeof Fuse
-				fuseRef.current = new FuseCtor(keys, { includeScore: true, ignoreLocation: true })
+				fuseRef.current = new FuseCtor(phraseKeys, { includeScore: true, ignoreLocation: true })
 			})
 			.catch(() => {
 				if (cancelled) return
@@ -52,40 +51,57 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 		return () => {
 			cancelled = true
 		}
-	}, [hasPhraseKeys, keys])
+	}, [phraseKeys])
 
 	const triggerCommand = useCallback<TriggerCommand>(
 		(rawInput) => {
 			if (!keys.length) return null
 
-			if (!hasPhraseKeys) {
-				const words = rawInput.trim().split(/\s+/)
-				const targets = words.length > 1 ? words : [rawInput.trim()]
-				for (const w of targets) {
-					const commandKey = w.toLowerCase()
-					if (commandKey in normalized) return normalized[commandKey]?.(w, commandKey)
-				}
-				return null
+			const trimmed = rawInput.trim()
+			const isMultiWord = /\s/.test(trimmed)
+
+			const matchSingleWord = (word: string) => {
+				const commandKey = word.toLowerCase()
+				return Object.hasOwn(normalized, commandKey) ? normalized[commandKey]?.(word, commandKey) : null
 			}
 
-			const fuse = fuseRef.current
-			if (fuse) {
-				const result = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
-				if (result?.length) {
-					const commandKey = (result[0].item as string).toLowerCase()
-					return normalized[commandKey]?.(rawInput, commandKey)
-				}
-			} else {
-				// `k.includes(lInput)` can produce false positives when input is short
-				// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
-				// only runs when fuse.js is absent, so degraded precision is expected.
-				const lInput = rawInput.toLowerCase()
-				const commandKey = keys.find((k) => lInput.includes(k) || k.includes(lInput))
-				if (commandKey) return normalized[commandKey]?.(rawInput, commandKey)
+			if (singleWordKeys.length && !isMultiWord) {
+				const result = matchSingleWord(trimmed)
+				if (result !== null) return result
 			}
+
+			if (phraseKeys.length) {
+				const fuse = fuseRef.current
+				if (fuse) {
+					const matches = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
+					if (matches.length) {
+						const commandKey = matches[0].item as string
+						const result = normalized[commandKey]?.(rawInput, commandKey)
+						if (result !== null) return result
+					}
+				} else if (trimmed) {
+					// `k.includes(lInput)` can produce false positives when input is short
+					// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
+					// only runs when fuse.js is absent, so degraded precision is expected.
+					const lInput = trimmed.toLowerCase()
+					const commandKey = phraseKeys.find((k) => lInput.includes(k) || k.includes(lInput))
+					if (commandKey) {
+						const result = normalized[commandKey]?.(rawInput, commandKey)
+						if (result !== null) return result
+					}
+				}
+			}
+
+			if (singleWordKeys.length && isMultiWord) {
+				for (const w of trimmed.split(/\s+/)) {
+					const result = matchSingleWord(w)
+					if (result !== null) return result
+				}
+			}
+
 			return null
 		},
-		[keys, normalized, hasPhraseKeys, precision]
+		[keys, normalized, singleWordKeys, phraseKeys, precision]
 	)
 
 	return triggerCommand
