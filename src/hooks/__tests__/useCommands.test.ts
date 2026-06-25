@@ -130,6 +130,125 @@ describe('useCommands', () => {
 		expect(triggerCommand('vert')).toBe('green')
 	})
 
+	describe('Mixed command map', () => {
+		// Primary regression anchor for #246: with a phrase key present, an embedded single
+		// word must still fire. This is the one input that returns null on the pre-fix code.
+		it('fires a single-word command embedded in a phrase even when a phrase key also exists', async () => {
+			const rouge = vi.fn(() => 'red')
+			const commands = {
+				rouge,
+				'change the background color': () => 'changed',
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			// Flush the dynamic fuse.js import microtask so the phrase path is fully wired.
+			await act(async () => {})
+			expect(triggerCommand('je veux du rouge')).toBe('red')
+			expect(rouge).toHaveBeenCalledWith('rouge', 'rouge')
+		})
+
+		// An exact/near-exact phrase utterance must win over a single-word key that merely
+		// appears inside the phrase — otherwise the embedded word would hijack the phrase.
+		it('prefers the phrase command over an embedded single-word key for an exact-phrase utterance', async () => {
+			const color = vi.fn(() => 'single')
+			const phrase = vi.fn(() => 'phrase')
+			const commands = {
+				color,
+				'change the background color': phrase,
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('change the background color')).toBe('phrase')
+			expect(phrase).toHaveBeenCalled()
+			expect(color).not.toHaveBeenCalled()
+		})
+
+		// The reverse priority: a deliberate one-word utterance must still fire its single-word
+		// command even when that word also appears inside a phrase key.
+		it('prefers the exact single-word command over a phrase key that contains the word', async () => {
+			const phrase = vi.fn(() => 'phrase')
+			const commands = {
+				rouge: () => 'red',
+				'change la bordure en rouge': phrase,
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('rouge')).toBe('red')
+			expect(phrase).not.toHaveBeenCalled()
+		})
+
+		// A single-word callback returning null (the "no match" sentinel) must not suppress a
+		// phrase command that matches the same utterance.
+		it('falls through to the phrase command when a single-word callback returns null', async () => {
+			const commands = {
+				color: () => null,
+				'change the background color': () => 'changed',
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('change the background color')).toBe('changed')
+		})
+
+		// null fall-through within the per-word pass: a declined single-word command must not
+		// block another single-word command spoken in the same utterance.
+		it('keeps scanning words when a single-word callback returns null', async () => {
+			const commands = {
+				rouge: () => null,
+				bleu: () => 'blue',
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('rouge ou bleu')).toBe('blue')
+		})
+
+		it('still fires the phrase command via fuzzy matching in a mixed map', async () => {
+			const commands = {
+				rouge: () => 'red',
+				'change the background color': () => 'changed',
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('change the background color')).toBe('changed')
+			// Fuzzy tolerance still applies to the phrase key.
+			expect(triggerCommand('change the background colour')).toBe('changed')
+		})
+
+		it('matches a single-word command exactly in a mixed map', async () => {
+			const commands = {
+				rouge: () => 'red',
+				'change the background color': () => 'changed',
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('rouge')).toBe('red')
+		})
+
+		it('returns null in a mixed map when no command matches', async () => {
+			const commands = {
+				rouge: () => 'red',
+				'change the background color': () => 'changed',
+			}
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands(commands))
+			await act(async () => {})
+			expect(triggerCommand('je veux du bleu')).toBeNull()
+		})
+	})
+
 	it('falls back to contains matching when fuse.js is not available', async () => {
 		vi.doMock('fuse.js', () => {
 			throw new Error('fuse.js not installed')
@@ -141,6 +260,25 @@ describe('useCommands', () => {
 		} = renderHook(() => useCommandsWithoutFuse(commands))
 		await act(async () => {})
 		expect(triggerCommand('change color')).toBe('matched')
+		vi.doUnmock('fuse.js')
+	})
+
+	it('fires an embedded single-word command in a mixed map even when fuse.js is absent', async () => {
+		vi.doMock('fuse.js', () => {
+			throw new Error('fuse.js not installed')
+		})
+		const { useCommands: useCommandsWithoutFuse } = await import('../useCommands')
+		const rouge = vi.fn(() => 'red')
+		const commands = {
+			rouge,
+			'change the background color': () => 'changed',
+		}
+		const {
+			result: { current: triggerCommand },
+		} = renderHook(() => useCommandsWithoutFuse(commands))
+		await act(async () => {})
+		expect(triggerCommand('je veux du rouge')).toBe('red')
+		expect(rouge).toHaveBeenCalledWith('rouge', 'rouge')
 		vi.doUnmock('fuse.js')
 	})
 
