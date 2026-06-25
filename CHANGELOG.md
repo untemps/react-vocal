@@ -1,3 +1,10 @@
+# [2.0.0-beta.42](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.41...v2.0.0-beta.42) (2026-06-25)
+
+
+### Bug Fixes
+
+* Restore single-word matching in mixed command maps ([#253](https://github.com/untemps/react-vocal/issues/253)) ([c1452f9](https://github.com/untemps/react-vocal/commit/c1452f91f8768608a7b8284e8528fd3b33363c0a))
+
 # [2.0.0-beta.41](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.40...v2.0.0-beta.41) (2026-06-25)
 
 # [2.0.0-beta.40](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.39...v2.0.0-beta.40) (2026-06-23)
