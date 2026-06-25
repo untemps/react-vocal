@@ -136,7 +136,6 @@ describe('useCommands', () => {
 		const {
 			result: { current: triggerCommand },
 		} = renderHook(() => useCommands(commands))
-		// Recognition may join segments with tabs/newlines, not only spaces; each word is still scanned.
 		expect(triggerCommand('red\tblue')).toBe('red')
 		expect(triggerCommand('please\nred')).toBe('red')
 		expect(red).toHaveBeenCalledWith('red', 'red')
@@ -255,8 +254,6 @@ describe('useCommands', () => {
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
-			// `'constructor' in normalized` is true via the prototype chain; Object.hasOwn
-			// keeps it from invoking the inherited Object constructor as if it were a command.
 			expect(triggerCommand('constructor')).toBeNull()
 		})
 
@@ -265,8 +262,6 @@ describe('useCommands', () => {
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
-			// `normalized['__proto__']` is Object.prototype (not callable) — `in` would
-			// have reached it and thrown "is not a function".
 			expect(() => triggerCommand('__proto__')).not.toThrow()
 			expect(triggerCommand('__proto__')).toBeNull()
 		})
@@ -284,16 +279,11 @@ describe('useCommands', () => {
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
-			// An own property named 'constructor' is a legitimate command and must still fire.
 			expect(triggerCommand('constructor')).toBe('ctor')
 		})
 	})
 
 	describe('Fuse-absent fallback (fuse.js not installed)', () => {
-		// Fresh module graph per test so `vi.doMock('fuse.js')` actually intercepts the
-		// hook's lazy `import('fuse.js')`; `doUnmock` + reset afterwards so the throwing
-		// module can never leak into a later fuzzy-matching test. (`restoreMocks` resets
-		// spy state but neither clears the module cache nor removes `doMock` registrations.)
 		beforeEach(() => {
 			vi.resetModules()
 		})
@@ -309,11 +299,7 @@ describe('useCommands', () => {
 			})
 			const { useCommands: useCommandsWithoutFuse } = await import('../useCommands')
 			const view = renderHook(() => useCommandsWithoutFuse(commands))
-			// Flush the rejected dynamic import so fuseRef settles to null.
 			await act(async () => {})
-			// Sentinel: the hook warns *only* when import('fuse.js') rejects. Asserting it
-			// fired proves fuse.js is genuinely absent here — not merely "real fuse not loaded
-			// yet", which would also leave fuseRef null and silently pass the fallback paths.
 			await vi.waitFor(() => expect(warnSpy).toHaveBeenCalled())
 			warnSpy.mockRestore()
 			return view
@@ -331,17 +317,11 @@ describe('useCommands', () => {
 			const {
 				result: { current: triggerCommand },
 			} = await renderWithoutFuse({ 'change color': phrase })
-			// Real fuse scores 'please change color now' vs 'change color' at ~0.59 > the
-			// 0.4 threshold, so a match here can come *only* from the substring fallback —
-			// combined with the warn sentinel above, this exercises the fuse-absent path.
 			expect(triggerCommand('please change color now')).toBe('changed')
 			expect(phrase).toHaveBeenCalledWith('please change color now', 'change color')
 		})
 
 		it('matches a short utterance contained in a phrase key (k.includes(lInput) — documented tradeoff)', async () => {
-			// The source flags this as an accepted false positive of the fuse-absent
-			// fallback: a single word that is a substring of a phrase key still fires it.
-			// Pinned so a regression dropping the `|| k.includes(lInput)` clause is caught.
 			const phrase = vi.fn(() => 'changed')
 			const {
 				result: { current: triggerCommand },
@@ -351,8 +331,6 @@ describe('useCommands', () => {
 		})
 
 		it('does not fire a phrase command on an empty or whitespace-only transcript', async () => {
-			// Regression for the `trimmed` guard: `k.includes('')` is always true, so an
-			// empty transcript would otherwise spuriously fire the first phrase command.
 			const phrase = vi.fn(() => 'changed')
 			const {
 				result: { current: triggerCommand },
@@ -363,8 +341,6 @@ describe('useCommands', () => {
 		})
 
 		it('keeps single-word embedded matching working in a mixed map', async () => {
-			// A phrase key + missing fuse.js must not break single-word matching:
-			// 'I want some red' resolves via the per-word scan (step 3), not fuse.
 			const red = vi.fn(() => 'red')
 			const {
 				result: { current: triggerCommand },
