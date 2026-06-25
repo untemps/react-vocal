@@ -132,17 +132,17 @@ describe('useCommands', () => {
 
 	describe('Mixed command map', () => {
 		it('fires a single-word command embedded in a phrase even when a phrase key also exists', async () => {
-			const rouge = vi.fn(() => 'red')
+			const red = vi.fn(() => 'red')
 			const commands = {
-				rouge,
+				red,
 				'change the background color': () => 'changed',
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
 			await act(async () => {})
-			expect(triggerCommand('je veux du rouge')).toBe('red')
-			expect(rouge).toHaveBeenCalledWith('rouge', 'rouge')
+			expect(triggerCommand('I want some red')).toBe('red')
+			expect(red).toHaveBeenCalledWith('red', 'red')
 		})
 
 		it('prefers the phrase command over an embedded single-word key for an exact-phrase utterance', async () => {
@@ -164,14 +164,14 @@ describe('useCommands', () => {
 		it('prefers the exact single-word command over a phrase key that contains the word', async () => {
 			const phrase = vi.fn(() => 'phrase')
 			const commands = {
-				rouge: () => 'red',
-				'change la bordure en rouge': phrase,
+				red: () => 'red',
+				'change the border to red': phrase,
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
 			await act(async () => {})
-			expect(triggerCommand('rouge')).toBe('red')
+			expect(triggerCommand('red')).toBe('red')
 			expect(phrase).not.toHaveBeenCalled()
 		})
 
@@ -189,19 +189,19 @@ describe('useCommands', () => {
 
 		it('keeps scanning words when a single-word callback returns null', async () => {
 			const commands = {
-				rouge: () => null,
-				bleu: () => 'blue',
+				red: () => null,
+				blue: () => 'blue',
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
 			await act(async () => {})
-			expect(triggerCommand('rouge ou bleu')).toBe('blue')
+			expect(triggerCommand('red or blue')).toBe('blue')
 		})
 
 		it('still fires the phrase command via fuzzy matching in a mixed map', async () => {
 			const commands = {
-				rouge: () => 'red',
+				red: () => 'red',
 				'change the background color': () => 'changed',
 			}
 			const {
@@ -214,26 +214,26 @@ describe('useCommands', () => {
 
 		it('matches a single-word command exactly in a mixed map', async () => {
 			const commands = {
-				rouge: () => 'red',
+				red: () => 'red',
 				'change the background color': () => 'changed',
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
 			await act(async () => {})
-			expect(triggerCommand('rouge')).toBe('red')
+			expect(triggerCommand('red')).toBe('red')
 		})
 
 		it('returns null in a mixed map when no command matches', async () => {
 			const commands = {
-				rouge: () => 'red',
+				red: () => 'red',
 				'change the background color': () => 'changed',
 			}
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
 			await act(async () => {})
-			expect(triggerCommand('je veux du bleu')).toBeNull()
+			expect(triggerCommand('I want some blue')).toBeNull()
 		})
 	})
 
@@ -256,17 +256,17 @@ describe('useCommands', () => {
 			throw new Error('fuse.js not installed')
 		})
 		const { useCommands: useCommandsWithoutFuse } = await import('../useCommands')
-		const rouge = vi.fn(() => 'red')
+		const red = vi.fn(() => 'red')
 		const commands = {
-			rouge,
+			red,
 			'change the background color': () => 'changed',
 		}
 		const {
 			result: { current: triggerCommand },
 		} = renderHook(() => useCommandsWithoutFuse(commands))
 		await act(async () => {})
-		expect(triggerCommand('je veux du rouge')).toBe('red')
-		expect(rouge).toHaveBeenCalledWith('rouge', 'rouge')
+		expect(triggerCommand('I want some red')).toBe('red')
+		expect(red).toHaveBeenCalledWith('red', 'red')
 		vi.doUnmock('fuse.js')
 	})
 
