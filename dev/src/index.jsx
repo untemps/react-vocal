@@ -3,9 +3,6 @@ import { createRoot } from 'react-dom/client'
 
 import { Vocal } from '../../src'
 
-// Mixed command map: single-word keys (exact lookup, fire even when embedded in a phrase)
-// alongside a phrase key (fuzzy matching). See #246 — a phrase key must not disable the
-// single-word matching, so saying "I want some red" still triggers `red`.
 const COMMANDS = {
 	red: 'red',
 	blue: 'blue',

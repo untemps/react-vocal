@@ -18,10 +18,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 
 	const keys = useMemo(() => Object.keys(normalized), [normalized])
 
-	// Partition keys by matching strategy. Single-word keys use exact case-insensitive
-	// lookup (simpler, no false positives); phrase keys use fuzzy matching. The two passes
-	// are independent so a mixed map keeps single-word matching working regardless of how
-	// many phrase keys it also contains.
 	const singleWordKeys = useMemo(() => keys.filter((k) => !k.includes(' ')), [keys])
 	const phraseKeys = useMemo(() => keys.filter((k) => k.includes(' ')), [keys])
 
@@ -41,9 +37,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			.then((module) => {
 				if (cancelled) return
 				const FuseCtor = (module.default ?? module) as unknown as typeof Fuse
-				// Index only phrase keys: single-word keys are handled by exact lookup, so
-				// indexing them here would let a typo'd single word fuzzy-match a key that
-				// is contractually exact-only.
 				fuseRef.current = new FuseCtor(phraseKeys, { includeScore: true, ignoreLocation: true })
 			})
 			.catch(() => {
@@ -66,14 +59,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 
 			const trimmed = rawInput.trim()
 
-			// Three passes run in priority order; each returns the first command whose callback
-			// yields a non-null result. `null` is the documented "no match" sentinel (see
-			// tryMatchCommand in Vocal.tsx), so a callback that returns it falls through to the
-			// next pass instead of ending the scan.
-
-			// 1. Exact single-word command for the whole utterance. Highest priority so an
-			// intentional one-word command fires even when that word also appears inside a phrase
-			// key (e.g. "rouge" with a { rouge, 'change la bordure en rouge' } map).
 			if (singleWordKeys.length && !trimmed.includes(' ')) {
 				const commandKey = trimmed.toLowerCase()
 				if (commandKey in normalized) {
@@ -82,10 +67,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 				}
 			}
 
-			// 2. Phrase keys via fuzzy matching (or substring fallback when fuse.js is absent).
-			// Runs before the per-word pass so an exact/near-exact phrase wins over a single-word
-			// key that merely appears inside it (#246: "change the background color" must fire the
-			// phrase, not the embedded "color").
 			if (phraseKeys.length) {
 				const fuse = fuseRef.current
 				if (fuse) {
@@ -108,12 +89,9 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 				}
 			}
 
-			// 3. A single-word command embedded in a multi-word utterance ("je veux du rouge"
-			// fires "rouge"). Lowest priority: only reached when no phrase matched (#246).
 			if (singleWordKeys.length && trimmed.includes(' ')) {
 				for (const w of trimmed.split(/\s+/)) {
 					const commandKey = w.toLowerCase()
-					// A split word never contains a space, so this only ever hits single-word keys.
 					if (commandKey in normalized) {
 						const result = normalized[commandKey]?.(w, commandKey)
 						if (result !== null) return result

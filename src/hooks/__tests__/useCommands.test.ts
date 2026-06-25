@@ -131,8 +131,6 @@ describe('useCommands', () => {
 	})
 
 	describe('Mixed command map', () => {
-		// Primary regression anchor for #246: with a phrase key present, an embedded single
-		// word must still fire. This is the one input that returns null on the pre-fix code.
 		it('fires a single-word command embedded in a phrase even when a phrase key also exists', async () => {
 			const rouge = vi.fn(() => 'red')
 			const commands = {
@@ -142,14 +140,11 @@ describe('useCommands', () => {
 			const {
 				result: { current: triggerCommand },
 			} = renderHook(() => useCommands(commands))
-			// Flush the dynamic fuse.js import microtask so the phrase path is fully wired.
 			await act(async () => {})
 			expect(triggerCommand('je veux du rouge')).toBe('red')
 			expect(rouge).toHaveBeenCalledWith('rouge', 'rouge')
 		})
 
-		// An exact/near-exact phrase utterance must win over a single-word key that merely
-		// appears inside the phrase — otherwise the embedded word would hijack the phrase.
 		it('prefers the phrase command over an embedded single-word key for an exact-phrase utterance', async () => {
 			const color = vi.fn(() => 'single')
 			const phrase = vi.fn(() => 'phrase')
@@ -166,8 +161,6 @@ describe('useCommands', () => {
 			expect(color).not.toHaveBeenCalled()
 		})
 
-		// The reverse priority: a deliberate one-word utterance must still fire its single-word
-		// command even when that word also appears inside a phrase key.
 		it('prefers the exact single-word command over a phrase key that contains the word', async () => {
 			const phrase = vi.fn(() => 'phrase')
 			const commands = {
@@ -182,8 +175,6 @@ describe('useCommands', () => {
 			expect(phrase).not.toHaveBeenCalled()
 		})
 
-		// A single-word callback returning null (the "no match" sentinel) must not suppress a
-		// phrase command that matches the same utterance.
 		it('falls through to the phrase command when a single-word callback returns null', async () => {
 			const commands = {
 				color: () => null,
@@ -196,8 +187,6 @@ describe('useCommands', () => {
 			expect(triggerCommand('change the background color')).toBe('changed')
 		})
 
-		// null fall-through within the per-word pass: a declined single-word command must not
-		// block another single-word command spoken in the same utterance.
 		it('keeps scanning words when a single-word callback returns null', async () => {
 			const commands = {
 				rouge: () => null,
@@ -220,7 +209,6 @@ describe('useCommands', () => {
 			} = renderHook(() => useCommands(commands))
 			await act(async () => {})
 			expect(triggerCommand('change the background color')).toBe('changed')
-			// Fuzzy tolerance still applies to the phrase key.
 			expect(triggerCommand('change the background colour')).toBe('changed')
 		})
 
