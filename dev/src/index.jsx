@@ -5,13 +5,13 @@ import { Vocal } from '../../src'
 
 // Mixed command map: single-word keys (exact lookup, fire even when embedded in a phrase)
 // alongside a phrase key (fuzzy matching). See #246 — a phrase key must not disable the
-// single-word matching, so saying "je veux du rouge" still triggers `rouge`.
+// single-word matching, so saying "I want some red" still triggers `red`.
 const COMMANDS = {
-	rouge: 'red',
-	bleu: 'blue',
-	vert: 'green',
-	jaune: 'yellow',
-	'change la bordure en orange': 'orange',
+	red: 'red',
+	blue: 'blue',
+	green: 'green',
+	yellow: 'yellow',
+	'change the border to orange': 'orange',
 }
 
 const App = () => {
@@ -40,7 +40,7 @@ const App = () => {
 	return (
 		<>
 			<Vocal
-				lang="fr"
+				lang="en-US"
 				commands={commands}
 				continuous={continuous}
 				onStart={() => _log('start')}
@@ -54,24 +54,24 @@ const App = () => {
 				maxAlternatives={3}
 			/>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
-				Permission micro : <code>{permission ?? 'inconnue'}</code>
+				Microphone permission: <code>{permission ?? 'unknown'}</code>
 			</p>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
 				<label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
 					<input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
-					Mode continu
+					Continuous mode
 				</label>
 			</p>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
-				Commandes :{' '}
+				Commands:{' '}
 				{Object.keys(COMMANDS).map((k, i) => (
 					<span key={k}>
 						{i > 0 && ', '}
 						<code>{k}</code>
 					</span>
 				))}{' '}
-				— les mots simples se déclenchent même dans une phrase (ex : «&nbsp;je veux du rouge&nbsp;»), la
-				commande phrase tolère les approximations
+				— single words fire even inside a sentence (e.g. “I want some red”), and the phrase command tolerates
+				approximations
 			</p>
 			<textarea value={logs} rows={30} disabled style={{ width: '100%', borderColor }} />
 		</>
