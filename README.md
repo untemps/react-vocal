@@ -253,13 +253,13 @@ To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorit
 
 fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive exact matching.
 
-**Single-word command keys** (e.g. `rouge`, `submit`) use exact case-insensitive lookup. When the recognition returns a multi-word transcript, each word is tried individually so a command fires even when embedded in a phrase (e.g. _"je veux du rouge"_ triggers `rouge`).
+**Single-word command keys** (e.g. `red`, `submit`) use exact case-insensitive lookup. When the recognition returns a multi-word transcript, each word is tried individually so a command fires even when embedded in a phrase (e.g. _"I want some red"_ triggers `red`).
 
 **Phrase command keys** (e.g. `'Change the background color'`) use [fuse.js](https://fusejs.io/) fuzzy matching. The `precision` prop controls the Fuse.js score threshold (default `0.4` — lower is stricter).
 
-**Mixing single-word and phrase keys** is fully supported — a phrase key never disables single-word matching. For each transcript the hook tries, in order: (1) an exact match of the whole utterance against a single-word key, (2) fuzzy matching against the phrase keys, then (3) each word of the utterance against the single-word keys. The first command whose callback returns a non-`null` value wins (returning `null` is treated as "no match" and falls through to the next step). So an exact phrase like _"change the background color"_ fires the phrase even when a single-word key (`color`) appears inside it, while an embedded single word like _"je veux du rouge"_ still fires `rouge` when no phrase matches.
+**Mixing single-word and phrase keys** is fully supported — a phrase key never disables single-word matching. For each transcript the hook tries, in order: (1) an exact match of the whole utterance against a single-word key, (2) fuzzy matching against the phrase keys, then (3) each word of the utterance against the single-word keys. The first command whose callback returns a non-`null` value wins (returning `null` is treated as "no match" and falls through to the next step). So an exact phrase like _"change the background color"_ fires the phrase even when a single-word key (`color`) appears inside it, while an embedded single word like _"I want some red"_ still fires `red` when no phrase matches.
 
-**Homophone tolerance** is achieved via `maxAlternatives`: by setting it to 3–5, the speech engine returns several transcription candidates per segment. The correct word (e.g. _vert_) may appear as a secondary alternative when the primary is a homophone (e.g. _verre_), and will still trigger the command.
+**Homophone tolerance** is achieved via `maxAlternatives`: by setting it to 3–5, the speech engine returns several transcription candidates per segment. The correct word (e.g. _blue_) may appear as a secondary alternative when the primary is a homophone (e.g. _blew_), and will still trigger the command.
 
 **At most one command fires per utterance.** Alternatives and segments are scanned in order and matching stops at the first hit, so a single recognition event can trigger at most one command callback.
 
@@ -274,7 +274,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | grammars        | SpeechGrammarList | null                 | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
 | timeout         | number            | 3000                 | Time in ms to wait before discarding the recognition                                            |
 | precision       | number            | 0.4                  | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word commands always use exact lookup. |
-| maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _vert_ / _verre_ in French). |
+| maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _blue_ / _blew_). |
 | continuous      | boolean           | false                | Keep the recognition session open after each result. The session accumulates transcript across segments and stops when the button is clicked again or `silenceTimeout` expires. Commands are not evaluated in continuous mode. |
 | silenceTimeout  | number            | null                 | When `continuous` is true, automatically stop the session after this many ms of inactivity following the last recognized result. `null` or `0` disables auto-stop (button click required). |
 | style         | object            | null                 | Styles of the root element if className is not specified                                        |
@@ -305,7 +305,7 @@ import Icon from './Icon'
 const App = () => {
 	const [result, setResult] = useState('')
 
-	const [, { start, subscribe, unsubscribe, isRecording }] = useVocal('fr-FR')
+	const [, { start, subscribe, unsubscribe, isRecording }] = useVocal('en-US')
 
 	useEffect(() => {
 		const _onVocalStart = () => {
@@ -418,12 +418,12 @@ import { useVocal, useCommands } from '@untemps/react-vocal'
 
 const App = () => {
 	const commands = {
-		rouge: () => setBorderColor('red'),
-		bleu: () => setBorderColor('blue'),
+		red: () => setBorderColor('red'),
+		blue: () => setBorderColor('blue'),
 	}
 	const triggerCommand = useCommands(commands)
 
-	const [, { start, subscribe }] = useVocal('fr-FR')
+	const [, { start, subscribe }] = useVocal('en-US')
 
 	const _onResult = (_event, bestAlternative) => {
 		triggerCommand(bestAlternative)
@@ -455,7 +455,7 @@ useCommands(commands, precision)
 
 Matching rules:
 
-- **Single-word keys** (e.g. `rouge`, `submit`): exact case-insensitive lookup, with each word of the input tried individually so a key fires even when embedded in a phrase (`je veux du rouge` triggers `rouge`).
+- **Single-word keys** (e.g. `red`, `submit`): exact case-insensitive lookup, with each word of the input tried individually so a key fires even when embedded in a phrase (`I want some red` triggers `red`).
 - **Phrase keys** (e.g. `change the background color`): Fuse.js fuzzy matching against the joined transcript, gated by `precision`. fuse.js is loaded lazily; if it's not installed, the hook falls back to substring matching.
 - **Precedence** (mixed maps): an exact single-word utterance is tried first, then phrase fuzzy matching, then single words embedded in a multi-word transcript. The first command whose callback returns a non-`null` value wins; a `null` return is treated as no-match and falls through.
 
