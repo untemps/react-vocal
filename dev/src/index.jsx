@@ -15,6 +15,7 @@ const App = () => {
 	const [logs, setLogs] = useState('')
 	const [borderColor, setBorderColor] = useState()
 	const [continuous, setContinuous] = useState(false)
+	const [silenceTimeout, setSilenceTimeout] = useState(5000)
 	const [permission, setPermission] = useState(null)
 
 	const _log = (value) => setLogs((prev) => `${prev}${prev.length > 0 ? '\n' : ''} ----- ${value}`)
@@ -40,6 +41,7 @@ const App = () => {
 				lang="en-US"
 				commands={commands}
 				continuous={continuous}
+				silenceTimeout={silenceTimeout}
 				onStart={() => _log('start')}
 				onEnd={() => _log('end')}
 				onResult={(result) => _log(`transcript: "${result}"`)}
@@ -58,6 +60,22 @@ const App = () => {
 					<input type="checkbox" checked={continuous} onChange={(e) => setContinuous(e.target.checked)} />
 					Continuous mode
 				</label>
+			</p>
+			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
+				<label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+					Silence timeout (ms)
+					<input
+						type="number"
+						min={0}
+						step={500}
+						value={silenceTimeout ?? ''}
+						disabled={!continuous}
+						onChange={(e) => setSilenceTimeout(e.target.value === '' ? null : Number(e.target.value))}
+						style={{ width: 80 }}
+					/>
+				</label>
+				— in continuous mode the session auto-stops after this many ms of silence; leave empty (or 0) to
+				require a button click
 			</p>
 			<p style={{ fontSize: 12, color: '#666', margin: '8px 0' }}>
 				Commands:{' '}

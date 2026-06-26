@@ -1162,21 +1162,18 @@ describe('Vocal', () => {
 			expect(commandFn).not.toHaveBeenCalled()
 		})
 
-		it('auto-stops after silenceTimeout ms of inactivity following last result', async () => {
+		it('auto-stops at silenceTimeout, not at the shorter regular timeout', async () => {
 			vi.useFakeTimers()
 			const onEnd = vi.fn()
 			const onResult = vi.fn()
 			const recognition = createMockVocal({ continuous: true })
-			// timeout bumped above silenceTimeout so the regular timer cannot fire first —
-			// both timers share stableTimerCb, so a shorter `timeout` would mask which one
-			// actually triggered _onEnd.
 			const { getByTestId } = render(
 				getInstance({
 					__rsInstance: recognition,
 					onEnd,
 					onResult,
 					continuous: true,
-					timeout: 10_000,
+					timeout: 3000,
 					silenceTimeout: 5000,
 				})
 			)
@@ -1188,21 +1185,49 @@ describe('Vocal', () => {
 			act(() => {
 				recognition.say('Hello')
 			})
-
 			expect(onEnd).not.toHaveBeenCalled()
 
 			act(() => {
-				vi.advanceTimersByTime(4999)
+				vi.advanceTimersByTime(3000)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(1999)
 			})
 			expect(onEnd).not.toHaveBeenCalled()
 
 			act(() => {
 				vi.advanceTimersByTime(1)
 			})
-
 			expect(onEnd).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledTimes(1)
 			expect(onResult).toHaveBeenCalledWith('Hello', expect.anything())
+			vi.useRealTimers()
+		})
+
+		it('keeps an always-on session alive past the regular timeout when no speech occurs', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: true,
+					timeout: 3000,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			act(() => {
+				vi.advanceTimersByTime(10_000)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+			expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
 			vi.useRealTimers()
 		})
 
@@ -1215,7 +1240,7 @@ describe('Vocal', () => {
 					__rsInstance: recognition,
 					onEnd,
 					continuous: true,
-					timeout: 10_000,
+					timeout: 3000,
 					silenceTimeout: 5000,
 				})
 			)

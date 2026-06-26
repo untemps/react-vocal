@@ -272,7 +272,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | commands        | object            | null                 | Callbacks to be triggered when specified commands are detected by the recognition               |
 | lang            | string            | 'en-US'              | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
 | grammars        | SpeechGrammarList | null                 | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
-| timeout         | number            | 3000                 | Time in ms to wait before discarding the recognition                                            |
+| timeout         | number            | 3000                 | Time in ms to wait before discarding the recognition. Not applied in continuous mode, where the session is governed by `silenceTimeout` or an explicit stop. |
 | precision       | number            | 0.4                  | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word commands always use exact lookup. |
 | maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _blue_ / _blew_). |
 | continuous      | boolean           | false                | Keep the recognition session open after each result. The session accumulates transcript across segments and stops when the button is clicked again or `silenceTimeout` expires. Commands are not evaluated in continuous mode. |
