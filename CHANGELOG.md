@@ -1,3 +1,10 @@
+# [2.0.0-beta.43](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.42...v2.0.0-beta.43) (2026-06-26)
+
+
+### Bug Fixes
+
+* Continuous-mode regular timeout pre-empts silenceTimeout and auto-stops always-on sessions ([#255](https://github.com/untemps/react-vocal/issues/255)) ([8f64960](https://github.com/untemps/react-vocal/commit/8f64960746bce1ef55a71d2bca44ad9bbf279da3))
+
 # [2.0.0-beta.42](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.41...v2.0.0-beta.42) (2026-06-25)
 
 
