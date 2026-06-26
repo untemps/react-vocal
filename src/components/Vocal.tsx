@@ -215,7 +215,7 @@ export const Vocal = ({
 
 	const _onStart = useCallback(
 		(e: Event) => {
-			startTimer()
+			if (!continuousRef.current) startTimer()
 			propsRef.current.onStart?.(e)
 		},
 		[startTimer]
@@ -232,11 +232,11 @@ export const Vocal = ({
 
 	const _onSpeechEnd = useCallback(
 		(e: Event) => {
-			startTimer()
-			// silenceTimeout fires stop() after N ms of silence following speech in continuous mode.
-			// Anchored on speechend because vocal 2.x intercepts intermediate result events in continuous mode,
-			// so _onResult only runs once on the aggregated end-of-session event.
-			if (continuousRef.current && (silenceTimeoutRef.current ?? 0) > 0) startSilenceTimer()
+			if (continuousRef.current) {
+				if ((silenceTimeoutRef.current ?? 0) > 0) startSilenceTimer()
+			} else {
+				startTimer()
+			}
 			propsRef.current.onSpeechEnd?.(e)
 		},
 		[startTimer, startSilenceTimer]
