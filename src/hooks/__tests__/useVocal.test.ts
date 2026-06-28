@@ -129,7 +129,8 @@ describe('useVocal', () => {
 					current: [ref],
 				},
 			} = renderHook(() => useVocal())
-			expect(ref.current).toBeDefined()
+			const instance = vi.mocked(createVocal).mock.results[0].value
+			expect(ref.current).toBe(instance)
 		})
 
 		it('passes maxAlternatives to createVocal factory', () => {
