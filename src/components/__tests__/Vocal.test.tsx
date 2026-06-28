@@ -1,4 +1,4 @@
-import { type MouseEvent as ReactMouseEvent } from 'react'
+import { type FormEvent as ReactFormEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
 import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
@@ -275,6 +275,18 @@ describe('Vocal', () => {
 		const { getByTestId } = render(getInstance())
 		fireEvent.click(getByTestId('__vocal-root__'))
 		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true')
+	})
+
+	it('renders the default button with type="button" so it never submits an enclosing form', () => {
+		const { getByTestId } = render(getInstance())
+		expect(getByTestId('__vocal-root__')).toHaveAttribute('type', 'button')
+	})
+
+	it('does not submit an enclosing form when the default button is clicked', () => {
+		const onSubmit = vi.fn((event: ReactFormEvent<HTMLFormElement>) => event.preventDefault())
+		const { getByTestId } = render(<form onSubmit={onSubmit}>{getInstance()}</form>)
+		fireEvent.click(getByTestId('__vocal-root__'))
+		expect(onSubmit).not.toHaveBeenCalled()
 	})
 
 	it('renders the default outline when focused', () => {

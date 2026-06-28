@@ -331,6 +331,7 @@ export const Vocal = ({
 
 	const _renderDefault = () => (
 		<button
+			type="button"
 			data-testid="__vocal-root__"
 			aria-label={ariaLabel}
 			aria-pressed={isListening}
