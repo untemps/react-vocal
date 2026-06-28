@@ -1054,6 +1054,154 @@ describe('Vocal', () => {
 		})
 	})
 
+	describe('Mid-session timing changes', () => {
+		// Regression for issue #263: timing props changed while a session is active must take
+		// effect on the next re-arm. The handlers bound to the recognition instance at session
+		// start used to bake in the duration captured then, so later changes were ignored — and
+		// a null→positive silenceTimeout change re-armed a stale 0ms timer, ending the session
+		// almost immediately. These use fake timers to pin the exact firing deadline.
+
+		it('honors a null→positive silenceTimeout change mid continuous session (no 0ms timer)', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId, rerender } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: true,
+					timeout: 30_000,
+					silenceTimeout: null,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			act(() => {
+				rerender(
+					getInstance({
+						__rsInstance: recognition,
+						onEnd,
+						continuous: true,
+						timeout: 30_000,
+						silenceTimeout: 7000,
+					})
+				)
+			})
+
+			// speechend now passes the (live) gate and arms the silence timer.
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			// The pre-fix bug armed a 0ms timer here, ending the session on the next tick.
+			act(() => {
+				vi.advanceTimersByTime(6999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			// Fires at the current 7000ms value.
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
+		})
+
+		it('honors a silenceTimeout change between positive values on the next re-arm', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId, rerender } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: true,
+					timeout: 30_000,
+					silenceTimeout: 5000,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			// First silence cycle arms at the original 5000ms (fires at t=5000).
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				rerender(
+					getInstance({
+						__rsInstance: recognition,
+						onEnd,
+						continuous: true,
+						timeout: 30_000,
+						silenceTimeout: 8000,
+					})
+				)
+			})
+
+			// Speech resumes (cancels the 5000ms timer) then ends again, re-arming at 8000ms.
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				vi.advanceTimersByTime(7999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
+		})
+
+		it('honors a timeout change mid single-shot session when the timer re-arms', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd, timeout: 3000 }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+			// _onStart armed the regular timer at the original 3000ms.
+
+			act(() => {
+				rerender(getInstance({ __rsInstance: recognition, onEnd, timeout: 5000 }))
+			})
+
+			// speechstart cancels the in-flight timer; speechend re-arms it. Drive the events
+			// directly — a full say() would emit `result`, ending the session immediately.
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			// The pre-fix bug re-armed at the stale 3000ms and ended here.
+			act(() => {
+				vi.advanceTimersByTime(4999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			// Re-armed at the current 5000ms value.
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
+		})
+	})
+
 	describe('Continuous sessions', () => {
 		it('keeps session active after first result without firing onResult', async () => {
 			const onResult = vi.fn()
