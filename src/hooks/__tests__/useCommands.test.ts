@@ -14,8 +14,8 @@ vi.mock('fuse.js', async () => {
 
 describe('useCommands', () => {
 	it('returns triggerCommand function', () => {
-		const triggerCommand = renderHook(() => useCommands())
-		expect(triggerCommand).toBeDefined()
+		const { result } = renderHook(() => useCommands())
+		expect(typeof result.current).toBe('function')
 	})
 
 	it('returns a stable triggerCommand across renders when commands prop is referentially equal', () => {
