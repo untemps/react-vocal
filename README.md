@@ -257,7 +257,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 
 **Single-word command keys** (e.g. `red`, `submit`) use exact case-insensitive lookup. When the recognition returns a multi-word transcript, each word is tried individually so a command fires even when embedded in a phrase (e.g. _"I want some red"_ triggers `red`).
 
-**Phrase command keys** (e.g. `'Change the background color'`) use [fuse.js](https://fusejs.io/) fuzzy matching. The `precision` prop controls the Fuse.js score threshold (default `0.4` — lower is stricter).
+**Phrase command keys** (e.g. `'Change the background color'`) use [fuse.js](https://fusejs.io/) fuzzy matching against multi-word transcripts. The `precision` prop controls the Fuse.js score threshold (default `0.4` — lower is stricter). A single-word transcript never fuzzy-matches a phrase key, so a stray fragment (`"the"`, `"to"`) returned by the recognition can't trigger a phrase command.
 
 **Mixing single-word and phrase keys** is fully supported — a phrase key never disables single-word matching. For each transcript the hook tries, in order: (1) an exact match of the whole utterance against a single-word key, (2) fuzzy matching against the phrase keys, then (3) each word of the utterance against the single-word keys. The first command whose callback returns a non-`null` value wins (returning `null` is treated as "no match" and falls through to the next step). So an exact phrase like _"change the background color"_ fires the phrase even when a single-word key (`color`) appears inside it, while an embedded single word like _"I want some red"_ still fires `red` when no phrase matches.
 
@@ -458,7 +458,7 @@ useCommands(commands, precision)
 Matching rules:
 
 - **Single-word keys** (e.g. `red`, `submit`): exact case-insensitive lookup, with each word of the input tried individually so a key fires even when embedded in a phrase (`I want some red` triggers `red`).
-- **Phrase keys** (e.g. `change the background color`): Fuse.js fuzzy matching against the joined transcript, gated by `precision`. fuse.js is loaded lazily; if it's not installed, the hook falls back to substring matching.
+- **Phrase keys** (e.g. `change the background color`): Fuse.js fuzzy matching against the joined multi-word transcript, gated by `precision`. A single-word transcript is never fuzzy-matched against a phrase key. fuse.js is loaded lazily; if it's not installed, the hook falls back to substring matching.
 - **Precedence** (mixed maps): an exact single-word utterance is tried first, then phrase fuzzy matching, then single words embedded in a multi-word transcript. The first command whose callback returns a non-`null` value wins; a `null` return is treated as no-match and falls through.
 
 ### Browser support flag
