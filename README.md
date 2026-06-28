@@ -23,8 +23,10 @@ far (see [caniuse](https://caniuse.com/#search=SpeechRecognition)). If the API i
 won't display anything.
 
 This component intends to catch a speech result as soon as possible. This can be a good fit for vocal commands or search
-field filling. It also supports a continuous mode (`continuous` prop) for real-time transcription and always-on voice
-command use cases — see the `Vocal` component API table for details.
+field filling. It also supports a continuous mode (`continuous` prop) that keeps the recognition session open across
+speech segments and delivers a single, aggregated transcript through `onResult` when the session ends — stopped by a
+second click or by `silenceTimeout`. Commands are not evaluated in continuous mode; see the `Vocal` component API table
+for details.
 
 In single-shot mode (the default), either a result is caught and returned or the timeout is reached and the recognition
 is discarded. The `stop` function returned by children-as-function mechanism allows to prematurely discard the
