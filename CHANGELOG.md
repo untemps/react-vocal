@@ -1,3 +1,10 @@
+# [2.0.0-beta.45](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.44...v2.0.0-beta.45) (2026-06-28)
+
+
+### Bug Fixes
+
+* Add type="button" to the default mic button to prevent form submission ([#265](https://github.com/untemps/react-vocal/issues/265)) ([0b5c5cb](https://github.com/untemps/react-vocal/commit/0b5c5cbcac4c45453598df978e94da1b610e6e7a))
+
 # [2.0.0-beta.44](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.43...v2.0.0-beta.44) (2026-06-28)
 
 
