@@ -39,6 +39,14 @@ beforeEach(async () => {
 	vi.mocked(createVocal).mockImplementation(actual.createVocal)
 })
 
+// Fake-timer tests below restore real timers at the end of their body. Reset here too so a
+// test that throws mid-body (before its vi.useRealTimers() runs) can't leak fake timers into
+// the next test and cascade into unrelated failures. vi.useRealTimers() is a no-op when real
+// timers are already active, so this is safe for every test.
+afterEach(() => {
+	vi.useRealTimers()
+})
+
 describe('Vocal', () => {
 	it('matches snapshot', () => {
 		const { asFragment } = render(getInstance())
