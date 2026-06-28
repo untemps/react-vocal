@@ -37,7 +37,11 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			.then((module) => {
 				if (cancelled) return
 				const FuseCtor = (module.default ?? module) as unknown as typeof Fuse
-				fuseRef.current = new FuseCtor(phraseKeys, { includeScore: true, ignoreLocation: true })
+				fuseRef.current = new FuseCtor(phraseKeys, {
+					includeScore: true,
+					ignoreLocation: true,
+					minMatchCharLength: 2,
+				})
 			})
 			.catch(() => {
 				if (cancelled) return
@@ -73,11 +77,13 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			if (phraseKeys.length) {
 				const fuse = fuseRef.current
 				if (fuse) {
-					const matches = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
-					if (matches.length) {
-						const commandKey = matches[0].item as string
-						const result = normalized[commandKey]?.(rawInput, commandKey)
-						if (result !== null) return result
+					if (isMultiWord) {
+						const matches = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
+						if (matches.length) {
+							const commandKey = matches[0].item as string
+							const result = normalized[commandKey]?.(rawInput, commandKey)
+							if (result !== null) return result
+						}
 					}
 				} else if (trimmed) {
 					// `k.includes(lInput)` can produce false positives when input is short
