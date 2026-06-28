@@ -465,7 +465,7 @@ Matching rules:
 
 #### Basic usage
 
-`isSupported` is a function that returns `true` when the browser supports the Web Speech API (along with the Permissions and MediaDevices APIs that `@untemps/vocal` relies on). It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
+`isSupported` is a function that returns `true` when the browser supports the Web Speech API and the MediaDevices API that `@untemps/vocal` relies on. (The Permissions API is used at runtime to watch microphone permission, but it is not part of the support check.) It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
 
 ```javascript
 import { Vocal, isSupported } from '@untemps/react-vocal'
