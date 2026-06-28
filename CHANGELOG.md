@@ -1,3 +1,10 @@
+# [2.0.0-beta.44](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.43...v2.0.0-beta.44) (2026-06-28)
+
+
+### Bug Fixes
+
+* Short transcripts falsely trigger phrase commands (Fuse missing minMatchCharLength) ([#264](https://github.com/untemps/react-vocal/issues/264)) ([5f1d669](https://github.com/untemps/react-vocal/commit/5f1d669d3b0b873dfa3ad613e368ac996bcad03b))
+
 # [2.0.0-beta.43](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.42...v2.0.0-beta.43) (2026-06-26)
 
 
