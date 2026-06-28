@@ -68,10 +68,6 @@ describe('useTimeout', () => {
 	})
 
 	it('arms with the latest duration even from a start captured before the duration changed', () => {
-		// Mirrors how <Vocal> uses the hook: it captures `start` once (its handlers are
-		// subscribed to the recognition instance at session start) and never re-reads it. A
-		// stale reference must still arm with the current duration, otherwise a mid-session
-		// timeout/silenceTimeout prop change is silently ignored — see issue #263.
 		vi.useFakeTimers()
 		try {
 			const handler = vi.fn()
@@ -82,10 +78,8 @@ describe('useTimeout', () => {
 
 			rerender({ timeout: 100 })
 
-			// `start` identity is stable across duration changes...
 			expect(result.current[0]).toBe(startBefore)
 
-			// ...and the captured reference fires at the new 100ms value, not the old 1000ms.
 			startBefore()
 			vi.advanceTimersByTime(99)
 			expect(handler).not.toHaveBeenCalled()
