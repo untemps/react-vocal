@@ -248,6 +248,51 @@ describe('useCommands', () => {
 		})
 	})
 
+	describe('Fuse-present short-input guard', () => {
+		it.each([
+			['stop the music', 'the'],
+			['stop the music', 'to'],
+			['change the background color', 'a'],
+			['change the background color', 'c'],
+			['change the border to red', 'to'],
+			['change the border to red', 'der'],
+		])('does not fire phrase %p on the short single-word transcript %p', async (command, input) => {
+			const phrase = vi.fn(() => 'fired')
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands({ [command]: phrase }))
+			await act(async () => {})
+			expect(triggerCommand(input)).toBeNull()
+			expect(phrase).not.toHaveBeenCalled()
+		})
+
+		it('does not fire either of two near-identical phrases on a short single-word transcript', async () => {
+			const toRed = vi.fn(() => 'red')
+			const toBlue = vi.fn(() => 'blue')
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() =>
+				useCommands({ 'change the border to red': toRed, 'change the border to blue': toBlue })
+			)
+			await act(async () => {})
+			for (const input of ['the', 'to', 'a']) {
+				expect(triggerCommand(input)).toBeNull()
+			}
+			expect(toRed).not.toHaveBeenCalled()
+			expect(toBlue).not.toHaveBeenCalled()
+		})
+
+		it('still fires a phrase command on a genuine multi-word transcript', async () => {
+			const phrase = vi.fn(() => 'changed')
+			const {
+				result: { current: triggerCommand },
+			} = renderHook(() => useCommands({ 'change the background color': phrase }))
+			await act(async () => {})
+			expect(triggerCommand('change the background colour')).toBe('changed')
+			expect(phrase).toHaveBeenCalled()
+		})
+	})
+
 	describe('Object-prototype key safety', () => {
 		it('does not treat an inherited Object.prototype name as a registered command', () => {
 			const commands = { red: () => 'red' }
