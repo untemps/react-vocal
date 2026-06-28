@@ -37,10 +37,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			.then((module) => {
 				if (cancelled) return
 				const FuseCtor = (module.default ?? module) as unknown as typeof Fuse
-				// `minMatchCharLength: 2` drops single-character match segments so a stray
-				// letter (e.g. "a", "c") can't score near zero against a phrase key. It does
-				// not, on its own, block short whole-word fragments ("the", "to", "der") —
-				// the multi-word guard in triggerCommand handles those.
 				fuseRef.current = new FuseCtor(phraseKeys, {
 					includeScore: true,
 					ignoreLocation: true,
@@ -81,11 +77,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			if (phraseKeys.length) {
 				const fuse = fuseRef.current
 				if (fuse) {
-					// Only multi-word transcripts can be a meaningful match for a (multi-word)
-					// phrase key. With `ignoreLocation`, a single short word that happens to be a
-					// substring of a phrase scores near zero (e.g. "the"/"to"/"der"), so a stray
-					// fragment would otherwise fire the wrong command. Single words are still
-					// handled by the exact single-word lookup above and the embedded scan below.
 					if (isMultiWord) {
 						const matches = fuse.search(rawInput).filter((r) => (r.score ?? 1) < precision)
 						if (matches.length) {
