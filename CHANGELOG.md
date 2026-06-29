@@ -1,3 +1,10 @@
+# [2.0.0-beta.46](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.45...v2.0.0-beta.46) (2026-06-29)
+
+
+### Bug Fixes
+
+* Mid-session timeout/silenceTimeout changes are ignored ([#266](https://github.com/untemps/react-vocal/issues/266)) ([30636a5](https://github.com/untemps/react-vocal/commit/30636a553e9c6ed9f3442d3049a480ff50bffa7e))
+
 # [2.0.0-beta.45](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.44...v2.0.0-beta.45) (2026-06-28)
 
 
