@@ -125,7 +125,8 @@ export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstan
 		off: vi.fn((type: string, cb?: (...args: unknown[]) => void) => {
 			if (!handlers[type]) return
 			if (cb) {
-				handlers[type] = handlers[type].filter((h) => h !== cb)
+				const index = handlers[type].indexOf(cb)
+				if (index !== -1) handlers[type].splice(index, 1)
 				if (handlers[type].length === 0) delete handlers[type]
 			} else {
 				delete handlers[type]
