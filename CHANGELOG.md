@@ -1,3 +1,10 @@
+# [2.0.0-beta.47](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.46...v2.0.0-beta.47) (2026-06-29)
+
+
+### Bug Fixes
+
+* Externalize react/jsx-runtime so dist works on React <19 ([#269](https://github.com/untemps/react-vocal/issues/269)) ([75988f9](https://github.com/untemps/react-vocal/commit/75988f9e6c7e8d783890bbc680d3512b2626646f))
+
 # [2.0.0-beta.46](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.45...v2.0.0-beta.46) (2026-06-29)
 
 
