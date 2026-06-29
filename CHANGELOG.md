@@ -1,3 +1,10 @@
+# [2.0.0-beta.48](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.47...v2.0.0-beta.48) (2026-06-29)
+
+
+### Bug Fixes
+
+* Release leaked event handlers when start() rejects or aborts ([#270](https://github.com/untemps/react-vocal/issues/270)) ([2bfa435](https://github.com/untemps/react-vocal/commit/2bfa435c1bd388a085569a8068ee0278ec4cce90))
+
 # [2.0.0-beta.47](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.46...v2.0.0-beta.47) (2026-06-29)
 
 
