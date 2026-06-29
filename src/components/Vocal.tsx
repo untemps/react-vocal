@@ -318,6 +318,7 @@ export const Vocal = ({
 	const startRecognition = useCallback(() => {
 		try {
 			stopSilenceTimer()
+			unsubscribeAllRef.current?.()
 			Object.entries(HANDLERS).forEach(([event, fn]) => subscribe(event, fn as (e: Event) => void))
 			unsubscribeAllRef.current = () =>
 				Object.entries(HANDLERS).forEach(([event, fn]) => unsubscribe(event, fn as (e: Event) => void))

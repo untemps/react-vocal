@@ -1058,6 +1058,153 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('does not double-fire callbacks after a rejected start, and a later session fires once', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const onResult = vi.fn()
+		const onError = vi.fn()
+		const recognition = createMockVocal()
+		recognition.stop.mockImplementation(() => {})
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onStart, onEnd, onResult, onError }))
+		const baseline = recognition.handlerCount()
+
+		recognition.start.mockRejectedValueOnce(new DOMException('Permission denied', 'NotAllowedError'))
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onError).toHaveBeenCalledTimes(1))
+		})
+		expect(onError).toHaveBeenCalledWith(expect.objectContaining({ type: 'permission-denied' }))
+		const afterReject = recognition.handlerCount()
+		expect(afterReject).toBeGreaterThan(baseline)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+		expect(recognition.handlerCount()).toBe(afterReject)
+		await act(async () => {
+			recognition.say('Foo')
+			await waitFor(() => expect(onResult).toHaveBeenCalled())
+		})
+		await act(async () => {
+			recognition.end()
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+
+		expect(onStart).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledWith('Foo', expect.anything())
+		expect(onEnd).toHaveBeenCalledTimes(1)
+		expect(onError).toHaveBeenCalledTimes(1)
+		expect(recognition.handlerCount()).toBe(baseline)
+	})
+
+	it('does not double-fire callbacks after a silent signal-abort that never reaches onError', async () => {
+		const onStart = vi.fn()
+		const onEnd = vi.fn()
+		const onResult = vi.fn()
+		const onError = vi.fn()
+		const recognition = createMockVocal()
+		recognition.stop.mockImplementation(() => {})
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onStart, onEnd, onResult, onError }))
+		const baseline = recognition.handlerCount()
+
+		recognition.start.mockImplementationOnce(async () => {})
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await new Promise((r) => setTimeout(r, 0))
+		})
+		expect(onStart).not.toHaveBeenCalled()
+		expect(onError).not.toHaveBeenCalled()
+		const afterAbort = recognition.handlerCount()
+		expect(afterAbort).toBeGreaterThan(baseline)
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(onStart).toHaveBeenCalled())
+		})
+		expect(recognition.handlerCount()).toBe(afterAbort)
+		await act(async () => {
+			recognition.say('Bar')
+			await waitFor(() => expect(onResult).toHaveBeenCalled())
+		})
+		await act(async () => {
+			recognition.end()
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+
+		expect(onStart).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledWith('Bar', expect.anything())
+		expect(onEnd).toHaveBeenCalledTimes(1)
+		expect(onError).not.toHaveBeenCalled()
+		expect(recognition.handlerCount()).toBe(baseline)
+	})
+
+	it('still fires onEnd via the trailing end event after an in-session error', async () => {
+		const onEnd = vi.fn()
+		const onError = vi.fn()
+		const recognition = createMockVocal()
+		recognition.stop.mockImplementation(() => {})
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onEnd, onError }))
+		const baseline = recognition.handlerCount()
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+
+		await act(async () => {
+			recognition.error({ error: 'network', message: 'Network error' })
+			await waitFor(() => expect(onError).toHaveBeenCalledTimes(1))
+		})
+		expect(onEnd).not.toHaveBeenCalled()
+
+		await act(async () => {
+			recognition.end()
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(1))
+		})
+
+		expect(onError).toHaveBeenCalledTimes(1)
+		expect(onEnd).toHaveBeenCalledTimes(1)
+		expect(recognition.handlerCount()).toBe(baseline)
+	})
+
+	it('delivers the final transcript and onEnd when a continuous session ends via an error', async () => {
+		const onResult = vi.fn()
+		const onEnd = vi.fn()
+		const onError = vi.fn()
+		const recognition = createMockVocal({ continuous: true })
+		recognition.stop.mockImplementation(() => {})
+		const { getByTestId } = render(
+			getInstance({ __rsInstance: recognition, onResult, onEnd, onError, continuous: true, timeout: 10_000 })
+		)
+		const baseline = recognition.handlerCount()
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+			await waitFor(() => expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'true'))
+		})
+		await act(async () => {
+			recognition.say('Hello world')
+		})
+
+		await act(async () => {
+			recognition.error({ error: 'network', message: 'Network error' })
+			await waitFor(() => expect(onError).toHaveBeenCalledTimes(1))
+		})
+		await act(async () => {
+			recognition.fire('result', new Event('result'), 'Hello world', ['Hello world'])
+			recognition.end()
+			await waitFor(() => expect(onEnd).toHaveBeenCalledTimes(1))
+		})
+
+		expect(onResult).toHaveBeenCalledTimes(1)
+		expect(onResult).toHaveBeenCalledWith('Hello world', expect.anything())
+		expect(onEnd).toHaveBeenCalledTimes(1)
+		expect(recognition.handlerCount()).toBe(baseline)
+	})
+
 	describe('Mid-session timing changes', () => {
 		it('honors a null→positive silenceTimeout change mid continuous session (no 0ms timer)', async () => {
 			vi.useFakeTimers()
