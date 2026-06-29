@@ -41,7 +41,7 @@ Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the u
 
 ## Requirements
 
--   React >= 16.13.1
+-   React >= 16.14.0
 -   Node >= 22
 
 ## Installation
