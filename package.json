@@ -143,6 +143,8 @@
 		"typecheck": "tsc --noEmit",
 		"lint": "eslint src vitest.setup.ts dev/src",
 		"build": "vite build",
+		"postbuild": "node scripts/verify-bundle.mjs",
+		"verify:bundle": "node scripts/verify-bundle.mjs",
 		"prepare": "husky",
 		"prettier": "prettier \"*/**/*.{js,ts,tsx}\" --ignore-path ./.prettierignore --write && git add -u && git status"
 	}
