@@ -39,6 +39,10 @@ beforeEach(async () => {
 	vi.mocked(createVocal).mockImplementation(actual.createVocal)
 })
 
+afterEach(() => {
+	vi.useRealTimers()
+})
+
 describe('Vocal', () => {
 	it('matches snapshot', () => {
 		const { asFragment } = render(getInstance())
@@ -1051,6 +1055,138 @@ describe('Vocal', () => {
 			// Browser fires end asynchronously after recognition stops
 			recognition.end()
 			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+	})
+
+	describe('Mid-session timing changes', () => {
+		it('honors a null→positive silenceTimeout change mid continuous session (no 0ms timer)', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId, rerender } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: true,
+					timeout: 30_000,
+					silenceTimeout: null,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			act(() => {
+				rerender(
+					getInstance({
+						__rsInstance: recognition,
+						onEnd,
+						continuous: true,
+						timeout: 30_000,
+						silenceTimeout: 7000,
+					})
+				)
+			})
+
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				vi.advanceTimersByTime(6999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
+		})
+
+		it('honors a silenceTimeout change between positive values on the next re-arm', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal({ continuous: true })
+			const { getByTestId, rerender } = render(
+				getInstance({
+					__rsInstance: recognition,
+					onEnd,
+					continuous: true,
+					timeout: 30_000,
+					silenceTimeout: 5000,
+				})
+			)
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				rerender(
+					getInstance({
+						__rsInstance: recognition,
+						onEnd,
+						continuous: true,
+						timeout: 30_000,
+						silenceTimeout: 8000,
+					})
+				)
+			})
+
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				vi.advanceTimersByTime(7999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
+		})
+
+		it('honors a timeout change mid single-shot session when the timer re-arms', async () => {
+			vi.useFakeTimers()
+			const onEnd = vi.fn()
+			const recognition = createMockVocal()
+			const { getByTestId, rerender } = render(getInstance({ __rsInstance: recognition, onEnd, timeout: 3000 }))
+
+			await act(async () => {
+				fireEvent.click(getByTestId('__vocal-root__'))
+			})
+
+			act(() => {
+				rerender(getInstance({ __rsInstance: recognition, onEnd, timeout: 5000 }))
+			})
+
+			act(() => {
+				recognition.fire('speechstart', new Event('speechstart'))
+				recognition.fire('speechend', new Event('speechend'))
+			})
+
+			act(() => {
+				vi.advanceTimersByTime(4999)
+			})
+			expect(onEnd).not.toHaveBeenCalled()
+
+			act(() => {
+				vi.advanceTimersByTime(1)
+			})
+			expect(onEnd).toHaveBeenCalledTimes(1)
+			vi.useRealTimers()
 		})
 	})
 

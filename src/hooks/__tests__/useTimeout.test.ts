@@ -66,4 +66,27 @@ describe('useTimeout', () => {
 		await wait(timeout)
 		expect(handler).not.toHaveBeenCalled()
 	})
+
+	it('arms with the latest duration even from a start captured before the duration changed', () => {
+		vi.useFakeTimers()
+		try {
+			const handler = vi.fn()
+			const { result, rerender } = renderHook(({ timeout }) => useTimeout(handler, timeout), {
+				initialProps: { timeout: 1000 },
+			})
+			const [startBefore] = result.current
+
+			rerender({ timeout: 100 })
+
+			expect(result.current[0]).toBe(startBefore)
+
+			startBefore()
+			vi.advanceTimersByTime(99)
+			expect(handler).not.toHaveBeenCalled()
+			vi.advanceTimersByTime(1)
+			expect(handler).toHaveBeenCalledTimes(1)
+		} finally {
+			vi.useRealTimers()
+		}
+	})
 })
