@@ -71,13 +71,9 @@ export const useVocal = (
 		// Optimistic update so the UI reacts immediately at click, before the
 		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
-		// vocal 2.x's start() can either reject (microphone/permission errors) or
-		// silently resolve without dispatching 'start' (AbortError on the signal —
-		// caught and swallowed internally, or any other no-op resolution). In both
-		// cases the instance never fires 'end'/'error', so the optimistic flag would
-		// stay stuck on `true`. Track the real 'start' event so we can detect any
-		// silent resolution — independent of whether a signal was provided — while
-		// a late signal abort that races a true success does not trigger a false rollback.
+		// vocal 2.x's start() may resolve without ever firing 'start' (e.g. a swallowed
+		// AbortError), leaving the optimistic flag stuck on `true`. Roll back only when the
+		// real 'start' event never fired, so a late abort racing a genuine success is safe.
 		let startEventFired = false
 		const onStart = () => {
 			startEventFired = true

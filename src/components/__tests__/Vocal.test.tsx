@@ -16,9 +16,8 @@ vi.mock('@untemps/vocal', async (importOriginal) => {
 })
 
 const defaultProps: Partial<VocalProps> = {}
-// getInstance routes the test-only `__rsInstance` shorthand to
-// `vi.mocked(createVocal).mockReturnValue(...)` so test bodies stay concise.
-// `__rsInstance` is internal to this harness — not a prop of <Vocal>.
+// `__rsInstance` is a test-only shorthand (not a <Vocal> prop): when provided it
+// makes the mocked createVocal return that instance, keeping test bodies concise.
 const getInstance = (
 	props: (Partial<VocalProps> & { __rsInstance?: VocalInstance }) | null = {},
 	children: VocalProps['children'] = null
@@ -30,10 +29,8 @@ const getInstance = (
 	return <Vocal {...componentProps}>{children}</Vocal>
 }
 
-// vitest's `restoreMocks: true` resets `vi.fn(actual.createVocal)` to an empty
-// stub between tests, dropping the delegation to the real `createVocal`. Re-stub
-// the implementation before every test so the default path (no `__rsInstance`
-// injected) still uses the real vocal factory.
+// restoreMocks wipes createVocal's implementation between tests; re-stub it so the
+// default path (no `__rsInstance`) keeps delegating to the real vocal factory.
 beforeEach(async () => {
 	const actual = await vi.importActual<typeof import('@untemps/vocal')>('@untemps/vocal')
 	vi.mocked(createVocal).mockImplementation(actual.createVocal)
@@ -854,8 +851,7 @@ describe('Vocal', () => {
 		})
 
 		expect(getByTestId('__vocal-root__')).toHaveAttribute('aria-pressed', 'false')
-		// Silent abort is not an error from the consumer's perspective —
-		// no error event should surface.
+		// A silent abort is not an error from the consumer's perspective — none should surface
 		expect(onError).not.toHaveBeenCalled()
 	})
 
@@ -1599,9 +1595,8 @@ describe('Vocal', () => {
 				fireEvent.click(getByTestId('__vocal-root__'))
 			})
 
-			// Drive speechstart/speechend directly — a full say() would emit `result`,
-			// which in non-continuous mode calls stopRecognition() and fires `end`
-			// immediately, masking the silence-timer branch under test.
+			// Drive speechstart/speechend directly: a full say() emits `result`, which in
+			// non-continuous mode stops recognition and fires `end`, masking the branch under test.
 			act(() => {
 				recognition.fire('speechstart', new Event('speechstart'))
 				recognition.fire('speechend', new Event('speechend'))

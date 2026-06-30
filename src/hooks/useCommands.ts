@@ -29,9 +29,8 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 			fuseRef.current = null
 			return
 		}
-		// Race guard: if the effect re-runs (keys change) or unmounts before the dynamic
-		// import resolves, discard the .then()/.catch() result so a stale Fuse instance
-		// can't overwrite fuseRef.current.
+		// Race guard: discard the result if the effect re-runs or unmounts before the
+		// dynamic import resolves, so a stale Fuse instance can't overwrite fuseRef.current.
 		let cancelled = false
 		import('fuse.js')
 			.then((module) => {
@@ -86,9 +85,8 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 						}
 					}
 				} else if (trimmed) {
-					// `k.includes(lInput)` can produce false positives when input is short
-					// (e.g. "rouge" matches "change en rouge"). Accepted tradeoff: this branch
-					// only runs when fuse.js is absent, so degraded precision is expected.
+					// `k.includes(lInput)` can false-positive on short input (e.g. "rouge" matches
+					// "change en rouge"); accepted since this fallback only runs when fuse.js is absent.
 					const lInput = trimmed.toLowerCase()
 					const commandKey = phraseKeys.find((k) => lInput.includes(k) || k.includes(lInput))
 					if (commandKey) {

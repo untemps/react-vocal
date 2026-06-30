@@ -35,12 +35,9 @@ export interface MockVocalOptions {
 
 export type MockVocalInput = string | Segment[] | null | undefined
 
-// MockVocalInstance extends VocalInstance with test-only helpers (.say, .error,
-// .end, .fire, .handlerCount). Production code consuming a VocalInstance MUST
-// NOT call them — they exist only to drive lifecycle events during tests and
-// inspect the listener map. Lifecycle methods are typed as MockedFunction so
-// test bodies can call `.mockImplementation()` on them when they need to
-// override behavior.
+// Test-only helpers (.say/.error/.end/.fire/.permission/.handlerCount) drive
+// lifecycle events and inspect the listener map; production code must not call
+// them. Lifecycle methods are MockedFunction so tests can .mockImplementation().
 export interface MockVocalInstance extends Omit<VocalInstance, 'start' | 'stop' | 'abort' | 'on' | 'off' | 'cleanup'> {
 	start: MockedFunction<VocalInstance['start']>
 	stop: MockedFunction<VocalInstance['stop']>
@@ -59,21 +56,11 @@ export interface MockVocalInstance extends Omit<VocalInstance, 'start' | 'stop' 
 const buildPermissionEvent = (state: PermissionState): Event & { state: PermissionState } =>
 	Object.assign(new Event('permission'), { state })
 
-// Mock VocalInstance for component tests — implements the contract of
-// `createVocal()` from @untemps/vocal 2.x and exposes test helpers
-// (.say, .error, .end, .fire) to simulate the recognition lifecycle
-// without going through the global SpeechRecognition mock.
-//
-// Known limitations vs. the real vocal 2.x:
-// - `start(options)` accepts an options object but ignores `options.signal`.
-//   Tests that need to assert signal pass-through should inspect
-//   `instance.start.mock.calls` directly.
-// - `start` is `async`, so `fire('start', ...)` resolves in a microtask. The
-//   real vocal awaits getUserMediaStream first; the optimistic order in
-//   useVocal is the same in both cases.
-// - The helpers (`say`, `error`, `end`, `fire`) live alongside the public
-//   VocalInstance API on the same object. They are test-only escape hatches;
-//   production code consuming a `VocalInstance` MUST NOT call them.
+// Mock of createVocal() from @untemps/vocal 2.x for component tests.
+// Gotchas vs. real vocal 2.x:
+// - start() ignores options.signal; assert pass-through via start.mock.calls.
+// - start is async, so fire('start') resolves in a microtask (matches the
+//   optimistic order in useVocal).
 export const createMockVocal = (options: MockVocalOptions = {}): MockVocalInstance => {
 	const handlers: Record<string, Array<(...args: unknown[]) => void>> = {}
 	let isRecording = false
