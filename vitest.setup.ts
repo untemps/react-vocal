@@ -39,11 +39,9 @@ Object.defineProperty(globalThis.navigator, 'mediaDevices', {
 	return { length: 0 }
 })
 
-// Minimal SpeechRecognition mock used by tests that create a real `createVocal()`
-// instance (i.e. tests that don't inject a __rsInstance mock). Just enough to make
-// vocal 2.x's isSupported()/start() chain succeed and forward start/end events.
-// Tests that need to simulate speech results inject a createMockVocal() instance
-// instead — see src/components/__tests__/createMockVocal.ts.
+// Minimal SpeechRecognition mock for tests using a real createVocal(): just enough for vocal 2.x's
+// isSupported()/start() chain to succeed and to forward start/end events. Tests simulating speech
+// results use createMockVocal() instead (src/components/__tests__/createMockVocal.ts).
 ;(globalThis as unknown as { SpeechRecognition: unknown }).SpeechRecognition = vi.fn(function () {
 	const handlers: Record<string, Handler[]> = {}
 	const fire = (type: string, event?: Event) => {

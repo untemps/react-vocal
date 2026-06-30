@@ -3,8 +3,7 @@ import { act, renderHook } from '@testing-library/react'
 import { useCommands } from '../useCommands'
 
 // Static import anchors fuse.js in the module graph so vi.mock intercepts the
-// dynamic import('fuse.js') inside the hook. Without it the dynamic import resolves
-// against the real module before the async mock factory completes.
+// hook's dynamic import('fuse.js'); otherwise it resolves to the real module first
 import 'fuse.js'
 
 vi.mock('fuse.js', async () => {
@@ -119,14 +118,12 @@ describe('useCommands', () => {
 		expect(triggerCommand('jaune')).toBe('yellow')
 	})
 
-	it('does not match near-homophones with strict precision — rely on maxAlternatives instead', () => {
+	it('does not match a near-homophone of a single-word command (exact lookup only — rely on maxAlternatives instead)', () => {
 		const commands = { vert: () => 'green' }
 		const {
 			result: { current: triggerCommand },
 		} = renderHook(() => useCommands(commands))
-		// 'verre' scores 0.4 against 'vert' — not strictly < STRICT_PRECISION (0.4)
 		expect(triggerCommand('verre')).toBeNull()
-		// The engine surfaces 'vert' as a secondary alternative (score 0) — exact match
 		expect(triggerCommand('vert')).toBe('green')
 	})
 
@@ -395,9 +392,8 @@ describe('useCommands', () => {
 		})
 
 		it('discards the dynamic fuse.js import result when the effect is cleaned up before it resolves', async () => {
-			// Without the cancellation guard, the .catch() branch would fire console.warn
-			// even after the component unmounted (stale effect). With the guard, the
-			// cleanup runs before the import settles and the .catch() is skipped.
+			// Without the cancellation guard, the import's .catch() fires console.warn after
+			// unmount; the guard skips it because cleanup runs before the import settles.
 			const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 			vi.doMock('fuse.js', () => {
 				throw new Error('fuse.js not installed')
