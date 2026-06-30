@@ -62,8 +62,8 @@ describe('classifyError', () => {
 		})
 
 		it('falls through to "unknown" for unrecognized DOMException names', () => {
-			// jsdom resets `message` to '' when name is non-standard; the wrapper
-			// falls back to 'unknown' rather than the empty string.
+			// Unrecognized DOMException name with an empty message falls back to 'unknown',
+			// not the name (unlike the recognized-name branch above).
 			const exception = new DOMException('', 'SomeUnknownError')
 			expect(classifyError(exception)).toEqual({
 				type: 'unknown',

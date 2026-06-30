@@ -245,9 +245,8 @@ export const Vocal = ({
 	const _onResult = useCallback(
 		(event: SpeechRecognitionEvent | Event, bestAlternative: string) => {
 			stopTimer()
-			// In continuous mode, vocal 2.x emits a single aggregated synthetic event just before 'end' —
-			// no need to accumulate. tryMatchCommand is skipped in continuous because commands are
-			// intentionally not evaluated against the full session transcript.
+			// Continuous mode: vocal 2.x emits one aggregated synthetic event before 'end'; commands are
+			// intentionally not matched against the full session transcript
 			if (!continuousRef.current) {
 				const results =
 					(event as SpeechRecognitionEvent).results !== undefined
@@ -282,9 +281,8 @@ export const Vocal = ({
 
 	const _onEnd = useCallback(
 		(e?: Event) => {
-			// Guard against re-entry: when a timer (timeout/silenceTimeout) fires _onEnd,
-			// stopRecognition() calls vocal.stop() which dispatches the 'end' event, which
-			// would re-enter _onEnd and double-fire onEnd.
+			// Guard against re-entry: a timer firing _onEnd calls stop(), which dispatches 'end'
+			// and would re-enter _onEnd, double-firing onEnd
 			if (isEndingRef.current) return
 			isEndingRef.current = true
 			stopTimer()

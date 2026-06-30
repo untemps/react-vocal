@@ -94,9 +94,8 @@ describe('useVocal', () => {
 		})
 
 		beforeEach(() => {
-			// mockReset clears both calls and any per-test implementation overrides
-			// (mockReturnValue / mockImplementation). mockClear would leak those overrides
-			// across tests — see the start() rejection / throw cases below.
+			// mockReset (not mockClear) also drops per-test implementation overrides,
+			// so they don't leak across tests — see the start() rejection/throw cases below.
 			mockStart.mockReset()
 			mockStop.mockReset()
 			mockAbort.mockReset()
@@ -232,15 +231,14 @@ describe('useVocal', () => {
 		})
 
 		it('keeps isRecording true when start() resolves and the signal is not aborted', async () => {
-			// Guard against regression: the silent-resolve rollback must not fire
-			// on a normal successful start. Simulate vocal's real contract by
-			// dispatching 'start' from inside start() before resolution.
+			// Regression guard: the silent-resolve rollback must not fire on a normal start.
+			// Simulate vocal's contract by dispatching 'start' before resolving.
 			mockStart.mockImplementation(async () => {
 				mockOn.mock.calls
 					.filter(([type]) => type === 'start')
 					.forEach(([, handler]) => (handler as () => void)())
 			})
-			const controller = new AbortController() // not aborted
+			const controller = new AbortController()
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
 				await result.current[1].start({ signal: controller.signal })
@@ -249,11 +247,8 @@ describe('useVocal', () => {
 		})
 
 		it('keeps isRecording true when the start event fires and the signal aborts late', async () => {
-			// Race scenario: vocal.start() succeeds (the real 'start' event has
-			// already been dispatched), then the consumer aborts the signal
-			// before the wrapper's .then microtask runs. The rollback must rely
-			// on whether 'start' actually fired, not just on signal.aborted, so
-			// the real-recording flag stays `true`.
+			// Race: 'start' already fired, then the consumer aborts before the wrapper's .then microtask.
+			// Rollback must check whether 'start' fired, not signal.aborted, so isRecording stays true.
 			let resolveStart: (() => void) | undefined
 			mockStart.mockReturnValue(
 				new Promise<void>((res) => {
@@ -264,8 +259,7 @@ describe('useVocal', () => {
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
 				const p = result.current[1].start({ signal: controller.signal })
-				// Simulate vocal dispatching 'start' to every subscriber, including
-				// the wrapper's internal tracker.
+				// Simulate vocal dispatching 'start' to subscribers, including the wrapper's tracker.
 				mockOn.mock.calls
 					.filter(([type]) => type === 'start')
 					.forEach(([, handler]) => (handler as () => void)())
@@ -278,9 +272,8 @@ describe('useVocal', () => {
 		})
 
 		it('unsubscribes the internal start tracker once the promise settles', async () => {
-			// Each start() call adds a transient 'start' listener used for the
-			// silent-abort detection. It must be removed once the promise settles
-			// so repeated calls do not leak listeners on the vocal instance.
+			// The transient 'start' listener (for silent-abort detection) must be removed
+			// once the promise settles, else repeated calls leak listeners on the instance.
 			mockStart.mockReturnValue(Promise.resolve())
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
@@ -330,10 +323,8 @@ describe('useVocal', () => {
 		})
 
 		it('forwards the vocal 2.x result callback signature unchanged', () => {
-			// Locks the contract: a handler subscribed via subscribe('result', cb)
-			// receives (event, bestAlternative, alternatives) — matching
-			// @untemps/vocal's ResultEventHandler. The README examples for both
-			// useVocal and useCommands rely on this signature.
+			// Locks the contract: subscribe('result', cb) receives (event, bestAlternative, alternatives),
+			// matching @untemps/vocal's ResultEventHandler — README examples rely on this signature.
 			const handler = vi.fn()
 			const {
 				result: {

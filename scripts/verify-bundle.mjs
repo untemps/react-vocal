@@ -25,9 +25,8 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
 const bundles = [...new Set([pkg.module, pkg.main].filter(Boolean))]
 
-// React element symbols that must never be inlined (they would pin element
-// creation to the build's React version). `react.transitional.element` is
-// React 19's symbol; `react.element` is the classic one used by React <19.
+// React element symbols that must never be inlined — their presence pins element
+// creation to the build's React version instead of the consumer's (see header).
 const inlinedElementSymbols = ['react.transitional.element', 'react.element']
 
 const errors = []
