@@ -1,3 +1,5 @@
+## [1.7.41](https://github.com/untemps/react-vocal/compare/v1.7.40...v1.7.41) (2026-07-01)
+
 ## [1.7.40](https://github.com/untemps/react-vocal/compare/v1.7.39...v1.7.40) (2026-06-22)
 
 ## [1.7.39](https://github.com/untemps/react-vocal/compare/v1.7.38...v1.7.39) (2026-06-22)
