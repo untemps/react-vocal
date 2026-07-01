@@ -14,6 +14,7 @@ import { RenderPropCard } from './cards/RenderPropCard.jsx'
 import { ErrorsCard } from './cards/ErrorsCard.jsx'
 import { UseVocalCard } from './cards/UseVocalCard.jsx'
 import { UseCommandsCard } from './cards/UseCommandsCard.jsx'
+import { SupportCard } from './cards/SupportCard.jsx'
 
 export const App = () => {
 	const [theme, toggleTheme] = useTheme()
@@ -21,7 +22,7 @@ export const App = () => {
 
 	return (
 		<div className="page">
-			<Header theme={theme} onToggleTheme={toggleTheme} supported={supported} />
+			<Header theme={theme} onToggleTheme={toggleTheme} />
 
 			<main className="container" id="main">
 				<section className="intro">
@@ -53,7 +54,7 @@ export const App = () => {
 
 				<h2 className="section-title">Explore the API</h2>
 				<p className="section-lead">
-					Seven focused examples, one capability each — from the drop-in button to the low-level hooks.
+					Eight focused examples, one capability each — from the drop-in button to feature detection.
 				</p>
 
 				<div className="grid">
@@ -64,6 +65,7 @@ export const App = () => {
 					<UseVocalCard supported={supported} />
 					<UseCommandsCard />
 					<ErrorsCard />
+					<SupportCard supported={supported} />
 				</div>
 			</main>
 

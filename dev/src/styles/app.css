@@ -63,15 +63,23 @@
 .install {
 	display: none;
 	align-items: center;
-	gap: var(--space-2);
-	padding: 6px 6px 6px 12px;
-	border: 1px solid var(--border);
+	gap: var(--space-3);
+	padding: 10px 12px 10px 18px;
+	border: 1px solid var(--border-strong);
 	border-radius: var(--radius-pill);
 	background: var(--surface-raised);
-	color: var(--text-muted);
+	color: var(--text);
 	font-family: var(--font-mono);
-	font-size: var(--step--1);
-	max-width: 320px;
+	font-size: var(--step-0);
+	max-width: 420px;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+.install:hover {
+	border-color: var(--text-faint);
+	background: var(--surface-sunken);
 }
 .install code {
 	overflow: hidden;
