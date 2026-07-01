@@ -1,10 +1,9 @@
 import { useClipboard } from '../lib/useClipboard.js'
 import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, PackageIcon, SunIcon } from '../lib/icons.jsx'
-import { Pill } from './Pill.jsx'
 
-const INSTALL_CMD = 'npm i @untemps/react-vocal'
+const INSTALL_CMD = 'yarn add @untemps/react-vocal'
 
-export const Header = ({ theme, onToggleTheme, supported }) => {
+export const Header = ({ theme, onToggleTheme }) => {
 	const [copied, copy] = useClipboard()
 	return (
 		<header className="header">
@@ -23,20 +22,10 @@ export const Header = ({ theme, onToggleTheme, supported }) => {
 					aria-label={copied ? 'Copied install command' : 'Copy install command'}
 				>
 					<code>{INSTALL_CMD}</code>
-					{copied ? <CheckIcon size={15} /> : <CopyIcon size={15} />}
+					{copied ? <CheckIcon size={17} /> : <CopyIcon size={17} />}
 				</button>
 
-				<Pill tone={supported ? 'ok' : 'warn'}>{supported ? 'API supported' : 'API unavailable'}</Pill>
-
 				<div className="header__actions">
-					<button
-						type="button"
-						className="iconbtn"
-						onClick={onToggleTheme}
-						aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-					>
-						{theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-					</button>
 					<a
 						className="iconbtn"
 						href="https://github.com/untemps/react-vocal"
@@ -55,6 +44,14 @@ export const Header = ({ theme, onToggleTheme, supported }) => {
 					>
 						<PackageIcon />
 					</a>
+					<button
+						type="button"
+						className="iconbtn"
+						onClick={onToggleTheme}
+						aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+					>
+						{theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+					</button>
 				</div>
 			</div>
 		</header>
