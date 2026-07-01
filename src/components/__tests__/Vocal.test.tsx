@@ -365,6 +365,44 @@ describe('Vocal', () => {
 		})
 	})
 
+	it('forwards interimResults to the vocal factory', () => {
+		render(getInstance({ interimResults: true }))
+		expect(createVocal).toHaveBeenCalledWith(expect.objectContaining({ interimResults: true }))
+	})
+
+	it('streams interim results to onResult without ending the session, then stops on the final result', async () => {
+		// A SpeechRecognitionResult whose isFinal flag drives the finalize gate in _onResult.
+		const buildResult = (transcript: string, isFinal: boolean) =>
+			Object.assign(new Event('result'), {
+				resultIndex: 0,
+				results: [Object.assign([{ transcript }], { isFinal })],
+			})
+		const onResult = vi.fn()
+		const onEnd = vi.fn()
+		const recognition = createMockVocal()
+		const { getByTestId } = render(getInstance({ __rsInstance: recognition, onResult, onEnd }))
+
+		await act(async () => {
+			fireEvent.click(getByTestId('__vocal-root__'))
+		})
+
+		// Interim segment: surfaced to onResult, but must not stop the session.
+		await act(async () => {
+			recognition.fire('result', buildResult('Fo', false), 'Fo', ['Fo'])
+		})
+		expect(onResult).toHaveBeenCalledWith('Fo', expect.anything())
+		expect(recognition.stop).not.toHaveBeenCalled()
+		expect(onEnd).not.toHaveBeenCalled()
+
+		// Final segment: surfaced and finalizes the session.
+		await act(async () => {
+			recognition.fire('result', buildResult('Foo', true), 'Foo', ['Foo'])
+			await waitFor(() => expect(onEnd).toHaveBeenCalled())
+		})
+		expect(onResult).toHaveBeenLastCalledWith('Foo', expect.anything())
+		expect(recognition.stop).toHaveBeenCalled()
+	})
+
 	it('triggers onNoMatch handler', async () => {
 		const onNoMatch = vi.fn()
 		const recognition = createMockVocal()
