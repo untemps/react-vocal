@@ -278,6 +278,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | precision       | number            | 0.4                  | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word commands always use exact lookup. |
 | maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _blue_ / _blew_). |
 | continuous      | boolean           | false                | Keep the recognition session open after each result. The session accumulates transcript across segments and stops when the button is clicked again or `silenceTimeout` expires. Commands are not evaluated in continuous mode. |
+| interimResults  | boolean           | false                | Emit provisional (non-final) transcripts through `onResult` as the user is still speaking, enabling live captions. Each result event carries `event.results[event.resultIndex].isFinal` so consumers can distinguish interim from final text. In non-continuous mode the session is not discarded on an interim result — only the final result ends it (and evaluates commands). |
 | silenceTimeout  | number            | null                 | When `continuous` is true, automatically stop the session after this many ms of silence following the last detected speech (the `speechend` event). `null` or `0` disables auto-stop (button click required). A change during an active session takes effect when the silence timer next re-arms (on the next `speechend`); a countdown already in progress keeps its original deadline, so switching to `null`/`0` does not cancel an auto-stop that is already pending until speech resumes. |
 | style         | object            | null                 | Styles of the root element if className is not specified                                        |
 | className     | string            | null                 | Class of the root element                                                                       |
@@ -361,7 +362,7 @@ const App = () => {
 #### Signature
 
 ```
-useVocal(lang, grammars, maxAlternatives, continuous)
+useVocal(lang, grammars, maxAlternatives, continuous, interimResults)
 ```
 
 | Args            | Type              | Default | Description                                                                                     |
@@ -370,6 +371,7 @@ useVocal(lang, grammars, maxAlternatives, continuous)
 | grammars        | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
 | maxAlternatives | number            | 1       | Maximum number of recognition alternatives per segment                                          |
 | continuous      | boolean           | false   | Keep the recognition session open after each result                                             |
+| interimResults  | boolean           | false   | Emit provisional (non-final) transcripts as the user is still speaking (live captions)          |
 
 > :warning: **Memoize non-primitive arguments.** `useVocal` rebuilds its recognition instance whenever an argument changes identity. `grammars` is non-primitive, so passing a fresh value each render — `useVocal(lang, new SpeechGrammarList())` — triggers a teardown/rebuild cycle on every render. Wrap such arguments in `useMemo` to keep their identity stable across renders.
 

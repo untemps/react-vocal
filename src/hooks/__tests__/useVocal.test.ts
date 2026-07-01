@@ -139,7 +139,33 @@ describe('useVocal', () => {
 				grammars: null,
 				maxAlternatives: 5,
 				continuous: false,
+				interimResults: false,
 			})
+		})
+
+		it('defaults interimResults to false', () => {
+			renderHook(() => useVocal())
+			expect(createVocal).toHaveBeenCalledWith(expect.objectContaining({ interimResults: false }))
+		})
+
+		it('passes interimResults to createVocal factory', () => {
+			renderHook(() => useVocal('en-US', null, 1, false, true))
+			expect(createVocal).toHaveBeenCalledWith(expect.objectContaining({ interimResults: true }))
+		})
+
+		it('tears down and recreates the instance when interimResults changes', () => {
+			const { rerender } = renderHook(({ interimResults }) => useVocal('en-US', null, 1, false, interimResults), {
+				initialProps: { interimResults: false },
+			})
+			expect(createVocal).toHaveBeenCalledTimes(1)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ interimResults: false }))
+
+			rerender({ interimResults: true })
+
+			expect(createVocal).toHaveBeenCalledTimes(2)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ interimResults: true }))
+			expect(mockAbort).toHaveBeenCalledTimes(1)
+			expect(mockCleanup).toHaveBeenCalledTimes(1)
 		})
 
 		it('triggers start function', () => {

@@ -93,6 +93,7 @@ export interface VocalProps {
 	precision?: number
 	maxAlternatives?: number
 	continuous?: boolean
+	interimResults?: boolean
 	ariaLabel?: string
 	style?: CSSProperties | null
 	className?: string | null
@@ -132,6 +133,7 @@ export const Vocal = ({
 	precision = 0.4, // Fuse.js score threshold for phrase commands only; single-word commands always use exact lookup
 	maxAlternatives = 1,
 	continuous = false,
+	interimResults = false,
 	ariaLabel = 'start recognition',
 	style = null,
 	className = null,
@@ -153,7 +155,8 @@ export const Vocal = ({
 		lang,
 		grammars,
 		maxAlternatives,
-		continuous
+		continuous,
+		interimResults
 	)
 	const triggerCommand = useCommands(commands, precision)
 
@@ -248,12 +251,18 @@ export const Vocal = ({
 			// Continuous mode: vocal 2.x emits one aggregated synthetic event before 'end'; commands are
 			// intentionally not matched against the full session transcript
 			if (!continuousRef.current) {
-				const results =
-					(event as SpeechRecognitionEvent).results !== undefined
-						? Array.from((event as SpeechRecognitionEvent).results, (segment) => Array.from(segment))
-						: []
-				tryMatchCommand(results, triggerCommandRef.current)
-				stopRecognition()
+				const srEvent = event as SpeechRecognitionEvent
+				// With interimResults, non-final segments stream in before the final one; matching commands
+				// or stopping on an interim result would truncate the session. Only finalize on the final
+				// segment. Absent isFinal (interimResults off, or synthetic events) counts as final.
+				const segment = srEvent.results?.[srEvent.resultIndex ?? 0]
+				const isFinal = segment ? segment.isFinal !== false : true
+				if (isFinal) {
+					const results =
+						srEvent.results !== undefined ? Array.from(srEvent.results, (seg) => Array.from(seg)) : []
+					tryMatchCommand(results, triggerCommandRef.current)
+					stopRecognition()
+				}
 			}
 			propsRef.current.onResult?.(bestAlternative, event)
 		},
