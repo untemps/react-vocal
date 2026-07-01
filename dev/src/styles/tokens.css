@@ -1,0 +1,147 @@
+/*
+ * Design tokens for the react-vocal playground.
+ * Brand is black / white / red — red (the "recording" dot from the logo) is the
+ * only accent, reserved for the listening state and primary emphasis.
+ */
+:root {
+	color-scheme: light;
+
+	/* Brand */
+	--brand-red: #e8231e;
+	--brand-red-strong: #c81812;
+
+	/* Surfaces (light) */
+	--bg: #ffffff;
+	--surface: #ffffff;
+	--surface-raised: #f5f5f7;
+	--surface-sunken: #ececef;
+
+	/* Text (light) */
+	--text: #16161a;
+	--text-muted: #5c5c68;
+	--text-faint: #8a8a96;
+
+	/* Lines & focus */
+	--border: #e3e3e8;
+	--border-strong: #cfcfd6;
+	--focus: var(--brand-red);
+
+	/* Semantic */
+	--ok: #1f9d57;
+	--warn: #b7791f;
+	--danger: #d93a34;
+	--info: #2b6cb0;
+
+	/* Accent surface tints */
+	--accent: var(--brand-red);
+	--accent-contrast: #ffffff;
+	--accent-tint: rgba(232, 35, 30, 0.08);
+	--accent-ring: rgba(232, 35, 30, 0.28);
+
+	/* Elevation */
+	--shadow-sm: 0 1px 2px rgba(16, 16, 20, 0.06), 0 1px 3px rgba(16, 16, 20, 0.05);
+	--shadow-md: 0 4px 12px rgba(16, 16, 20, 0.08), 0 2px 4px rgba(16, 16, 20, 0.05);
+	--shadow-lg: 0 12px 32px rgba(16, 16, 20, 0.12);
+
+	/* Radii */
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 18px;
+	--radius-pill: 999px;
+
+	/* Spacing scale */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-7: 3rem;
+	--space-8: 4rem;
+
+	/* Fluid type scale (rem term keeps user zoom working) */
+	--step--1: clamp(0.79rem, 0.76rem + 0.15vw, 0.87rem);
+	--step-0: clamp(0.94rem, 0.9rem + 0.2vw, 1.03rem);
+	--step-1: clamp(1.12rem, 1.05rem + 0.35vw, 1.36rem);
+	--step-2: clamp(1.35rem, 1.2rem + 0.7vw, 1.8rem);
+	--step-3: clamp(1.6rem, 1.35rem + 1.2vw, 2.4rem);
+	--step-4: clamp(2rem, 1.5rem + 2.4vw, 3.4rem);
+
+	/* Typography */
+	--font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	--font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+	/* Layout */
+	--page-max: 1120px;
+	--header-h: 60px;
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+
+	/* Elevated greys, never pure black, to avoid halation against bright text */
+	--bg: #0f0f14;
+	--surface: #16161d;
+	--surface-raised: #1e1e27;
+	--surface-sunken: #101017;
+
+	--text: #f3f3f6;
+	--text-muted: #a6a6b3;
+	--text-faint: #74747f;
+
+	--border: #2a2a34;
+	--border-strong: #3a3a46;
+
+	/* Slightly brighter red keeps AA contrast on dark surfaces */
+	--brand-red: #ff5b52;
+	--brand-red-strong: #ff7a72;
+	--accent: var(--brand-red);
+	--accent-contrast: #17070a;
+	--accent-tint: rgba(255, 91, 82, 0.12);
+	--accent-ring: rgba(255, 91, 82, 0.32);
+
+	--ok: #43c07d;
+	--warn: #e0b155;
+	--danger: #ff6b63;
+	--info: #6bb0f0;
+
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+	--shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+	--shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+/* Follow the OS when the user has not made an explicit choice */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		color-scheme: dark;
+
+		--bg: #0f0f14;
+		--surface: #16161d;
+		--surface-raised: #1e1e27;
+		--surface-sunken: #101017;
+
+		--text: #f3f3f6;
+		--text-muted: #a6a6b3;
+		--text-faint: #74747f;
+
+		--border: #2a2a34;
+		--border-strong: #3a3a46;
+
+		--brand-red: #ff5b52;
+		--brand-red-strong: #ff7a72;
+		--accent: var(--brand-red);
+		--accent-contrast: #17070a;
+		--accent-tint: rgba(255, 91, 82, 0.12);
+		--accent-ring: rgba(255, 91, 82, 0.32);
+
+		--ok: #43c07d;
+		--warn: #e0b155;
+		--danger: #ff6b63;
+		--info: #6bb0f0;
+
+		--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+		--shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+		--shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+	}
+}
