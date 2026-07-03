@@ -1,3 +1,10 @@
+# [2.0.0-beta.49](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.48...v2.0.0-beta.49) (2026-07-03)
+
+
+### Features
+
+* Add interimResults prop for live (interim) transcripts ([#272](https://github.com/untemps/react-vocal/issues/272)) ([0229e19](https://github.com/untemps/react-vocal/commit/0229e19bff603d7063ebf2a4de2310e52410e449))
+
 # [2.0.0-beta.48](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.47...v2.0.0-beta.48) (2026-06-29)
 
 
