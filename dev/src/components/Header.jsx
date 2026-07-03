@@ -9,7 +9,7 @@ export const Header = ({ theme, onToggleTheme }) => {
 		<header className="header">
 			<div className="container header__inner">
 				<span className="brand">
-					<span className="brand__dot" />
+					<img className="brand__icon" src="/react-vocal-icon.png" alt="" width="28" height="28" />
 					react-vocal
 				</span>
 

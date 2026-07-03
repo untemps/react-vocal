@@ -41,11 +41,22 @@
 	display: inline-flex;
 	align-items: center;
 	gap: var(--space-2);
-	font-family: var(--font-serif);
-	font-size: var(--step-1);
-	font-weight: 600;
-	letter-spacing: -0.01em;
+	font-family: 'Elsie', var(--font-serif);
+	font-size: var(--step-2);
+	font-weight: 400;
+	letter-spacing: 0;
 	white-space: nowrap;
+}
+/* White badge keeps the black mic glyph legible on both light and dark headers. */
+.brand__icon {
+	width: 28px;
+	height: 28px;
+	flex: none;
+	padding: 3px;
+	border-radius: 8px;
+	background: #fff;
+	border: 1px solid var(--border);
+	object-fit: contain;
 }
 .brand__dot {
 	width: 0.62em;
