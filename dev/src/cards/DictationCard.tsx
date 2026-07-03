@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import { Vocal } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { Pill, StatusPill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { Pill, StatusPill } from '../components/Pill'
 
 const CODE = `import { Vocal } from '@untemps/react-vocal'
 
@@ -18,15 +18,16 @@ const CODE = `import { Vocal } from '@untemps/react-vocal'
   }}
 />`
 
-export const DictationCard = ({ supported }) => {
+export const DictationCard = ({ supported }: { supported: boolean }) => {
 	const [silenceTimeout, setSilenceTimeout] = useState(4000)
 	const [committed, setCommitted] = useState('')
 	const [interim, setInterim] = useState('')
 	const [listening, setListening] = useState(false)
 	const [speaking, setSpeaking] = useState(false)
 
-	const onResult = (text, event) => {
-		const segment = event?.results?.[event.resultIndex ?? 0]
+	const onResult = (text: string, event: SpeechRecognitionEvent | Event) => {
+		const srEvent = event as SpeechRecognitionEvent
+		const segment = srEvent.results?.[srEvent.resultIndex ?? 0]
 		const isFinal = segment ? segment.isFinal !== false : true
 		if (isFinal) {
 			setCommitted((prev) => `${prev}${prev ? ' ' : ''}${text}`.trim())

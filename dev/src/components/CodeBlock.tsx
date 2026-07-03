@@ -1,7 +1,13 @@
-import { CopyButton } from './CopyButton.jsx'
+import { CopyButton } from './CopyButton'
+
+interface CodeBlockProps {
+	code: string
+	summary?: string
+	open?: boolean
+}
 
 /** Collapsible "View source" panel with copy-to-clipboard. */
-export const CodeBlock = ({ code, summary = 'View source', open = false }) => (
+export const CodeBlock = ({ code, summary = 'View source', open = false }: CodeBlockProps) => (
 	<details className="code" open={open}>
 		<summary>{summary}</summary>
 		<div className="code__body">

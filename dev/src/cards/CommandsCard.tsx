@@ -2,8 +2,8 @@ import { useMemo, useState } from 'react'
 
 import { Vocal } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { StatusPill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { StatusPill } from '../components/Pill'
 
 const COLORS = {
 	red: '#e8231e',
@@ -25,10 +25,10 @@ const commands = {
 
 <Vocal lang="en-US" commands={commands} maxAlternatives={3} />`
 
-export const CommandsCard = ({ supported }) => {
-	const [color, setColor] = useState(null)
-	const [matched, setMatched] = useState(null)
-	const [alternatives, setAlternatives] = useState([])
+export const CommandsCard = ({ supported }: { supported: boolean }) => {
+	const [color, setColor] = useState<string | null>(null)
+	const [matched, setMatched] = useState<string | null>(null)
+	const [alternatives, setAlternatives] = useState<string[]>([])
 	const [noMatch, setNoMatch] = useState(false)
 	const [listening, setListening] = useState(false)
 
@@ -38,7 +38,7 @@ export const CommandsCard = ({ supported }) => {
 			Object.fromEntries(
 				Object.entries(COLORS).map(([key, value]) => [
 					key,
-					(_rawInput, commandKey) => {
+					(_rawInput: string, commandKey: string) => {
 						setColor(value)
 						setMatched(commandKey)
 						setNoMatch(false)
@@ -67,7 +67,7 @@ export const CommandsCard = ({ supported }) => {
 						}}
 						onEnd={() => setListening(false)}
 						onResult={(_best, event) => {
-							const segment = event?.results?.[0]
+							const segment = (event as SpeechRecognitionEvent).results?.[0]
 							setAlternatives(segment ? Array.from(segment, (alt) => alt.transcript) : [])
 						}}
 						onNoMatch={() => setNoMatch(true)}

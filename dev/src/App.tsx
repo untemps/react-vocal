@@ -2,19 +2,19 @@ import { useMemo } from 'react'
 
 import { isSupported } from '../../src'
 
-import { useTheme } from './lib/useTheme.js'
-import { Header } from './components/Header.jsx'
-import { SupportBanner } from './components/SupportBanner.jsx'
-import { Footer } from './components/Footer.jsx'
+import { useTheme } from './lib/useTheme'
+import { Header } from './components/Header'
+import { SupportBanner } from './components/SupportBanner'
+import { Footer } from './components/Footer'
 
-import { DefaultButtonCard } from './cards/DefaultButtonCard.jsx'
-import { CommandsCard } from './cards/CommandsCard.jsx'
-import { DictationCard } from './cards/DictationCard.jsx'
-import { RenderPropCard } from './cards/RenderPropCard.jsx'
-import { ErrorsCard } from './cards/ErrorsCard.jsx'
-import { UseVocalCard } from './cards/UseVocalCard.jsx'
-import { UseCommandsCard } from './cards/UseCommandsCard.jsx'
-import { SupportCard } from './cards/SupportCard.jsx'
+import { DefaultButtonCard } from './cards/DefaultButtonCard'
+import { CommandsCard } from './cards/CommandsCard'
+import { DictationCard } from './cards/DictationCard'
+import { RenderPropCard } from './cards/RenderPropCard'
+import { ErrorsCard } from './cards/ErrorsCard'
+import { UseVocalCard } from './cards/UseVocalCard'
+import { UseCommandsCard } from './cards/UseCommandsCard'
+import { SupportCard } from './cards/SupportCard'
 
 export const App = () => {
 	const [theme, toggleTheme] = useTheme()

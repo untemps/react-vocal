@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 
+export type Theme = 'light' | 'dark'
+
 const STORAGE_KEY = 'react-vocal-theme'
 
-const getSystemTheme = () =>
+const getSystemTheme = (): Theme =>
 	typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 
-const getStored = () => {
+const getStored = (): Theme | null => {
 	try {
 		const value = localStorage.getItem(STORAGE_KEY)
 		return value === 'light' || value === 'dark' ? value : null
@@ -18,14 +20,14 @@ const getStored = () => {
  * Resolves the active theme from an explicit user choice (persisted) or the OS
  * setting, and keeps <html data-theme> + the address-bar color in sync.
  */
-export const useTheme = () => {
-	const [override, setOverride] = useState(getStored)
-	const [systemTheme, setSystemTheme] = useState(getSystemTheme)
+export const useTheme = (): [Theme, () => void] => {
+	const [override, setOverride] = useState<Theme | null>(getStored)
+	const [systemTheme, setSystemTheme] = useState<Theme>(getSystemTheme)
 
 	useEffect(() => {
 		const mql = window.matchMedia?.('(prefers-color-scheme: dark)')
 		if (!mql) return
-		const onChange = (e) => setSystemTheme(e.matches ? 'dark' : 'light')
+		const onChange = (e: MediaQueryListEvent) => setSystemTheme(e.matches ? 'dark' : 'light')
 		mql.addEventListener('change', onChange)
 		return () => mql.removeEventListener('change', onChange)
 	}, [])
@@ -43,7 +45,7 @@ export const useTheme = () => {
 
 	const toggle = useCallback(() => {
 		setOverride((prev) => {
-			const next = (prev ?? getSystemTheme()) === 'dark' ? 'light' : 'dark'
+			const next: Theme = (prev ?? getSystemTheme()) === 'dark' ? 'light' : 'dark'
 			try {
 				localStorage.setItem(STORAGE_KEY, next)
 			} catch {

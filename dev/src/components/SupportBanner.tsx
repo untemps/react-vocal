@@ -1,11 +1,11 @@
-import { InfoIcon } from '../lib/icons.jsx'
+import { InfoIcon } from '../lib/icons'
 
 /**
  * Honest, always-visible note about the Web Speech API. When unsupported
  * (Firefox, insecure context) the demo is never hidden — the banner sets
  * expectations and the typed cards keep working.
  */
-export const SupportBanner = ({ supported }) =>
+export const SupportBanner = ({ supported }: { supported: boolean }) =>
 	supported ? (
 		<div className="banner" role="note">
 			<InfoIcon size={18} className="banner__icon" />

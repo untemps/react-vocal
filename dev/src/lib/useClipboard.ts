@@ -5,12 +5,12 @@ import { useCallback, useRef, useState } from 'react'
  * Falls back to a hidden textarea + execCommand where the async Clipboard API
  * is unavailable or blocked (older Safari, insecure contexts).
  */
-export const useClipboard = (resetMs = 1600) => {
+export const useClipboard = (resetMs = 1600): [boolean, (text: string) => Promise<boolean>] => {
 	const [copied, setCopied] = useState(false)
-	const timer = useRef(null)
+	const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	const copy = useCallback(
-		async (text) => {
+		async (text: string) => {
 			try {
 				if (navigator.clipboard?.writeText) {
 					await navigator.clipboard.writeText(text)
@@ -26,7 +26,7 @@ export const useClipboard = (resetMs = 1600) => {
 					document.body.removeChild(ta)
 				}
 				setCopied(true)
-				clearTimeout(timer.current)
+				if (timer.current) clearTimeout(timer.current)
 				timer.current = setTimeout(() => setCopied(false), resetMs)
 				return true
 			} catch {

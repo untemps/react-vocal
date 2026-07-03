@@ -1,5 +1,5 @@
-import { Card } from '../components/Card.jsx'
-import { Pill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { Pill } from '../components/Pill'
 
 const CODE = `import { isSupported } from '@untemps/react-vocal'
 
@@ -11,7 +11,7 @@ if (isSupported()) {
   renderKeyboardFallback()
 }`
 
-export const SupportCard = ({ supported }) => (
+export const SupportCard = ({ supported }: { supported: boolean }) => (
 	<Card
 		title="Feature detection"
 		badge="isSupported"

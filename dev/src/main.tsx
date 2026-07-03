@@ -5,9 +5,9 @@ import './styles/tokens.css'
 import './styles/base.css'
 import './styles/app.css'
 
-import { App } from './App.jsx'
+import { App } from './App'
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root')!).render(
 	<StrictMode>
 		<App />
 	</StrictMode>

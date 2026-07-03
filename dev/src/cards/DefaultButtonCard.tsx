@@ -2,8 +2,8 @@ import { useState } from 'react'
 
 import { Vocal } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { StatusPill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { StatusPill } from '../components/Pill'
 
 const CODE = `import { Vocal } from '@untemps/react-vocal'
 
@@ -12,7 +12,7 @@ const CODE = `import { Vocal } from '@untemps/react-vocal'
   onResult={(transcript) => console.log(transcript)}
 />`
 
-export const DefaultButtonCard = ({ supported }) => {
+export const DefaultButtonCard = ({ supported }: { supported: boolean }) => {
 	const [transcript, setTranscript] = useState('')
 	const [listening, setListening] = useState(false)
 

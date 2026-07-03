@@ -1,9 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 
 import { useCommands } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { Pill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { Pill } from '../components/Pill'
 
 const CODE = `import { useCommands } from '@untemps/react-vocal'
 
@@ -21,7 +21,7 @@ const result = trigger(userInput) // callback return, or null
 
 export const UseCommandsCard = () => {
 	const [input, setInput] = useState('')
-	const [outcome, setOutcome] = useState(null)
+	const [outcome, setOutcome] = useState<{ matched: boolean; value: unknown } | null>(null)
 
 	const commands = useMemo(
 		() => ({
@@ -34,7 +34,7 @@ export const UseCommandsCard = () => {
 	)
 	const trigger = useCommands(commands, 0.4)
 
-	const run = (event) => {
+	const run = (event: FormEvent) => {
 		event.preventDefault()
 		const matchedValue = trigger(input)
 		setOutcome({ matched: matchedValue !== null && matchedValue !== undefined, value: matchedValue })

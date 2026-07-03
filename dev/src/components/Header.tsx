@@ -1,9 +1,9 @@
-import { useClipboard } from '../lib/useClipboard.js'
-import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, PackageIcon, SunIcon } from '../lib/icons.jsx'
+import { useClipboard } from '../lib/useClipboard'
+import { CheckIcon, CopyIcon, GithubIcon, MoonIcon, PackageIcon, SunIcon } from '../lib/icons'
 
 const INSTALL_CMD = 'yarn add @untemps/react-vocal'
 
-export const Header = ({ theme, onToggleTheme }) => {
+export const Header = ({ theme, onToggleTheme }: { theme: 'light' | 'dark'; onToggleTheme: () => void }) => {
 	const [copied, copy] = useClipboard()
 	return (
 		<header className="header">

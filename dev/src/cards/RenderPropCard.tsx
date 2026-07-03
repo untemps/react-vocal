@@ -2,9 +2,9 @@ import { useState } from 'react'
 
 import { Vocal } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { MicButton } from '../components/MicButton.jsx'
-import { PermissionPill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { MicButton } from '../components/MicButton'
+import { PermissionPill } from '../components/Pill'
 
 const CODE = `import { Vocal } from '@untemps/react-vocal'
 
@@ -18,7 +18,7 @@ const CODE = `import { Vocal } from '@untemps/react-vocal'
   )}
 </Vocal>`
 
-export const RenderPropCard = ({ supported }) => {
+export const RenderPropCard = ({ supported }: { supported: boolean }) => {
 	const [transcript, setTranscript] = useState('')
 	const [speaking, setSpeaking] = useState(false)
 

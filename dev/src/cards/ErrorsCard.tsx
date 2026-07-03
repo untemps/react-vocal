@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
-import { classifyError } from '../../../src'
+import { classifyError, type VocalError, type VocalErrorType } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { Pill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { Pill } from '../components/Pill'
 
 const CODE = `import { classifyError } from '@untemps/react-vocal'
 
@@ -28,7 +28,7 @@ const SAMPLES = [
 	{ label: 'unknown', raw: new Error('Something unexpected happened') },
 ]
 
-const FRIENDLY = {
+const FRIENDLY: Record<VocalErrorType, string> = {
 	'permission-denied': 'Microphone access was blocked. Allow it in your browser settings to continue.',
 	'no-speech': 'We didn’t catch anything — try speaking a little louder.',
 	network: 'The recognition service is unreachable. Check your connection.',
@@ -39,7 +39,7 @@ const FRIENDLY = {
 }
 
 export const ErrorsCard = () => {
-	const [result, setResult] = useState(null)
+	const [result, setResult] = useState<VocalError | null>(null)
 
 	return (
 		<Card

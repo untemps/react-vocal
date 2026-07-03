@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 
 import { useVocal } from '../../../src'
 
-import { Card } from '../components/Card.jsx'
-import { PermissionPill, StatusPill } from '../components/Pill.jsx'
+import { Card } from '../components/Card'
+import { PermissionPill, StatusPill } from '../components/Pill'
 
 const CODE = `import { useVocal } from '@untemps/react-vocal'
 
@@ -21,24 +21,43 @@ const stamp = () => {
 	return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`
 }
 
-export const UseVocalCard = ({ supported }) => {
+interface LogEntry {
+	t: string
+	event: string
+	detail?: string
+}
+
+export const UseVocalCard = ({ supported }: { supported: boolean }) => {
 	const [, { start, stop, abort, subscribe, unsubscribe, isRecording, permissionState }] = useVocal('en-US')
-	const [log, setLog] = useState([])
+	const [log, setLog] = useState<LogEntry[]>([])
 
 	useEffect(() => {
 		if (!supported) return
-		const push = (event, detail) => setLog((prev) => [{ t: stamp(), event, detail }, ...prev].slice(0, 24))
-		const handlers = {
-			start: () => push('start'),
-			speechstart: () => push('speechstart'),
-			speechend: () => push('speechend'),
-			result: (_event, best) => push('result', best),
-			nomatch: () => push('nomatch'),
-			end: () => push('end'),
-			error: (err) => push('error', err?.error ?? err?.message ?? 'error'),
+		const push = (event: string, detail?: string) =>
+			setLog((prev) => [{ t: stamp(), event, detail }, ...prev].slice(0, 24))
+		const onStart = () => push('start')
+		const onSpeechStart = () => push('speechstart')
+		const onSpeechEnd = () => push('speechend')
+		const onResult = (_event: SpeechRecognitionEvent, best: string) => push('result', best)
+		const onNoMatch = () => push('nomatch')
+		const onEnd = () => push('end')
+		const onError = (event: SpeechRecognitionErrorEvent) => push('error', event.error || event.message)
+		subscribe('start', onStart)
+		subscribe('speechstart', onSpeechStart)
+		subscribe('speechend', onSpeechEnd)
+		subscribe('result', onResult)
+		subscribe('nomatch', onNoMatch)
+		subscribe('end', onEnd)
+		subscribe('error', onError)
+		return () => {
+			unsubscribe('start', onStart)
+			unsubscribe('speechstart', onSpeechStart)
+			unsubscribe('speechend', onSpeechEnd)
+			unsubscribe('result', onResult)
+			unsubscribe('nomatch', onNoMatch)
+			unsubscribe('end', onEnd)
+			unsubscribe('error', onError)
 		}
-		Object.entries(handlers).forEach(([type, fn]) => subscribe(type, fn))
-		return () => Object.entries(handlers).forEach(([type, fn]) => unsubscribe(type, fn))
 	}, [subscribe, unsubscribe, supported])
 
 	return (
