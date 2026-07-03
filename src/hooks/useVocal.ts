@@ -31,7 +31,8 @@ export const useVocal = (
 	lang: string = 'en-US',
 	grammars: SpeechGrammarList | null = null,
 	maxAlternatives: number = 1,
-	continuous: boolean = false
+	continuous: boolean = false,
+	interimResults: boolean = false
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
 	const [isRecording, setIsRecording] = useState(false)
@@ -40,7 +41,7 @@ export const useVocal = (
 
 	useEffect(() => {
 		if (supported) {
-			const instance = createVocal({ lang, grammars, maxAlternatives, continuous })
+			const instance = createVocal({ lang, grammars, maxAlternatives, continuous, interimResults })
 			ref.current = instance
 
 			const handleStart = () => setIsRecording(true)
@@ -63,7 +64,7 @@ export const useVocal = (
 				setPermissionState(null)
 			}
 		}
-	}, [lang, grammars, maxAlternatives, continuous, supported])
+	}, [lang, grammars, maxAlternatives, continuous, interimResults, supported])
 
 	const start = useCallback(async (options?: { signal?: AbortSignal }): Promise<void> => {
 		const instance = ref.current
