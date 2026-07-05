@@ -140,7 +140,7 @@
 		"dev": "cd dev && yarn && yarn dev",
 		"test": "vitest",
 		"test:ci": "vitest run --coverage",
-		"typecheck": "tsc --noEmit",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p dev/tsconfig.json",
 		"lint": "eslint src vitest.setup.ts dev/src",
 		"build": "vite build",
 		"postbuild": "node scripts/verify-bundle.mjs",
