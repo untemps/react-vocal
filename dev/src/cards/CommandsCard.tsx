@@ -101,6 +101,10 @@ export const CommandsCard = ({ supported, lang }: { supported: boolean; lang: st
 		setMatched(null)
 		setAlternatives([])
 		setNoMatch(false)
+		// A language change tears down any active <Vocal> (unsupported languages unmount it, and
+		// useVocal recreates its instance on lang change), so onEnd may never fire — reset listening
+		// here too, otherwise StatusPill stays stuck on "listening…".
+		setListening(false)
 	}, [primary])
 
 	const commands = useMemo(
