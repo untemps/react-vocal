@@ -35,9 +35,6 @@ export const useVocal = (
 	interimResults: boolean = false
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
-	// Consumer subscriptions, tracked so they can be re-attached whenever the instance is
-	// recreated on a lang/option change — consumers subscribe once and their listeners
-	// follow the live instance instead of stranding on the disposed one.
 	const subscriptionsRef = useRef<Array<[EventType | string, EventHandlerFor<EventType> | GenericEventHandler]>>([])
 	const [isRecording, setIsRecording] = useState(false)
 	const [permissionState, setPermissionState] = useState<PermissionState | null>(null)
@@ -80,15 +77,9 @@ export const useVocal = (
 	const start = useCallback(async (options?: { signal?: AbortSignal }): Promise<void> => {
 		const instance = ref.current
 		if (!instance) return
-		// Optimistic update so the UI reacts immediately at click, before the
-		// async permission/getUserMedia chain resolves.
 		setIsRecording(true)
 		try {
 			await instance.start(options)
-			// vocal flips its own isRecording synchronously once recognition starts, but only
-			// dispatches 'start' asynchronously — and it may resolve start() without ever
-			// starting (aborted signal / swallowed AbortError). Reconcile against the
-			// instance's own state rather than the not-yet-fired event.
 			if (!instance.isRecording) setIsRecording(false)
 		} catch (err) {
 			setIsRecording(false)
@@ -110,20 +101,22 @@ export const useVocal = (
 
 	const subscribe = useCallback(
 		(eventType: EventType | string, handler: EventHandlerFor<EventType> | GenericEventHandler) => {
+			if (!supported) return
 			subscriptionsRef.current.push([eventType, handler])
 			ref.current?.on(eventType as EventType, handler as EventHandlerFor<EventType>)
 		},
-		[]
+		[supported]
 	) as UseVocalActions['subscribe']
 
 	const unsubscribe = useCallback(
 		(eventType: EventType | string, handler?: EventHandlerFor<EventType> | GenericEventHandler) => {
+			if (!supported) return
 			subscriptionsRef.current = subscriptionsRef.current.filter(
 				([type, registered]) => !(type === eventType && (handler === undefined || registered === handler))
 			)
 			ref.current?.off(eventType as EventType, handler as EventHandlerFor<EventType>)
 		},
-		[]
+		[supported]
 	) as UseVocalActions['unsubscribe']
 
 	const clean = useCallback(() => {

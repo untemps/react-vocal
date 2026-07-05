@@ -89,8 +89,6 @@ describe('useVocal', () => {
 	})
 
 	describe('with SpeechRecognition support', () => {
-		// Mirrors vocal 2.x: isRecording flips true synchronously on a genuine start and
-		// stays false on a silent abort. Tests opt out via mockStart to simulate aborts.
 		let mockIsRecording = false
 
 		beforeAll(() => {
@@ -107,8 +105,6 @@ describe('useVocal', () => {
 			mockOff.mockReset()
 			mockCleanup.mockReset()
 			mockIsRecording = false
-			// Default to vocal's genuine-start contract: start() resolves and the instance
-			// reports isRecording === true. Silent-abort tests override this below.
 			mockStart.mockImplementation(async () => {
 				mockIsRecording = true
 			})
@@ -264,8 +260,6 @@ describe('useVocal', () => {
 		})
 
 		it('keeps isRecording true when start() resolves and recognition actually started', async () => {
-			// Regression guard: the reconciliation must not roll back a genuine start, where the
-			// instance reports isRecording === true even though 'start' dispatches asynchronously.
 			const controller = new AbortController()
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
@@ -275,8 +269,6 @@ describe('useVocal', () => {
 		})
 
 		it('keeps isRecording true when recognition started even if the signal aborts late', async () => {
-			// Race: recognition truly started (instance.isRecording === true), then the consumer
-			// aborts. Reconciliation reads the instance's own state, so the late abort is a no-op.
 			const controller = new AbortController()
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
@@ -471,8 +463,6 @@ describe('useVocal', () => {
 
 			rerender({ lang: 'fr-FR' })
 
-			// The disposed instance detached the handler and the new instance re-attached it,
-			// so a subscribe() made before the switch keeps receiving events afterwards.
 			expect(mockOff).toHaveBeenCalledWith('result', handler)
 			const resultOnsAfter = mockOn.mock.calls.filter(([type]) => type === 'result').length
 			expect(resultOnsAfter).toBe(resultOnsBefore + 1)
@@ -489,7 +479,6 @@ describe('useVocal', () => {
 
 			rerender({ lang: 'fr-FR' })
 
-			// Unsubscribed handlers leave the registry, so the recreated instance does not re-attach them.
 			const resultOnsAfter = mockOn.mock.calls.filter(([type]) => type === 'result').length
 			expect(resultOnsAfter).toBe(resultOnsBefore)
 		})
