@@ -25,7 +25,7 @@ const commands = {
 
 <Vocal lang="en-US" commands={commands} maxAlternatives={3} />`
 
-export const CommandsCard = ({ supported }: { supported: boolean }) => {
+export const CommandsCard = ({ supported, lang }: { supported: boolean; lang: string }) => {
 	const [color, setColor] = useState<string | null>(null)
 	const [matched, setMatched] = useState<string | null>(null)
 	const [alternatives, setAlternatives] = useState<string[]>([])
@@ -58,7 +58,7 @@ export const CommandsCard = ({ supported }: { supported: boolean }) => {
 			<div className="card__stage card__stage--center">
 				{supported ? (
 					<Vocal
-						lang="en-US"
+						lang={lang}
 						commands={commands}
 						maxAlternatives={3}
 						onStart={() => {

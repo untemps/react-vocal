@@ -18,7 +18,7 @@ const CODE = `import { Vocal } from '@untemps/react-vocal'
   }}
 />`
 
-export const DictationCard = ({ supported }: { supported: boolean }) => {
+export const DictationCard = ({ supported, lang }: { supported: boolean; lang: string }) => {
 	const [silenceTimeout, setSilenceTimeout] = useState(4000)
 	const [committed, setCommitted] = useState('')
 	const [interim, setInterim] = useState('')
@@ -67,7 +67,7 @@ export const DictationCard = ({ supported }: { supported: boolean }) => {
 				<div style={{ display: 'flex', justifyContent: 'center' }}>
 					{supported ? (
 						<Vocal
-							lang="en-US"
+							lang={lang}
 							continuous
 							interimResults
 							silenceTimeout={silenceTimeout || null}

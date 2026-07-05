@@ -27,8 +27,8 @@ interface LogEntry {
 	detail?: string
 }
 
-export const UseVocalCard = ({ supported }: { supported: boolean }) => {
-	const [, { start, stop, abort, subscribe, unsubscribe, isRecording, permissionState }] = useVocal('en-US')
+export const UseVocalCard = ({ supported, lang }: { supported: boolean; lang: string }) => {
+	const [, { start, stop, abort, subscribe, unsubscribe, isRecording, permissionState }] = useVocal(lang)
 	const [log, setLog] = useState<LogEntry[]>([])
 
 	useEffect(() => {

@@ -1,10 +1,11 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import { isSupported } from '../../src'
 
 import { useTheme } from './lib/useTheme'
 import { Header } from './components/Header'
 import { SupportBanner } from './components/SupportBanner'
+import { LanguageSelector } from './components/LanguageSelector'
 import { Footer } from './components/Footer'
 
 import { DefaultButtonCard } from './cards/DefaultButtonCard'
@@ -18,6 +19,7 @@ import { SupportCard } from './cards/SupportCard'
 
 export const App = () => {
 	const [theme, toggleTheme] = useTheme()
+	const [lang, setLang] = useState('en-US')
 	const supported = useMemo(() => isSupported(), [])
 
 	return (
@@ -57,12 +59,14 @@ export const App = () => {
 					Eight focused examples, one capability each — from the drop-in button to feature detection.
 				</p>
 
+				<LanguageSelector value={lang} onChange={setLang} />
+
 				<div className="grid">
-					<DefaultButtonCard supported={supported} />
-					<CommandsCard supported={supported} />
-					<DictationCard supported={supported} />
-					<RenderPropCard supported={supported} />
-					<UseVocalCard supported={supported} />
+					<DefaultButtonCard supported={supported} lang={lang} />
+					<CommandsCard supported={supported} lang={lang} />
+					<DictationCard supported={supported} lang={lang} />
+					<RenderPropCard supported={supported} lang={lang} />
+					<UseVocalCard supported={supported} lang={lang} />
 					<UseCommandsCard />
 					<ErrorsCard />
 					<SupportCard supported={supported} />

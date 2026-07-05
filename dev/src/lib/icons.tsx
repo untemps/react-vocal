@@ -77,3 +77,11 @@ export const PackageIcon = (props: IconProps) => (
 		<path d="M12 12v10" />
 	</Svg>
 )
+
+export const GlobeIcon = (props: IconProps) => (
+	<Svg {...props}>
+		<circle cx="12" cy="12" r="9" />
+		<path d="M3 12h18" />
+		<path d="M12 3a13 13 0 0 1 0 18 13 13 0 0 1 0-18Z" />
+	</Svg>
+)

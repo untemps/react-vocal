@@ -18,7 +18,7 @@ const CODE = `import { Vocal } from '@untemps/react-vocal'
   )}
 </Vocal>`
 
-export const RenderPropCard = ({ supported }: { supported: boolean }) => {
+export const RenderPropCard = ({ supported, lang }: { supported: boolean; lang: string }) => {
 	const [transcript, setTranscript] = useState('')
 	const [speaking, setSpeaking] = useState(false)
 
@@ -32,7 +32,7 @@ export const RenderPropCard = ({ supported }: { supported: boolean }) => {
 			<div className="card__stage card__stage--center">
 				{supported ? (
 					<Vocal
-						lang="en-US"
+						lang={lang}
 						onSpeechStart={() => setSpeaking(true)}
 						onSpeechEnd={() => setSpeaking(false)}
 						onEnd={() => setSpeaking(false)}

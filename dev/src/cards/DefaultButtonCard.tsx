@@ -12,7 +12,7 @@ const CODE = `import { Vocal } from '@untemps/react-vocal'
   onResult={(transcript) => console.log(transcript)}
 />`
 
-export const DefaultButtonCard = ({ supported }: { supported: boolean }) => {
+export const DefaultButtonCard = ({ supported, lang }: { supported: boolean; lang: string }) => {
 	const [transcript, setTranscript] = useState('')
 	const [listening, setListening] = useState(false)
 
@@ -26,7 +26,7 @@ export const DefaultButtonCard = ({ supported }: { supported: boolean }) => {
 			<div className="card__stage card__stage--center">
 				{supported ? (
 					<Vocal
-						lang="en-US"
+						lang={lang}
 						style={{ width: 44, height: 44 }}
 						onStart={() => setListening(true)}
 						onEnd={() => setListening(false)}
