@@ -1,24 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="theme-color" content="#000000" />
-		<meta name="description" content="react-vocal" />
-		<title>react-vocal</title>
-		<style>
-			* {
-				font-family: Arial, sans-serif;
-				font-size: 12px;
-			}
-			body {
-				padding: 32px;
-			}
-		</style>
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0f0f14" media="(prefers-color-scheme: dark)" />
+		<meta
+			name="description"
+			content="react-vocal — add speech recognition to any React UI with one component and a hook."
+		/>
+		<title>react-vocal · playground</title>
+		<link rel="icon" href="/favicon.ico" sizes="any" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Elsie:wght@400;900&display=swap" rel="stylesheet" />
+		<script>
+			try {
+				const saved = localStorage.getItem('react-vocal-theme')
+				if (saved === 'light' || saved === 'dark') {
+					document.documentElement.dataset.theme = saved
+				}
+			} catch {}
+		</script>
 	</head>
 	<body>
-		<noscript>You need to enable JavaScript to run this app.</noscript>
+		<noscript>You need to enable JavaScript to run this demo.</noscript>
 		<div id="root"></div>
-		<script type="module" src="/src/index.jsx"></script>
+		<script type="module" src="/src/main.tsx"></script>
 	</body>
 </html>
