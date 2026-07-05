@@ -1,3 +1,10 @@
+# [2.0.0-beta.51](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.50...v2.0.0-beta.51) (2026-07-05)
+
+
+### Bug Fixes
+
+* isRecording flicker/double-start race and stale subscriptions after instance recreation ([#276](https://github.com/untemps/react-vocal/issues/276)) ([2fdab1c](https://github.com/untemps/react-vocal/commit/2fdab1cc2e61a20e8a850e4203ef89c2997972e3))
+
 # [2.0.0-beta.50](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.49...v2.0.0-beta.50) (2026-07-05)
 
 # [2.0.0-beta.49](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.48...v2.0.0-beta.49) (2026-07-03)
