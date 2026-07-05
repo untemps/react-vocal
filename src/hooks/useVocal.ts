@@ -35,6 +35,7 @@ export const useVocal = (
 	interimResults: boolean = false
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
+	const subscriptionsRef = useRef<Array<[EventType | string, EventHandlerFor<EventType> | GenericEventHandler]>>([])
 	const [isRecording, setIsRecording] = useState(false)
 	const [permissionState, setPermissionState] = useState<PermissionState | null>(null)
 	const supported = useMemo(() => isSupported(), [])
@@ -53,11 +54,18 @@ export const useVocal = (
 			const handlePermission: EventHandlerFor<'permission'> = (_event, state) => setPermissionState(state)
 			instance.on('permission', handlePermission)
 
+			for (const [eventType, handler] of subscriptionsRef.current) {
+				instance.on(eventType as EventType, handler as EventHandlerFor<EventType>)
+			}
+
 			return () => {
 				instance.off('start', handleStart)
 				instance.off('end', handleStop)
 				instance.off('error', handleStop)
 				instance.off('permission', handlePermission)
+				for (const [eventType, handler] of subscriptionsRef.current) {
+					instance.off(eventType as EventType, handler as EventHandlerFor<EventType>)
+				}
 				instance.abort()
 				instance.cleanup()
 				setIsRecording(false)
@@ -69,25 +77,13 @@ export const useVocal = (
 	const start = useCallback(async (options?: { signal?: AbortSignal }): Promise<void> => {
 		const instance = ref.current
 		if (!instance) return
-		// Optimistic update so the UI reacts immediately at click, before the
-		// async permission/getUserMedia chain resolves and fires the 'start' event.
 		setIsRecording(true)
-		// vocal 2.x's start() may resolve without ever firing 'start' (e.g. a swallowed
-		// AbortError), leaving the optimistic flag stuck on `true`. Roll back only when the
-		// real 'start' event never fired, so a late abort racing a genuine success is safe.
-		let startEventFired = false
-		const onStart = () => {
-			startEventFired = true
-		}
-		instance.on('start', onStart)
 		try {
 			await instance.start(options)
-			if (!startEventFired) setIsRecording(false)
+			if (!instance.isRecording) setIsRecording(false)
 		} catch (err) {
 			setIsRecording(false)
 			throw err
-		} finally {
-			instance.off('start', onStart)
 		}
 	}, [])
 
@@ -105,20 +101,22 @@ export const useVocal = (
 
 	const subscribe = useCallback(
 		(eventType: EventType | string, handler: EventHandlerFor<EventType> | GenericEventHandler) => {
-			if (ref.current) {
-				ref.current.on(eventType as EventType, handler as EventHandlerFor<EventType>)
-			}
+			if (!supported) return
+			subscriptionsRef.current.push([eventType, handler])
+			ref.current?.on(eventType as EventType, handler as EventHandlerFor<EventType>)
 		},
-		[]
+		[supported]
 	) as UseVocalActions['subscribe']
 
 	const unsubscribe = useCallback(
 		(eventType: EventType | string, handler?: EventHandlerFor<EventType> | GenericEventHandler) => {
-			if (ref.current) {
-				ref.current.off(eventType as EventType, handler as EventHandlerFor<EventType>)
-			}
+			if (!supported) return
+			subscriptionsRef.current = subscriptionsRef.current.filter(
+				([type, registered]) => !(type === eventType && (handler === undefined || registered === handler))
+			)
+			ref.current?.off(eventType as EventType, handler as EventHandlerFor<EventType>)
 		},
-		[]
+		[supported]
 	) as UseVocalActions['unsubscribe']
 
 	const clean = useCallback(() => {
