@@ -70,24 +70,18 @@ export const useVocal = (
 		const instance = ref.current
 		if (!instance) return
 		// Optimistic update so the UI reacts immediately at click, before the
-		// async permission/getUserMedia chain resolves and fires the 'start' event.
+		// async permission/getUserMedia chain resolves.
 		setIsRecording(true)
-		// vocal 2.x's start() may resolve without ever firing 'start' (e.g. a swallowed
-		// AbortError), leaving the optimistic flag stuck on `true`. Roll back only when the
-		// real 'start' event never fired, so a late abort racing a genuine success is safe.
-		let startEventFired = false
-		const onStart = () => {
-			startEventFired = true
-		}
-		instance.on('start', onStart)
 		try {
 			await instance.start(options)
-			if (!startEventFired) setIsRecording(false)
+			// vocal flips its own isRecording synchronously once recognition starts, but only
+			// dispatches 'start' asynchronously — and it may resolve start() without ever
+			// starting (aborted signal / swallowed AbortError). Reconcile against the
+			// instance's own state rather than the not-yet-fired event.
+			if (!instance.isRecording) setIsRecording(false)
 		} catch (err) {
 			setIsRecording(false)
 			throw err
-		} finally {
-			instance.off('start', onStart)
 		}
 	}, [])
 
