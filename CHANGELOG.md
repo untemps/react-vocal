@@ -1,3 +1,5 @@
+# [2.0.0-beta.50](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.49...v2.0.0-beta.50) (2026-07-05)
+
 # [2.0.0-beta.49](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.48...v2.0.0-beta.49) (2026-07-03)
 
 
