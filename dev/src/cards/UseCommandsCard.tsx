@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 
-import { useCommands } from '../../../src'
+import { useCommands } from '@untemps/react-vocal'
 
 import { Card } from '../components/Card'
 import { Pill } from '../components/Pill'

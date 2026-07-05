@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useVocal } from '../../../src'
+import { useVocal } from '@untemps/react-vocal'
 
 import { Card } from '../components/Card'
 import { PermissionPill, StatusPill } from '../components/Pill'

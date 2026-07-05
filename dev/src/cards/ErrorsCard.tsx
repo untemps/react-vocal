@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { classifyError, type VocalError, type VocalErrorType } from '../../../src'
+import { classifyError, type VocalError, type VocalErrorType } from '@untemps/react-vocal'
 
 import { Card } from '../components/Card'
 import { Pill } from '../components/Pill'

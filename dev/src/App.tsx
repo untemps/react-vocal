@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { isSupported } from '../../src'
+import { isSupported } from '@untemps/react-vocal'
 
 import { useTheme } from './lib/useTheme'
 import { Header } from './components/Header'
