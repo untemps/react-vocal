@@ -89,6 +89,8 @@ describe('useVocal', () => {
 	})
 
 	describe('with SpeechRecognition support', () => {
+		let mockIsRecording = false
+
 		beforeAll(() => {
 			vi.mocked(isSupported).mockReturnValue(true)
 		})
@@ -102,9 +104,10 @@ describe('useVocal', () => {
 			mockOn.mockReset()
 			mockOff.mockReset()
 			mockCleanup.mockReset()
-			// vocal 2.x's start() always returns a Promise — default the mock to
-			// match the real contract so tests don't have to opt in every time.
-			mockStart.mockReturnValue(Promise.resolve())
+			mockIsRecording = false
+			mockStart.mockImplementation(async () => {
+				mockIsRecording = true
+			})
 			vi.mocked(createVocal).mockImplementation(() => ({
 				start: mockStart,
 				stop: mockStop,
@@ -113,7 +116,7 @@ describe('useVocal', () => {
 				off: mockOff,
 				cleanup: mockCleanup,
 				get isRecording() {
-					return false
+					return mockIsRecording
 				},
 			}))
 		})
@@ -256,14 +259,7 @@ describe('useVocal', () => {
 			expect(result.current[1].isRecording).toBe(false)
 		})
 
-		it('keeps isRecording true when start() resolves and the signal is not aborted', async () => {
-			// Regression guard: the silent-resolve rollback must not fire on a normal start.
-			// Simulate vocal's contract by dispatching 'start' before resolving.
-			mockStart.mockImplementation(async () => {
-				mockOn.mock.calls
-					.filter(([type]) => type === 'start')
-					.forEach(([, handler]) => (handler as () => void)())
-			})
+		it('keeps isRecording true when start() resolves and recognition actually started', async () => {
 			const controller = new AbortController()
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
@@ -272,40 +268,15 @@ describe('useVocal', () => {
 			expect(result.current[1].isRecording).toBe(true)
 		})
 
-		it('keeps isRecording true when the start event fires and the signal aborts late', async () => {
-			// Race: 'start' already fired, then the consumer aborts before the wrapper's .then microtask.
-			// Rollback must check whether 'start' fired, not signal.aborted, so isRecording stays true.
-			let resolveStart: (() => void) | undefined
-			mockStart.mockReturnValue(
-				new Promise<void>((res) => {
-					resolveStart = res
-				})
-			)
+		it('keeps isRecording true when recognition started even if the signal aborts late', async () => {
 			const controller = new AbortController()
 			const { result } = renderHook(() => useVocal())
 			await act(async () => {
 				const p = result.current[1].start({ signal: controller.signal })
-				// Simulate vocal dispatching 'start' to subscribers, including the wrapper's tracker.
-				mockOn.mock.calls
-					.filter(([type]) => type === 'start')
-					.forEach(([, handler]) => (handler as () => void)())
-				// Consumer aborts after recognition truly started.
 				controller.abort()
-				resolveStart?.()
 				await p
 			})
 			expect(result.current[1].isRecording).toBe(true)
-		})
-
-		it('unsubscribes the internal start tracker once the promise settles', async () => {
-			// The transient 'start' listener (for silent-abort detection) must be removed
-			// once the promise settles, else repeated calls leak listeners on the instance.
-			mockStart.mockReturnValue(Promise.resolve())
-			const { result } = renderHook(() => useVocal())
-			await act(async () => {
-				await result.current[1].start()
-			})
-			expect(mockOff).toHaveBeenCalledWith('start', expect.any(Function))
 		})
 
 		it('triggers stop function', () => {
@@ -409,12 +380,6 @@ describe('useVocal', () => {
 		})
 
 		it('optimistically flips isRecording to true when start() is called', async () => {
-			// Simulate vocal's real contract: 'start' fires before start() resolves.
-			mockStart.mockImplementation(async () => {
-				mockOn.mock.calls
-					.filter(([type]) => type === 'start')
-					.forEach(([, handler]) => (handler as () => void)())
-			})
 			const { result } = renderHook(() => useVocal())
 			await act(async () => result.current[1].start())
 			expect(result.current[1].isRecording).toBe(true)
@@ -485,6 +450,37 @@ describe('useVocal', () => {
 			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ grammars: g2 }))
 			expect(mockAbort).toHaveBeenCalledTimes(1)
 			expect(mockCleanup).toHaveBeenCalledTimes(1)
+		})
+
+		it('re-attaches consumer subscriptions to the recreated instance when lang changes', () => {
+			const handler = vi.fn()
+			const { result, rerender } = renderHook(({ lang }) => useVocal(lang), {
+				initialProps: { lang: 'en-US' },
+			})
+			result.current[1].subscribe('result', handler)
+			expect(mockOn).toHaveBeenCalledWith('result', handler)
+			const resultOnsBefore = mockOn.mock.calls.filter(([type]) => type === 'result').length
+
+			rerender({ lang: 'fr-FR' })
+
+			expect(mockOff).toHaveBeenCalledWith('result', handler)
+			const resultOnsAfter = mockOn.mock.calls.filter(([type]) => type === 'result').length
+			expect(resultOnsAfter).toBe(resultOnsBefore + 1)
+		})
+
+		it('stops re-attaching a subscription after it is unsubscribed', () => {
+			const handler = vi.fn()
+			const { result, rerender } = renderHook(({ lang }) => useVocal(lang), {
+				initialProps: { lang: 'en-US' },
+			})
+			result.current[1].subscribe('result', handler)
+			result.current[1].unsubscribe('result', handler)
+			const resultOnsBefore = mockOn.mock.calls.filter(([type]) => type === 'result').length
+
+			rerender({ lang: 'fr-FR' })
+
+			const resultOnsAfter = mockOn.mock.calls.filter(([type]) => type === 'result').length
+			expect(resultOnsAfter).toBe(resultOnsBefore)
 		})
 	})
 })
