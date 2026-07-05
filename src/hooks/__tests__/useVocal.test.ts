@@ -459,5 +459,39 @@ describe('useVocal', () => {
 			expect(mockAbort).toHaveBeenCalledTimes(1)
 			expect(mockCleanup).toHaveBeenCalledTimes(1)
 		})
+
+		it('re-attaches consumer subscriptions to the recreated instance when lang changes', () => {
+			const handler = vi.fn()
+			const { result, rerender } = renderHook(({ lang }) => useVocal(lang), {
+				initialProps: { lang: 'en-US' },
+			})
+			result.current[1].subscribe('result', handler)
+			expect(mockOn).toHaveBeenCalledWith('result', handler)
+			const resultOnsBefore = mockOn.mock.calls.filter(([type]) => type === 'result').length
+
+			rerender({ lang: 'fr-FR' })
+
+			// The disposed instance detached the handler and the new instance re-attached it,
+			// so a subscribe() made before the switch keeps receiving events afterwards.
+			expect(mockOff).toHaveBeenCalledWith('result', handler)
+			const resultOnsAfter = mockOn.mock.calls.filter(([type]) => type === 'result').length
+			expect(resultOnsAfter).toBe(resultOnsBefore + 1)
+		})
+
+		it('stops re-attaching a subscription after it is unsubscribed', () => {
+			const handler = vi.fn()
+			const { result, rerender } = renderHook(({ lang }) => useVocal(lang), {
+				initialProps: { lang: 'en-US' },
+			})
+			result.current[1].subscribe('result', handler)
+			result.current[1].unsubscribe('result', handler)
+			const resultOnsBefore = mockOn.mock.calls.filter(([type]) => type === 'result').length
+
+			rerender({ lang: 'fr-FR' })
+
+			// Unsubscribed handlers leave the registry, so the recreated instance does not re-attach them.
+			const resultOnsAfter = mockOn.mock.calls.filter(([type]) => type === 'result').length
+			expect(resultOnsAfter).toBe(resultOnsBefore)
+		})
 	})
 })
