@@ -6,7 +6,6 @@ interface CodeBlockProps {
 	open?: boolean
 }
 
-/** Collapsible "View source" panel with copy-to-clipboard. */
 export const CodeBlock = ({ code, summary = 'View source', open = false }: CodeBlockProps) => (
 	<details className="code" open={open}>
 		<summary>{summary}</summary>

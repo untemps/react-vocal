@@ -10,10 +10,6 @@ interface CardProps {
 	children?: ReactNode
 }
 
-/**
- * Self-contained showcase card: title + description, a live preview "stage",
- * and a collapsible source snippet. One capability per card.
- */
 export const Card = ({ title, badge, description, code, children }: CardProps) => (
 	<article className="card">
 		<div className="card__head">

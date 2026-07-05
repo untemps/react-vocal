@@ -1,10 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
 
-/**
- * Copy-to-clipboard with a transient "copied" flag for button feedback.
- * Falls back to a hidden textarea + execCommand where the async Clipboard API
- * is unavailable or blocked (older Safari, insecure contexts).
- */
 export const useClipboard = (resetMs = 1600): [boolean, (text: string) => Promise<boolean>] => {
 	const [copied, setCopied] = useState(false)
 	const timer = useRef<ReturnType<typeof setTimeout> | null>(null)

@@ -8,10 +8,6 @@ interface MicButtonProps {
 	label?: string
 }
 
-/**
- * Shared three-state mic visual (idle / listening / speaking) used by the
- * render-prop cards. Pass the toggle handler from <Vocal>'s children function.
- */
 export const MicButton = ({ listening, speaking = false, disabled = false, onClick, label }: MicButtonProps) => {
 	const state = listening ? (speaking ? 'mic--speaking' : 'mic--listening') : ''
 	return (

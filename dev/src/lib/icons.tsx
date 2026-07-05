@@ -1,7 +1,5 @@
 import type { ReactNode, SVGProps } from 'react'
 
-/* Inline single-color SVG icons (currentColor), so no icon dependency is needed. */
-
 export type IconProps = { size?: number } & SVGProps<SVGSVGElement>
 
 const Svg = ({ children, size = 24, ...rest }: IconProps & { children: ReactNode }) => (

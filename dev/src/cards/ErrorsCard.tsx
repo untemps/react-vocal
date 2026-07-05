@@ -17,7 +17,6 @@ const CODE = `import { classifyError } from '@untemps/react-vocal'
 // classifyError normalizes raw SpeechRecognition errors
 // and getUserMedia DOMExceptions into { type, message, original }`
 
-// Raw errors as the browser would emit them, one per VocalErrorType.
 const SAMPLES = [
 	{ label: 'permission-denied', raw: { error: 'not-allowed', message: 'Permission dismissed' } },
 	{ label: 'no-speech', raw: { error: 'no-speech' } },

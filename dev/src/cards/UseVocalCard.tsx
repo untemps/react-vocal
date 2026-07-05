@@ -58,8 +58,6 @@ export const UseVocalCard = ({ supported, lang }: { supported: boolean; lang: st
 			unsubscribe('end', onEnd)
 			unsubscribe('error', onError)
 		}
-		// `lang` is a dependency because useVocal recreates its instance when lang changes;
-		// re-running re-subscribes these listeners to the new instance.
 	}, [subscribe, unsubscribe, supported, lang])
 
 	return (

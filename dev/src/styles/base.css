@@ -1,4 +1,3 @@
-/* Reset & element defaults */
 *,
 *::before,
 *::after {
@@ -61,7 +60,6 @@ button {
 	accent-color: var(--accent);
 }
 
-/* Visible, consistent focus ring across browsers */
 :focus-visible {
 	outline: 2px solid var(--focus);
 	outline-offset: 2px;
@@ -75,7 +73,6 @@ button {
 	background: var(--accent-tint);
 }
 
-/* Respect reduced-motion globally; components add their own guards too */
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

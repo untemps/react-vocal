@@ -16,10 +16,6 @@ const getStored = (): Theme | null => {
 	}
 }
 
-/**
- * Resolves the active theme from an explicit user choice (persisted) or the OS
- * setting, and keeps <html data-theme> + the address-bar color in sync.
- */
 export const useTheme = (): [Theme, () => void] => {
 	const [override, setOverride] = useState<Theme | null>(getStored)
 	const [systemTheme, setSystemTheme] = useState<Theme>(getSystemTheme)
@@ -49,7 +45,7 @@ export const useTheme = (): [Theme, () => void] => {
 			try {
 				localStorage.setItem(STORAGE_KEY, next)
 			} catch {
-				// Ignore storage failures (private mode, disabled cookies) — theme still applies for the session.
+				return next
 			}
 			return next
 		})
