@@ -11,6 +11,7 @@ import { Footer } from './components/Footer'
 import { DefaultButtonCard } from './cards/DefaultButtonCard'
 import { CommandsCard } from './cards/CommandsCard'
 import { DictationCard } from './cards/DictationCard'
+import { GladiaCard } from './cards/GladiaCard'
 import { RenderPropCard } from './cards/RenderPropCard'
 import { ErrorsCard } from './cards/ErrorsCard'
 import { UseVocalCard } from './cards/UseVocalCard'
@@ -37,8 +38,8 @@ export const App = () => {
 					</h1>
 					<p>
 						react-vocal wraps the browser’s SpeechRecognition into a component and a hook — voice commands,
-						live dictation, custom buttons and typed error handling. Every card below is live; open “View
-						source” to see the exact code.
+						live dictation, custom buttons, pluggable cloud engines and typed error handling. Every card
+						below is live; open “View source” to see the exact code.
 					</p>
 					<div className="intro__meta">
 						<span>Click a mic and speak — recognition happens in your browser.</span>
@@ -56,7 +57,7 @@ export const App = () => {
 
 				<h2 className="section-title">Explore the API</h2>
 				<p className="section-lead">
-					Eight focused examples, one capability each — from the drop-in button to feature detection.
+					Nine focused examples, one capability each — from the drop-in button to a Gladia cloud engine.
 				</p>
 
 				<LanguageSelector value={lang} onChange={setLang} />
@@ -65,6 +66,7 @@ export const App = () => {
 					<DefaultButtonCard supported={supported} lang={lang} />
 					<CommandsCard supported={supported} lang={lang} />
 					<DictationCard supported={supported} lang={lang} />
+					<GladiaCard lang={lang} />
 					<RenderPropCard supported={supported} lang={lang} />
 					<UseVocalCard supported={supported} lang={lang} />
 					<UseCommandsCard />

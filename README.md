@@ -85,9 +85,10 @@ This removes the Rollup `MIXED_EXPORTS` warning from the build and aligns the ES
 - `useCommands` shapes (`CommandCallback`, `CommandsMap`, `TriggerCommand`)
 - Error classification (`VocalError`, `VocalErrorType`, `classifyError`)
 - `isSupported` function (re-exported from `@untemps/vocal`)
+- Custom speech engines (`createEngine`, `WebSpeechEngine`, `SpeechEngineFactory`, `SpeechEngineInstance`, `SpeechEngineContext`, `CreateVocalOptions`, `EngineBackend`, `EngineConnectContext`, `EngineSession`) — re-exported from `@untemps/vocal`; see [Custom speech engines](#custom-speech-engines)
 
 ```typescript
-import { Vocal, useVocal, isSupported, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
+import { Vocal, useVocal, isSupported, createEngine, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
 ```
 
 TypeScript is listed as an optional peer dependency (`>=6.0.0`) — install it only if your project uses TS.
@@ -279,6 +280,7 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 | maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _blue_ / _blew_). |
 | continuous      | boolean           | false                | Keep the recognition session open after each result. The session accumulates transcript across segments and stops when the button is clicked again or `silenceTimeout` expires. Commands are not evaluated in continuous mode. |
 | interimResults  | boolean           | false                | Emit provisional (non-final) transcripts through `onResult` as the user is still speaking, enabling live captions. Each result event carries `event.results[event.resultIndex].isFinal` so consumers can distinguish interim from final text. In non-continuous mode the session is not discarded on an interim result — only the final result ends it (and evaluates commands). |
+| engine          | SpeechEngineFactory | undefined           | Custom speech recognition backend (a `SpeechEngineFactory`, typically built with `createEngine`). When omitted, the built-in Web Speech API engine is used. Lets you drive a cloud/on-device STT service and brings recognition to browsers without `SpeechRecognition`. See [Custom speech engines](#custom-speech-engines). **Memoize it** — a fresh factory identity tears down and rebuilds the recognition instance. |
 | silenceTimeout  | number            | null                 | When `continuous` is true, automatically stop the session after this many ms of silence following the last detected speech (the `speechend` event). `null` or `0` disables auto-stop (button click required). A change during an active session takes effect when the silence timer next re-arms (on the next `speechend`); a countdown already in progress keeps its original deadline, so switching to `null`/`0` does not cancel an auto-stop that is already pending until speech resumes. |
 | style         | object            | null                 | Styles of the root element if className is not specified                                        |
 | className     | string            | null                 | Class of the root element                                                                       |
@@ -362,7 +364,7 @@ const App = () => {
 #### Signature
 
 ```
-useVocal(lang, grammars, maxAlternatives, continuous, interimResults)
+useVocal(lang, grammars, maxAlternatives, continuous, interimResults, engine)
 ```
 
 | Args            | Type              | Default | Description                                                                                     |
@@ -372,8 +374,9 @@ useVocal(lang, grammars, maxAlternatives, continuous, interimResults)
 | maxAlternatives | number            | 1       | Maximum number of recognition alternatives per segment                                          |
 | continuous      | boolean           | false   | Keep the recognition session open after each result                                             |
 | interimResults  | boolean           | false   | Emit provisional (non-final) transcripts as the user is still speaking (live captions)          |
+| engine          | SpeechEngineFactory | undefined | Custom recognition backend (a `SpeechEngineFactory`). Omit to use the built-in Web Speech engine. See [Custom speech engines](#custom-speech-engines). |
 
-> :warning: **Memoize non-primitive arguments.** `useVocal` rebuilds its recognition instance whenever an argument changes identity. `grammars` is non-primitive, so passing a fresh value each render — `useVocal(lang, new SpeechGrammarList())` — triggers a teardown/rebuild cycle on every render. Wrap such arguments in `useMemo` to keep their identity stable across renders.
+> :warning: **Memoize non-primitive arguments.** `useVocal` rebuilds its recognition instance whenever an argument changes identity. `grammars` and `engine` are non-primitive, so passing a fresh value each render — `useVocal(lang, new SpeechGrammarList())` or `useVocal(lang, null, 1, false, false, createGladiaEngine({ apiKey }))` — triggers a teardown/rebuild cycle on every render. Wrap such arguments in `useMemo` to keep their identity stable across renders.
 
 ---
 
@@ -476,6 +479,73 @@ const App = () => {
 	return isSupported() ? <Vocal /> : <p>Your browser does not support Web Speech API</p>
 }
 ```
+
+Pass a [custom engine](#custom-speech-engines) factory to probe **that** backend instead of the Web Speech API — useful when you ship a cloud or on-device engine to browsers where `SpeechRecognition` is missing:
+
+```javascript
+import { isSupported } from '@untemps/react-vocal'
+import { createGladiaEngine } from './gladiaEngine'
+
+const engine = createGladiaEngine({ apiKey })
+isSupported(engine) // probes the engine's own support (microphone + transport) instead of SpeechRecognition
+```
+
+### Custom speech engines
+
+By default `Vocal` and `useVocal` drive the browser's Web Speech API. Pass an `engine` — any `SpeechEngineFactory` — to target a different backend instead: a cloud STT service (Gladia, Deepgram, OpenAI…) or an on-device model. Because a custom engine does not rely on `SpeechRecognition`, it also brings speech recognition to browsers that lack it (e.g. Firefox). Omitting `engine` keeps the built-in Web Speech engine, so existing code is unaffected.
+
+```tsx
+import { Vocal, createEngine } from '@untemps/react-vocal'
+
+const engine = createEngine({
+	isSupported: () => typeof WebSocket !== 'undefined',
+	async connect({ stream, signal, language, options, emitTranscript, emitError, end }) {
+		// Stream `stream` to your backend, then push transcripts back to Vocal:
+		//   emitTranscript(text, { isFinal }) → the base applies the interim/continuous policy
+		//   emitError(message)                → emits a well-formed `error` event
+		//   end({ flush: true })              → flush the aggregated transcript and emit `end`
+		return {
+			stop() {
+				/* graceful close; call end({ flush: true }) once the transport drains */
+			},
+			abort() {
+				/* immediate teardown of the transport and the stream */
+			},
+		}
+	},
+})
+
+const App = () => <Vocal engine={engine} lang="en-US" interimResults onResult={(text) => console.log(text)} />
+```
+
+The engine authoring surface is re-exported from `@untemps/vocal`, so you can build one without adding a second dependency:
+
+| Export            | Kind     | Description                                                                                                                                                                                                                 |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createEngine`    | function | Scaffolds a `SpeechEngineFactory` from a small backend (`isSupported?` + `connect`). It owns microphone acquisition, `AbortSignal` handling, the `fr-FR → fr` language reduction, transcript aggregation in continuous mode, and the `start`/`result`/`end`/`error` lifecycle — your backend implements only its transport. |
+| `WebSpeechEngine` | function | The built-in Web Speech engine factory — the default backend used when no `engine` is passed.                                                                                                                              |
+| _types_           | types    | `SpeechEngineFactory`, `SpeechEngineInstance`, `SpeechEngineContext`, `CreateVocalOptions`, `EngineBackend`, `EngineConnectContext`, `EngineSession` for engine authors.                                                    |
+
+> :warning: **Memoize the engine.** Like `grammars`, a fresh factory identity on every render tears down and rebuilds the recognition instance. Wrap it in `useMemo` keyed on its inputs (e.g. the API key).
+
+See the [`@untemps/vocal` custom-engine guide](https://github.com/untemps/vocal#custom-speech-engines) for the full contract and additional reference backends.
+
+#### Example: a Gladia cloud engine
+
+The [demo](./dev) wires a real [Gladia](https://gladia.io) engine behind this seam — it streams PCM16 audio to Gladia over a WebSocket (an `AudioWorklet` converts Float32 → PCM16 off the main thread) and maps Gladia's partial/final transcripts onto `onResult`:
+
+```tsx
+import { useMemo } from 'react'
+import { Vocal } from '@untemps/react-vocal'
+import { createGladiaEngine } from './gladiaEngine' // demo engine — see dev/src/lib/gladiaEngine.ts
+
+const GladiaMic = ({ apiKey, lang }: { apiKey: string; lang: string }) => {
+	const engine = useMemo(() => createGladiaEngine({ apiKey }), [apiKey])
+	return <Vocal engine={engine} lang={lang} continuous interimResults onResult={(text) => console.log(text)} />
+}
+```
+
+Run `yarn dev` and open the **Custom engine — Gladia** card to try it (bring your own [Gladia](https://gladia.io) API key). The key stays in the browser and is proxied through Vite for local convenience — in production, mint short-lived credentials server-side and never ship a raw key to the client.
 
 ### Events
 

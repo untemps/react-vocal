@@ -12,5 +12,12 @@ export default defineConfig({
 	server: {
 		port: 10001,
 		open: true,
+		proxy: {
+			'/gladia-api': {
+				target: 'https://api.gladia.io',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/gladia-api/, ''),
+			},
+		},
 	},
 })
