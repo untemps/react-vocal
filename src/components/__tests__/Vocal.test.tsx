@@ -1,7 +1,7 @@
 import { type FormEvent as ReactFormEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import { waitFor } from '@testing-library/dom'
 import { act, fireEvent, render } from '@testing-library/react'
-import { createVocal, isSupported, type VocalInstance } from '@untemps/vocal'
+import { createVocal, isSupported, type SpeechEngineFactory, type VocalInstance } from '@untemps/vocal'
 
 import { DEFAULT_OUTLINE_STYLE, Vocal, type VocalProps } from '../Vocal'
 import { createMockVocal } from './createMockVocal'
@@ -55,6 +55,24 @@ describe('Vocal', () => {
 		const { queryByTestId } = render(getInstance(null, <div data-testid="__vocal-custom-root__" />))
 		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
 		expect(queryByTestId('__vocal-custom-root__')).toBeInTheDocument()
+	})
+
+	it('forwards a custom engine to createVocal', () => {
+		const engine = Object.assign(() => {}, { isSupported: () => true }) as unknown as SpeechEngineFactory
+		render(getInstance({ __rsInstance: createMockVocal(), engine }))
+		expect(createVocal).toHaveBeenCalledWith(expect.objectContaining({ engine }))
+	})
+
+	it('probes support with the custom engine', () => {
+		const engine = Object.assign(() => {}, { isSupported: () => true }) as unknown as SpeechEngineFactory
+		render(getInstance({ __rsInstance: createMockVocal(), engine }))
+		expect(isSupported).toHaveBeenCalledWith(engine)
+	})
+
+	it('renders nothing when the custom engine reports unsupported', () => {
+		const engine = Object.assign(() => {}, { isSupported: () => false }) as unknown as SpeechEngineFactory
+		const { queryByTestId } = render(getInstance({ engine }))
+		expect(queryByTestId('__vocal-root__')).not.toBeInTheDocument()
 	})
 
 	it('toggles recognition with custom children element (start then stop)', async () => {

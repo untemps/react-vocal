@@ -9,4 +9,13 @@ export {
 } from './components/Vocal'
 export { useVocal, type UseVocalActions, type UseVocalReturn } from './hooks/useVocal'
 export { useCommands, type CommandCallback, type CommandsMap, type TriggerCommand } from './hooks/useCommands'
-export { isSupported } from '@untemps/vocal'
+export { isSupported, createEngine, WebSpeechEngine } from '@untemps/vocal'
+export type {
+	SpeechEngineFactory,
+	SpeechEngineInstance,
+	SpeechEngineContext,
+	CreateVocalOptions,
+	EngineBackend,
+	EngineSession,
+	EngineConnectContext,
+} from '@untemps/vocal'

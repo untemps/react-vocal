@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react'
-import { createVocal, isSupported } from '@untemps/vocal'
+import { createVocal, isSupported, type SpeechEngineFactory } from '@untemps/vocal'
 
 import { useVocal } from '../useVocal'
 
@@ -167,6 +167,35 @@ describe('useVocal', () => {
 
 			expect(createVocal).toHaveBeenCalledTimes(2)
 			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ interimResults: true }))
+			expect(mockAbort).toHaveBeenCalledTimes(1)
+			expect(mockCleanup).toHaveBeenCalledTimes(1)
+		})
+
+		it('passes a custom engine to createVocal factory', () => {
+			const engine = (() => {}) as unknown as SpeechEngineFactory
+			renderHook(() => useVocal('en-US', null, 1, false, false, engine))
+			expect(createVocal).toHaveBeenCalledWith(expect.objectContaining({ engine }))
+		})
+
+		it('probes support with the provided engine', () => {
+			const engine = (() => {}) as unknown as SpeechEngineFactory
+			renderHook(() => useVocal('en-US', null, 1, false, false, engine))
+			expect(isSupported).toHaveBeenCalledWith(engine)
+		})
+
+		it('tears down and recreates the instance when engine identity changes', () => {
+			const engine1 = (() => {}) as unknown as SpeechEngineFactory
+			const engine2 = (() => {}) as unknown as SpeechEngineFactory
+			const { rerender } = renderHook(({ engine }) => useVocal('en-US', null, 1, false, false, engine), {
+				initialProps: { engine: engine1 },
+			})
+			expect(createVocal).toHaveBeenCalledTimes(1)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ engine: engine1 }))
+
+			rerender({ engine: engine2 })
+
+			expect(createVocal).toHaveBeenCalledTimes(2)
+			expect(createVocal).toHaveBeenLastCalledWith(expect.objectContaining({ engine: engine2 }))
 			expect(mockAbort).toHaveBeenCalledTimes(1)
 			expect(mockCleanup).toHaveBeenCalledTimes(1)
 		})
