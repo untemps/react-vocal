@@ -11,7 +11,7 @@ import {
 	type ReactElement,
 	type ReactNode,
 } from 'react'
-import { isSupported as isSupportedFn } from '@untemps/vocal'
+import { isSupported as isSupportedFn, type SpeechEngineFactory } from '@untemps/vocal'
 import { isFunction } from '@untemps/utils/function/isFunction'
 
 import { useVocal } from '../hooks/useVocal'
@@ -94,6 +94,7 @@ export interface VocalProps {
 	maxAlternatives?: number
 	continuous?: boolean
 	interimResults?: boolean
+	engine?: SpeechEngineFactory
 	ariaLabel?: string
 	style?: CSSProperties | null
 	className?: string | null
@@ -134,6 +135,7 @@ export const Vocal = ({
 	maxAlternatives = 1,
 	continuous = false,
 	interimResults = false,
+	engine,
 	ariaLabel = 'start recognition',
 	style = null,
 	className = null,
@@ -149,14 +151,15 @@ export const Vocal = ({
 	signal = null,
 }: VocalProps) => {
 	const [isFocused, setIsFocused] = useState(false)
-	const isSupported = useMemo(() => isSupportedFn(), [])
+	const isSupported = useMemo(() => isSupportedFn(engine), [engine])
 
 	const [, { start, stop, subscribe, unsubscribe, isRecording: isListening, permissionState }] = useVocal(
 		lang,
 		grammars,
 		maxAlternatives,
 		continuous,
-		interimResults
+		interimResults,
+		engine
 	)
 	const triggerCommand = useCommands(commands, precision)
 

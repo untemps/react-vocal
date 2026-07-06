@@ -5,6 +5,7 @@ import {
 	type EventHandlerFor,
 	type EventType,
 	type GenericEventHandler,
+	type SpeechEngineFactory,
 	type VocalInstance,
 } from '@untemps/vocal'
 
@@ -32,17 +33,18 @@ export const useVocal = (
 	grammars: SpeechGrammarList | null = null,
 	maxAlternatives: number = 1,
 	continuous: boolean = false,
-	interimResults: boolean = false
+	interimResults: boolean = false,
+	engine?: SpeechEngineFactory
 ): UseVocalReturn => {
 	const ref = useRef<VocalInstance | null>(null)
 	const subscriptionsRef = useRef<Array<[EventType | string, EventHandlerFor<EventType> | GenericEventHandler]>>([])
 	const [isRecording, setIsRecording] = useState(false)
 	const [permissionState, setPermissionState] = useState<PermissionState | null>(null)
-	const supported = useMemo(() => isSupported(), [])
+	const supported = useMemo(() => isSupported(engine), [engine])
 
 	useEffect(() => {
 		if (supported) {
-			const instance = createVocal({ lang, grammars, maxAlternatives, continuous, interimResults })
+			const instance = createVocal({ lang, grammars, maxAlternatives, continuous, interimResults, engine })
 			ref.current = instance
 
 			const handleStart = () => setIsRecording(true)
@@ -72,7 +74,7 @@ export const useVocal = (
 				setPermissionState(null)
 			}
 		}
-	}, [lang, grammars, maxAlternatives, continuous, interimResults, supported])
+	}, [lang, grammars, maxAlternatives, continuous, interimResults, engine, supported])
 
 	const start = useCallback(async (options?: { signal?: AbortSignal }): Promise<void> => {
 		const instance = ref.current
