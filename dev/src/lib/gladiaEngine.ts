@@ -8,6 +8,7 @@ import {
 const GLADIA_INIT_URL = '/gladia-api/v2/live'
 const SAMPLE_RATE = 16000
 const STOP_GRACE_MS = 2000
+const FLUSH_TIMEOUT_MS = 200
 
 interface GladiaConfig {
 	apiKey: string
@@ -34,7 +35,10 @@ export const createGladiaEngine = ({ apiKey }: GladiaConfig): SpeechEngineFactor
 			let workletNode: AudioWorkletNode | null = null
 			let source: MediaStreamAudioSourceNode | null = null
 			let closed = false
+			let stopping = false
+			let errored = false
 			let closeTimer: ReturnType<typeof setTimeout> | null = null
+			let onFlushed: (() => void) | null = null
 
 			const clearCloseTimer = (): void => {
 				if (closeTimer !== null) {
@@ -43,12 +47,17 @@ export const createGladiaEngine = ({ apiKey }: GladiaConfig): SpeechEngineFactor
 				}
 			}
 
-			const releaseAudio = (): void => {
-				workletNode?.disconnect()
+			const stopMic = (): void => {
 				source?.disconnect()
 				stream.getTracks().forEach((track) => track.stop())
+				source = null
+			}
+
+			const releaseAudio = (): void => {
+				stopMic()
+				workletNode?.disconnect()
 				audioContext?.close()
-				workletNode = source = audioContext = null
+				workletNode = audioContext = null
 			}
 
 			const initSession = async (sampleRate: number): Promise<string> => {
@@ -77,7 +86,11 @@ export const createGladiaEngine = ({ apiKey }: GladiaConfig): SpeechEngineFactor
 				await audioContext!.audioWorklet.addModule('/pcm-worklet.js')
 				source = audioContext!.createMediaStreamSource(stream)
 				workletNode = new AudioWorkletNode(audioContext!, 'pcm-processor')
-				workletNode.port.onmessage = (event: MessageEvent<ArrayBuffer>) => {
+				workletNode.port.onmessage = (event: MessageEvent<ArrayBuffer | string>) => {
+					if (event.data === 'flushed') {
+						onFlushed?.()
+						return
+					}
 					if (socket.readyState === WebSocket.OPEN) socket.send(event.data)
 				}
 				source.connect(workletNode)
@@ -130,10 +143,13 @@ export const createGladiaEngine = ({ apiKey }: GladiaConfig): SpeechEngineFactor
 					ws.onmessage = handleMessage
 					ws.onerror = () => {
 						clearAbort()
-						if (opened && !closed) emitError('Gladia WebSocket error')
+						if (opened && !closed) {
+							errored = true
+							emitError('Gladia WebSocket error')
+						}
 						reject(new Error('Gladia WebSocket error'))
 					}
-					ws.onclose = () => {
+					ws.onclose = (event) => {
 						if (!opened) {
 							clearAbort()
 							reject(new Error('Gladia WebSocket closed before opening'))
@@ -143,18 +159,47 @@ export const createGladiaEngine = ({ apiKey }: GladiaConfig): SpeechEngineFactor
 						closed = true
 						clearCloseTimer()
 						releaseAudio()
-						end({ flush: true })
+						// Only a user-initiated stop flushes the aggregated transcript as a final
+						// result; a server/network close is surfaced as an error, not a success.
+						if (stopping) {
+							end({ flush: true })
+						} else {
+							if (!errored) emitError(`Gladia WebSocket closed unexpectedly (${event.code})`)
+							end()
+						}
 					}
 				})
 
 				return {
 					stop() {
-						if (closed) return
-						if (socket.readyState === WebSocket.OPEN) {
-							socket.send(JSON.stringify({ type: 'stop_recording' }))
+						if (closed || stopping) return
+						stopping = true
+						stopMic()
+						const finalize = (): void => {
+							// Signal end-of-audio only after the tail has been drained to the socket.
+							if (socket.readyState === WebSocket.OPEN) {
+								socket.send(JSON.stringify({ type: 'stop_recording' }))
+							}
+							onFlushed = null
+							closeTimer = setTimeout(() => socket.close(), STOP_GRACE_MS)
 						}
-						releaseAudio()
-						closeTimer = setTimeout(() => socket.close(), STOP_GRACE_MS)
+						if (!workletNode) {
+							releaseAudio()
+							finalize()
+							return
+						}
+						// Drain the worklet's sub-threshold tail (<100ms) to the socket before
+						// signalling end-of-audio, else Gladia finalizes without the last word.
+						let drained = false
+						const finish = (): void => {
+							if (drained || closed) return
+							drained = true
+							releaseAudio()
+							finalize()
+						}
+						onFlushed = finish
+						setTimeout(finish, FLUSH_TIMEOUT_MS)
+						workletNode.port.postMessage('flush')
 					},
 					abort() {
 						if (closed) return
