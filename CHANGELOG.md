@@ -1,3 +1,10 @@
+# [2.0.0-beta.52](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.51...v2.0.0-beta.52) (2026-07-06)
+
+
+### Features
+
+* Support custom speech engines and add a Gladia demo card ([#277](https://github.com/untemps/react-vocal/issues/277)) ([499cf6c](https://github.com/untemps/react-vocal/commit/499cf6c026d0fddcedff505b6f44c1048413f26c))
+
 # [2.0.0-beta.51](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.50...v2.0.0-beta.51) (2026-07-05)
 
 
