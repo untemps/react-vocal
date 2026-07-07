@@ -32,7 +32,7 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 		// Race guard: discard the result if the effect re-runs or unmounts before the
 		// dynamic import resolves, so a stale Fuse instance can't overwrite fuseRef.current.
 		let cancelled = false
-		import('fuse.js')
+		import(/* webpackIgnore: true */ /* @vite-ignore */ 'fuse.js')
 			.then((module) => {
 				if (cancelled) return
 				const FuseCtor = (module.default ?? module) as unknown as typeof Fuse

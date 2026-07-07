@@ -55,6 +55,14 @@ for (const bundle of bundles) {
 				`externalized as expected (see issue #267).`,
 		)
 	}
+
+	const fuseImport = source.match(/import\(([^)]*fuse\.js[^)]*)\)/)
+	if (fuseImport && !fuseImport[1].includes('webpackIgnore')) {
+		errors.push(
+			`${bundle}: the import('fuse.js') lost its "webpackIgnore" marker — ` +
+				`consumer bundlers will hard-resolve the optional fuse.js peer and break builds when it is absent.`,
+		)
+	}
 }
 
 if (errors.length > 0) {
@@ -63,4 +71,6 @@ if (errors.length > 0) {
 	process.exit(1)
 }
 
-console.log(`✔ Bundle verification passed: ${bundles.join(', ')} keep react/jsx-runtime external.`)
+console.log(
+	`✔ Bundle verification passed: ${bundles.join(', ')} keep react/jsx-runtime external and fuse.js consumer-ignorable.`,
+)

@@ -29,6 +29,7 @@ export default defineConfig({
 		rollupOptions: {
 			external: [/^react($|\/)/, /^react-dom($|\/)/, 'fuse.js', '@untemps/vocal'],
 		},
+		minify: false,
 		sourcemap: true,
 	},
 	test: {
