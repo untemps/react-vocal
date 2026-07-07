@@ -56,7 +56,7 @@ Fuzzy matching for phrase commands requires [fuse.js](https://fusejs.io/) as an 
 yarn add fuse.js
 ```
 
-Without fuse.js, phrase commands fall back to case-insensitive exact matching. Single-word commands always use exact matching and never require fuse.js.
+Without fuse.js, phrase commands fall back to case-insensitive substring matching (a command fires when its key contains, or is contained by, the transcript). Single-word commands always use exact matching and never require fuse.js.
 
 ## Migration from 1.x
 
@@ -254,7 +254,7 @@ The component utilizes a special hook called `useCommands` to respond to the com
 The hook performs a fuzzy search to match approximate commands if needed. This allows to fix accidental typos or approximate recognition results.  
 To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorithm to find strings that are approximately equal to a given input. The score precision that distinguishes acceptable command-to-callback mapping from negative matching can be customized in the hook instantiation.
 
-fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive exact matching.
+fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive substring matching (a command fires when its key contains, or is contained by, the transcript).
 
 **Single-word command keys** (e.g. `red`, `submit`) use exact case-insensitive lookup. When the recognition returns a multi-word transcript, each word is tried individually so a command fires even when embedded in a phrase (e.g. _"I want some red"_ triggers `red`).
 
@@ -400,7 +400,7 @@ const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, pe
 
 #### Cancelling a start in flight
 
-Both `<Vocal signal={...}>` and `useVocal().start({ signal })` accept an `AbortSignal`. Aborting the controller while the browser is still resolving microphone permission cancels the start cleanly — no `start` event is dispatched and `isRecording` reverts to `false`.
+Both `<Vocal signal={...}>` and the `start({ signal })` action from `useVocal` accept an `AbortSignal`. Aborting the controller while the browser is still resolving microphone permission cancels the start cleanly — no `start` event is dispatched and `isRecording` reverts to `false`.
 
 ```javascript
 const controller = new AbortController()
@@ -412,7 +412,7 @@ const [, { start }] = useVocal('en-US')
 start({ signal: controller.signal })
 ```
 
-**Behavior note** — the underlying `@untemps/vocal` library still swallows the `AbortError` internally (as of 2.2.0): the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129), where the reject-on-abort fix is targeted for the next major, 3.0.0). `react-vocal` compensates by tracking whether the `start` event actually fired during the call and rolling `isRecording` back to `false` whenever it did not — regardless of whether a signal was provided — so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must observe the `start` event yourself to know when recognition truly began.
+**Behavior note** — the underlying `@untemps/vocal` library still swallows the `AbortError` internally (as of 2.3.5): the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129), where the reject-on-abort fix is targeted for the next major, 3.0.0). `react-vocal` compensates by tracking whether the `start` event actually fired during the call and rolling `isRecording` back to `false` whenever it did not — regardless of whether a signal was provided — so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must observe the `start` event yourself to know when recognition truly began.
 
 ### `useCommands` hook
 
@@ -637,7 +637,7 @@ Example:
 />
 ```
 
-The `classifyError` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `useVocal().start({ signal })` call site.
+The `classifyError` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `start({ signal })` call site (the `start` action returned by `useVocal`).
 
 ### Testing
 
