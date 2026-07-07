@@ -55,6 +55,19 @@ for (const bundle of bundles) {
 				`externalized as expected (see issue #267).`,
 		)
 	}
+
+	// fuse.js is an optional peer. Its lazy import() must carry a `webpackIgnore`
+	// marker so consumer bundlers (webpack/CRA/Next) leave it to runtime resolution
+	// instead of statically resolving it and failing the build when it is absent.
+	// The library minifier strips the comment, so the build ships unminified — this
+	// guard fails if the marker ever disappears (e.g. minify gets re-enabled).
+	const fuseImport = source.match(/import\(([^)]*fuse\.js[^)]*)\)/)
+	if (fuseImport && !fuseImport[1].includes('webpackIgnore')) {
+		errors.push(
+			`${bundle}: the import('fuse.js') lost its "webpackIgnore" marker — ` +
+				`consumer bundlers will hard-resolve the optional fuse.js peer and break builds when it is absent.`,
+		)
+	}
 }
 
 if (errors.length > 0) {
@@ -63,4 +76,6 @@ if (errors.length > 0) {
 	process.exit(1)
 }
 
-console.log(`✔ Bundle verification passed: ${bundles.join(', ')} keep react/jsx-runtime external.`)
+console.log(
+	`✔ Bundle verification passed: ${bundles.join(', ')} keep react/jsx-runtime external and fuse.js consumer-ignorable.`,
+)
