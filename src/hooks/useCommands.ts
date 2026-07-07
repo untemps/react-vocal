@@ -32,10 +32,6 @@ export const useCommands = (commands?: CommandsMap | null, precision: number = 0
 		// Race guard: discard the result if the effect re-runs or unmounts before the
 		// dynamic import resolves, so a stale Fuse instance can't overwrite fuseRef.current.
 		let cancelled = false
-		// webpackIgnore/@vite-ignore keep consumer bundlers from statically resolving fuse.js:
-		// it is an optional peer, so a bare import('fuse.js') fails webpack/CRA/Next builds when
-		// absent instead of falling back at runtime. The comment must survive into dist (guarded
-		// by scripts/verify-bundle.mjs).
 		import(/* webpackIgnore: true */ /* @vite-ignore */ 'fuse.js')
 			.then((module) => {
 				if (cancelled) return

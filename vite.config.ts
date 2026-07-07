@@ -29,9 +29,6 @@ export default defineConfig({
 		rollupOptions: {
 			external: [/^react($|\/)/, /^react-dom($|\/)/, 'fuse.js', '@untemps/vocal'],
 		},
-		// Ship unminified so the `webpackIgnore`/`@vite-ignore` magic comment on the optional
-		// import('fuse.js') survives into both bundles; the minifier strips it (see verify-bundle.mjs).
-		// Consumers minify downstream, and the bundle stays tiny.
 		minify: false,
 		sourcemap: true,
 	},

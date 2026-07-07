@@ -56,11 +56,6 @@ for (const bundle of bundles) {
 		)
 	}
 
-	// fuse.js is an optional peer. Its lazy import() must carry a `webpackIgnore`
-	// marker so consumer bundlers (webpack/CRA/Next) leave it to runtime resolution
-	// instead of statically resolving it and failing the build when it is absent.
-	// The library minifier strips the comment, so the build ships unminified — this
-	// guard fails if the marker ever disappears (e.g. minify gets re-enabled).
 	const fuseImport = source.match(/import\(([^)]*fuse\.js[^)]*)\)/)
 	if (fuseImport && !fuseImport[1].includes('webpackIgnore')) {
 		errors.push(
