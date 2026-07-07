@@ -58,24 +58,6 @@ yarn add fuse.js
 
 Without fuse.js, phrase commands fall back to case-insensitive exact matching. Single-word commands always use exact matching and never require fuse.js.
 
-## Migration from 1.x
-
-`@untemps/react-vocal` 2.x exposes a single named-export surface — there is no longer a default export. Every entry point must be imported with braces:
-
-```diff
-- import Vocal from '@untemps/react-vocal'
-+ import { Vocal } from '@untemps/react-vocal'
-```
-
-CJS consumers must update the destructuring accordingly:
-
-```diff
-- const { default: Vocal } = require('@untemps/react-vocal')
-+ const { Vocal } = require('@untemps/react-vocal')
-```
-
-This removes the Rollup `MIXED_EXPORTS` warning from the build and aligns the ESM and CJS shapes — both now expose `Vocal`, `useVocal`, `useCommands`, `isSupported`, and `classifyError` as named exports.
-
 ## TypeScript
 
 `@untemps/react-vocal` is written in TypeScript and ships full type declarations. The public surface is typed end-to-end:
