@@ -1,3 +1,10 @@
+# [2.0.0-beta.53](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.52...v2.0.0-beta.53) (2026-07-07)
+
+
+### Bug Fixes
+
+* Keep optional fuse.js import consumer-ignorable so webpack builds don't break when absent ([#278](https://github.com/untemps/react-vocal/issues/278)) ([4812bf9](https://github.com/untemps/react-vocal/commit/4812bf9647a0574bad70375918db944639711578))
+
 # [2.0.0-beta.52](https://github.com/untemps/react-vocal/compare/v2.0.0-beta.51...v2.0.0-beta.52) (2026-07-06)
 
 
