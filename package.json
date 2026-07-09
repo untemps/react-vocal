@@ -4,7 +4,7 @@
 	"author": "Vincent Le Badezet <v.lebadezet@untemps.net>",
 	"repository": "git@github.com:untemps/react-vocal.git",
 	"license": "MIT",
-	"description": "React component and hook to initiate a SpeechRecognition session",
+	"description": "React component and hook for speech recognition, with voice commands and pluggable STT engines",
 	"keywords": [
 		"Web Speech API",
 		"SpeechRecognition",

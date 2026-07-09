@@ -1,0 +1,7 @@
+{
+	"$schema": "https://openapi.vercel.sh/vercel.json",
+	"installCommand": "yarn install --frozen-lockfile",
+	"buildCommand": "cd dev && yarn install --frozen-lockfile && yarn build",
+	"outputDirectory": "dev/dist",
+	"rewrites": [{ "source": "/gladia-api/:path*", "destination": "https://api.gladia.io/:path*" }]
+}

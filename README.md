@@ -13,8 +13,7 @@
 
 ## Links
 
-:red_circle:&nbsp;<big><a href="https://untemps.github.io/react-vocal" target="_blank" rel="noopener">LIVE
-DEMO</a></big>&nbsp;:red_circle:
+🔴&nbsp;**[LIVE DEMO](https://react-vocal.vercel.app)**&nbsp;🔴
 
 ## Disclaimer
 
