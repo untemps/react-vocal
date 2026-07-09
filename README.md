@@ -11,37 +11,56 @@
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/untemps/react-vocal/publish.yml?style=for-the-badge)](https://github.com/untemps/react-vocal/actions)
 [![Codecov](https://img.shields.io/codecov/c/github/untemps/react-vocal?style=for-the-badge)](https://codecov.io/gh/untemps/react-vocal)
 
-## Links
+<p align="center">
+    🔴&nbsp;<strong><a href="https://react-vocal.vercel.app">LIVE DEMO</a></strong>&nbsp;🔴
+</p>
 
-🔴&nbsp;**[LIVE DEMO](https://react-vocal.vercel.app)**&nbsp;🔴
+## Features
 
-## Disclaimer
+- **Single-shot & continuous recognition** — catch a result as soon as it lands, or keep the session open across speech segments for one aggregated transcript. See [How it works](#how-it-works-single-shot-vs-continuous-mode).
+- **Vocal commands with fuzzy matching** — map spoken phrases to callbacks, with Fuse.js fuzzy matching for phrase keys and exact matching for single-word keys. See [Vocal commands](#vocal-commands).
+- **Interim results / live captions** — stream provisional transcripts while the user is still speaking. See [Interim results & live captions](#interim-results--live-captions).
+- **Microphone-permission tracking** — read the `PermissionState` reactively without ever starting a session. See [Microphone permission](#microphone-permission).
+- **Structured error classification** — `onError` receives a typed `VocalError` you branch on instead of parsing raw error names. See [Error handling](#error-handling).
+- **Pluggable custom speech engines** — swap the Web Speech API for a cloud or on-device backend behind a stable seam. See [Custom speech engines](#custom-speech-engines).
+- **Full TypeScript types** — the public surface is typed end-to-end. See [TypeScript types](#typescript-types).
+- **SSR-safe support check** — `isSupported()` returns `false` (rather than throwing) when `window` is undefined. See [`isSupported`](#issupported).
 
-The [Web Speech API](https://developer.mozilla.org/fr/docs/Web/API/Web_Speech_API) is only supported by few browsers so
-far (see [caniuse](https://caniuse.com/#search=SpeechRecognition)). If the API is not available, the `Vocal` component
-won't display anything.
+## Table of Contents
 
-This component intends to catch a speech result as soon as possible. This can be a good fit for vocal commands or search
-field filling. It also supports a continuous mode (`continuous` prop) that keeps the recognition session open across
-speech segments and delivers a single, aggregated transcript through `onResult` when the session ends — stopped by a
-second click or by `silenceTimeout`. Commands are not evaluated in continuous mode; see the `Vocal` component API table
-for details.
-
-In single-shot mode (the default), either a result is caught and returned or the timeout is reached and the recognition
-is discarded. The `stop` function returned by children-as-function mechanism allows to prematurely discard the
-recognition before the timeout elapses.
-
-### Special cases
-
-Some browsers support the `SpeechRecognition` API but not all the related APIs.  
-For example, on iOS 14.5, browsers do not support the `SpeechGrammar`, `SpeechGrammarList`, and `Permissions` APIs.
-
-Although the lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlying `@untemps/vocal` library, you need to deal with `Permissions` by yourself.
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Guide](#guide)
+    - [How it works: single-shot vs continuous mode](#how-it-works-single-shot-vs-continuous-mode)
+    - [Custom UI & render styles](#custom-ui--render-styles)
+    - [Vocal commands](#vocal-commands)
+    - [Interim results & live captions](#interim-results--live-captions)
+    - [Microphone permission](#microphone-permission)
+    - [Error handling](#error-handling)
+    - [Stable references & memoization](#stable-references--memoization)
+    - [Browser & platform caveats](#browser--platform-caveats)
+- [API reference](#api-reference)
+    - [`<Vocal>` component](#vocal-component)
+    - [`useVocal` hook](#usevocal-hook)
+    - [`useCommands` hook](#usecommands-hook)
+    - [`isSupported`](#issupported)
+    - [`classifyError` & `VocalError`](#classifyerror--vocalerror)
+    - [Events](#events)
+    - [TypeScript types](#typescript-types)
+- [Custom speech engines](#custom-speech-engines)
+    - [Example: Gladia cloud engine](#example-gladia-cloud-engine)
+- [Testing](#testing)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Requirements
 
--   React >= 16.14.0
--   Node >= 22
+- React >= 16.14.0
+- Node >= 22
+
+The [Web Speech API](https://developer.mozilla.org/fr/docs/Web/API/Web_Speech_API) is only supported by a few browsers so far (see [caniuse](https://caniuse.com/#search=SpeechRecognition)). When the API is unavailable, the `Vocal` component renders nothing — probe support ahead of time with [`isSupported`](#issupported), and note that a [custom speech engine](#custom-speech-engines) can bring recognition to browsers that lack `SpeechRecognition`.
 
 ## Installation
 
@@ -57,46 +76,11 @@ yarn add fuse.js
 
 Without fuse.js, phrase commands fall back to case-insensitive exact matching. Single-word commands always use exact matching and never require fuse.js.
 
-## Migration from 1.x
-
-`@untemps/react-vocal` 2.x exposes a single named-export surface — there is no longer a default export. Every entry point must be imported with braces:
-
-```diff
-- import Vocal from '@untemps/react-vocal'
-+ import { Vocal } from '@untemps/react-vocal'
-```
-
-CJS consumers must update the destructuring accordingly:
-
-```diff
-- const { default: Vocal } = require('@untemps/react-vocal')
-+ const { Vocal } = require('@untemps/react-vocal')
-```
-
-This removes the Rollup `MIXED_EXPORTS` warning from the build and aligns the ESM and CJS shapes — both now expose `Vocal`, `useVocal`, `useCommands`, `isSupported`, and `classifyError` as named exports.
-
-## TypeScript
-
-`@untemps/react-vocal` is written in TypeScript and ships full type declarations. The public surface is typed end-to-end:
-
-- `Vocal` component props (`VocalProps`, `OnResultCallback`, `OnErrorCallback`)
-- `useVocal` hook signature, action tuple (`UseVocalActions`, `UseVocalReturn`)
-- `useCommands` shapes (`CommandCallback`, `CommandsMap`, `TriggerCommand`)
-- Error classification (`VocalError`, `VocalErrorType`, `classifyError`)
-- `isSupported` function (re-exported from `@untemps/vocal`)
-- Custom speech engines (`createEngine`, `WebSpeechEngine`, `SpeechEngineFactory`, `SpeechEngineInstance`, `SpeechEngineContext`, `CreateVocalOptions`, `EngineBackend`, `EngineConnectContext`, `EngineSession`) — re-exported from `@untemps/vocal`; see [Custom speech engines](#custom-speech-engines)
-
-```typescript
-import { Vocal, useVocal, isSupported, createEngine, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
-```
-
 TypeScript is listed as an optional peer dependency (`>=6.0.0`) — install it only if your project uses TS.
 
-## Usage
+## Quick start
 
-### `Vocal` component
-
-#### Basic usage
+Drop a `<Vocal>` next to an input and read the transcript from `onResult`:
 
 ```javascript
 import { Vocal } from '@untemps/react-vocal'
@@ -127,20 +111,30 @@ const App = () => {
 }
 ```
 
----
+## Guide
 
-#### Custom component
+Concepts and mental models. For exact signatures, prop names, defaults, and types, see the [API reference](#api-reference).
+
+### How it works: single-shot vs continuous mode
+
+`Vocal` is built to catch a speech result as soon as possible — a good fit for vocal commands or search-field filling.
+
+**Single-shot mode (the default).** Either a result is caught and returned through `onResult`, or `timeout` (default `3000` ms) is reached and the recognition is discarded. The `stop` function exposed by the [children-as-function](#children-as-a-function) mechanism lets you prematurely discard the recognition before the timeout elapses. Commands are evaluated in this mode, on the final result segment.
+
+**Continuous mode (`continuous` prop).** The recognition session stays open across speech segments and accumulates the transcript, delivering a single aggregated transcript through `onResult` when the session ends — stopped by a second click on the button or by `silenceTimeout`. Commands are **not** evaluated in continuous mode.
+
+### Custom UI & render styles
 
 By default, `Vocal` displays an icon with two states:
 
--   Idle  
-    ![Idle state](assets/icon-idle.png)
--   Listening  
-    ![Listening state](assets/icon-listening.png)
+- Idle  
+  ![Idle state](assets/icon-idle.png)
+- Listening  
+  ![Listening state](assets/icon-listening.png)
 
 But you can provide your own component.
 
--   With a simple React element:
+- With a simple React element:
 
 ```javascript
 import { Vocal } from '@untemps/react-vocal'
@@ -154,23 +148,15 @@ const App = () => {
 }
 ```
 
-In this case, an `onClick` handler is automatically attached to the component to toggle the recognition session
-(start when idle, stop while listening).  
-Only the first direct descendant of Vocal will receive the `onClick` handler. If you want to use a more complex
-hierarchy, use the function syntax below.
+In this case, an `onClick` handler is automatically attached to the component to toggle the recognition session (start when idle, stop while listening). Only the first direct descendant of `Vocal` will receive the `onClick` handler. If you want to use a more complex hierarchy, use the function syntax below.
 
-If the child element already declares its own `onClick`, it is preserved: your handler runs first, then the
-recognition toggle. This lets you attach analytics or any other behavior to the same element without losing the
-toggle.
+If the child element already declares its own `onClick`, it is preserved: your handler runs first, then the recognition toggle. This lets you attach analytics or any other behavior to the same element without losing the toggle.
 
-To cancel the toggle (e.g. require a confirmation, block while the user is unauthenticated), call
-`event.preventDefault()` inside your handler — the recognition will not start or stop for that click.
+To cancel the toggle (e.g. require a confirmation, block while the user is unauthenticated), call `event.preventDefault()` inside your handler — the recognition will not start or stop for that click.
 
-For accessibility parity with the default button, `aria-pressed` is also injected on the cloned child to reflect
-the listening state, and `aria-label` falls back to the `ariaLabel` prop of `<Vocal>` when the child does not
-declare one of its own.
+For accessibility parity with the default button, `aria-pressed` is also injected on the cloned child to reflect the listening state, and `aria-label` falls back to the `ariaLabel` prop of `<Vocal>` when the child does not declare one of its own.
 
--   With a function that returns a React element:
+- With a function that returns a React element:
 
 ```javascript
 import { Vocal } from '@untemps/react-vocal'
@@ -211,21 +197,11 @@ const App = () => {
 }
 ```
 
-The following parameters are passed to the function:
+The function receives `(start, stop, isStarted, permissionState)` — see [Children as a function](#children-as-a-function) for the full argument reference.
 
-| Arguments       | Type                       | Description                                                                                                   |
-| --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| start           | func                       | The function used to start the recognition                                                                    |
-| stop            | func                       | The function used to stop the recognition                                                                     |
-| isStarted       | bool                       | A flag that indicates whether the recognition is started or not                                               |
-| permissionState | `PermissionState \| null` | Current microphone permission (`'granted'`/`'denied'`/`'prompt'`), tracked without starting a session. `null` until known or when the Permissions API is unavailable. See [Microphone permission](#microphone-permission). |
+### Vocal commands
 
----
-
-#### Commands
-
-The `Vocal` component accepts a `commands` prop to map special recognition results to callbacks.  
-That means you can define vocal commands to trigger specific functions.
+The `Vocal` component accepts a `commands` prop to map special recognition results to callbacks. That means you can define vocal commands to trigger specific functions.
 
 ```javascript
 const App = () => {
@@ -237,9 +213,7 @@ const App = () => {
 }
 ```
 
-`commands` object is a key/pair model where the `key` is the command to be caught by the recognition and the `value` is the callback triggered when the command is detected.  
-
-`key` is not case sensitive.
+The `commands` object is a key/pair model where the `key` is the command to be caught by the recognition and the `value` is the callback triggered when the command is detected. The `key` is not case sensitive.
 
 ```javascript
 const commands = {
@@ -249,11 +223,7 @@ const commands = {
 }
 ```
 
-The component utilizes a special hook called `useCommands` to respond to the commands.  
-The hook performs a fuzzy search to match approximate commands if needed. This allows to fix accidental typos or approximate recognition results.  
-To do so the hook uses [fuse.js](https://fusejs.io/) which implements an algorithm to find strings that are approximately equal to a given input. The score precision that distinguishes acceptable command-to-callback mapping from negative matching can be customized in the hook instantiation.
-
-fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive exact matching.
+The component uses a special hook called [`useCommands`](#usecommands-hook) to respond to the commands. For phrase keys, the hook performs a fuzzy search to match approximate commands, fixing accidental typos or approximate recognition results. It does so via [fuse.js](https://fusejs.io/), which finds strings approximately equal to a given input; the score precision that distinguishes an acceptable command-to-callback mapping from a negative match is customizable through the `precision` prop. fuse.js is an optional peer dependency — install it separately to enable fuzzy matching (see [Installation](#installation)). Without it, phrase commands fall back to case-insensitive exact matching.
 
 **Single-word command keys** (e.g. `red`, `submit`) use exact case-insensitive lookup. When the recognition returns a multi-word transcript, each word is tried individually so a command fires even when embedded in a phrase (e.g. _"I want some red"_ triggers `red`).
 
@@ -265,41 +235,128 @@ fuse.js is an optional peer dependency — install it separately to enable fuzzy
 
 **At most one command fires per utterance.** Alternatives and segments are scanned in order and matching stops at the first hit, so a single recognition event can trigger at most one command callback.
 
----
+Commands are evaluated only in single-shot mode; see [How it works](#how-it-works-single-shot-vs-continuous-mode).
 
-#### `Vocal` component API
+### Interim results & live captions
 
-| Props         | Type              | Default              | Description                                                                                     |
-| ------------- | ----------------- | -------------------- | ----------------------------------------------------------------------------------------------- |
-| commands        | object            | null                 | Callbacks to be triggered when specified commands are detected by the recognition               |
-| lang            | string            | 'en-US'              | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
-| grammars        | SpeechGrammarList | null                 | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
-| timeout         | number            | 3000                 | Time in ms to wait before discarding the recognition. Not applied in continuous mode, where the session is governed by `silenceTimeout` or an explicit stop. Changing this value during an active session takes effect the next time the timer re-arms. |
-| precision       | number            | 0.4                  | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word commands always use exact lookup. |
-| maxAlternatives | number            | 1                    | Maximum number of recognition alternatives per segment. Setting this to 3–5 lets the engine surface the correct word as a secondary transcript, which is useful for handling homophones (e.g. _blue_ / _blew_). |
-| continuous      | boolean           | false                | Keep the recognition session open after each result. The session accumulates transcript across segments and stops when the button is clicked again or `silenceTimeout` expires. Commands are not evaluated in continuous mode. |
-| interimResults  | boolean           | false                | Emit provisional (non-final) transcripts through `onResult` as the user is still speaking, enabling live captions. Each result event carries `event.results[event.resultIndex].isFinal` so consumers can distinguish interim from final text. In non-continuous mode the session is not discarded on an interim result — only the final result ends it (and evaluates commands). |
-| engine          | SpeechEngineFactory | undefined           | Custom speech recognition backend (a `SpeechEngineFactory`, typically built with `createEngine`). When omitted, the built-in Web Speech API engine is used. Lets you drive a cloud/on-device STT service and brings recognition to browsers without `SpeechRecognition`. See [Custom speech engines](#custom-speech-engines). **Memoize it** — a fresh factory identity tears down and rebuilds the recognition instance. |
-| silenceTimeout  | number            | null                 | When `continuous` is true, automatically stop the session after this many ms of silence following the last detected speech (the `speechend` event). `null` or `0` disables auto-stop (button click required). A change during an active session takes effect when the silence timer next re-arms (on the next `speechend`); a countdown already in progress keeps its original deadline, so switching to `null`/`0` does not cancel an auto-stop that is already pending until speech resumes. |
-| style         | object            | null                 | Styles of the root element if className is not specified                                        |
-| className     | string            | null                 | Class of the root element                                                                       |
-| ariaLabel     | string            | 'start recognition'  | Accessible label for the default button                                                         |
-| outlineStyle  | string            | '2px solid'          | Focus outline style applied to the default button                                               |
-| onStart       | func              | null                 | Handler called when the recognition starts                                                      |
-| onEnd         | func              | null                 | Handler called when the recognition ends                                                        |
-| onSpeechStart | func              | null                 | Handler called when the speech starts                                                           |
-| onSpeechEnd   | func              | null                 | Handler called when the speech ends                                                             |
-| onResult      | func              | null                 | Handler called when a result is recognized                                                      |
-| onError       | func              | null                 | Handler called when an error occurs                                                             |
-| onNoMatch     | func              | null                 | Handler called when no result can be recognized                                                 |
-| onPermission  | func              | null                 | Handler called with the microphone `PermissionState` (`'granted'`/`'denied'`/`'prompt'`). Fires with the current state on mount — no `start()` needed — and again on every change. See [Microphone permission](#microphone-permission). |
-| signal        | AbortSignal       | null                 | Optional `AbortSignal` propagated to the underlying `start()` call. Aborting it cancels the in-flight start (e.g. while waiting for microphone permission). |
+Set `interimResults` to emit provisional (non-final) transcripts through `onResult` while the user is still speaking, enabling live captions. Each result event carries `event.results[event.resultIndex].isFinal`, so consumers can distinguish interim from final text. In non-continuous mode the session is **not** discarded on an interim result — only the final result ends it (and evaluates [commands](#vocal-commands)). Combine `interimResults` with `continuous` to keep captions flowing across segments; see [How it works](#how-it-works-single-shot-vs-continuous-mode).
 
-> :warning: **Memoize non-primitive props.** A non-memoized `grammars` (constructed inline, e.g. `<Vocal grammars={new SpeechGrammarList()} />`) gets a new identity on every render and tears down and rebuilds the recognition instance each time — aborting in-flight sessions and churning microphone permissions. A non-memoized `commands` object similarly forces `useCommands` to re-normalize and re-index its fuzzy matcher on every render. Wrap such props in `useMemo` so their reference stays stable.
+### Microphone permission
+
+Since `@untemps/vocal` 2.3, `react-vocal` surfaces the microphone permission state **without starting a recognition session** (no `getUserMedia` prompt). `useVocal` begins watching `navigator.permissions` at mount and exposes the result reactively as `permissionState` — and the `Vocal` component forwards it through the `onPermission` prop and the fourth argument of the [children function](#children-as-a-function). The value is `'granted'`, `'denied'`, `'prompt'`, or `null` while still unknown (or when the Permissions API is unavailable, e.g. some browsers or SSR). The process to actually grant microphone access is still managed automatically by the hook when a session starts.
+
+Use it to gate the UI before the user ever clicks — for example, to hide the button or show guidance when access is already denied:
+
+```javascript
+import { Vocal } from '@untemps/react-vocal'
+
+const App = () => (
+	<Vocal onPermission={(state) => console.log('microphone permission:', state)}>
+		{(start, stop, isStarted, permissionState) =>
+			permissionState === 'denied' ? (
+				<p>Microphone access is blocked — enable it in your browser settings.</p>
+			) : (
+				<button onClick={isStarted ? stop : start}>{isStarted ? 'Stop' : 'Start'}</button>
+			)
+		}
+	</Vocal>
+)
+```
+
+With the `useVocal` hook the same state is available directly:
+
+```javascript
+const [, { start, permissionState }] = useVocal('en-US')
+```
+
+### Error handling
+
+`onError` receives a structured `VocalError` object so consumers can branch on the error category without parsing low-level error names or messages:
+
+```javascript
+<Vocal
+	onError={(err) => {
+		if (err.type === 'permission-denied') {
+			showPermissionPrompt()
+		} else if (err.type === 'no-speech') {
+			hint('Try speaking louder')
+		} else {
+			console.error(err.original)
+		}
+	}}
+/>
+```
+
+The `VocalError` shape and the full type-to-source mapping table live in [`classifyError` & `VocalError`](#classifyerror--vocalerror).
+
+### Stable references & memoization
+
+> :warning: **Memoize non-primitive props and arguments.** `Vocal` and `useVocal` rebuild the underlying recognition instance whenever a non-primitive input changes identity, which aborts in-flight sessions and churns microphone permissions. This affects three inputs:
+>
+> - **`grammars`** — constructing it inline (`<Vocal grammars={new SpeechGrammarList()} />` or `useVocal(lang, new SpeechGrammarList())`) yields a fresh identity on every render and forces a teardown/rebuild cycle each time.
+> - **`commands`** — a fresh object forces [`useCommands`](#usecommands-hook) to re-normalize and re-index its fuzzy matcher on every render.
+> - **`engine`** — like `grammars`, a fresh factory identity tears down and rebuilds the recognition instance.
+>
+> Wrap each of these in `useMemo` (keyed on its inputs — e.g. the API key for an engine) so the reference stays stable across renders.
+
+### Browser & platform caveats
+
+- When the Web Speech API is unavailable, the `Vocal` component renders nothing. See [Requirements](#requirements) for the base support caveat and [`isSupported`](#issupported) for probing support ahead of time.
+- Some browsers support the `SpeechRecognition` API but not all the related APIs. For example, on iOS 14.5, browsers do not support the `SpeechGrammar`, `SpeechGrammarList`, and `Permissions` APIs. The lack of `SpeechGrammar` and `SpeechGrammarList` is handled by the underlying `@untemps/vocal` library, but you must deal with `Permissions` yourself (see [Microphone permission](#microphone-permission)).
+- A [custom speech engine](#custom-speech-engines) does not rely on `SpeechRecognition`, so it can bring recognition to browsers that lack it (e.g. Firefox).
+
+## API reference
+
+Every entry point is a **named export** — there is no default export. Import with braces:
+
+```typescript
+import { Vocal, useVocal, isSupported, createEngine, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
+```
+
+Value exports: `Vocal`, `useVocal`, `useCommands`, `classifyError`, `isSupported`, `createEngine`, `WebSpeechEngine`. Everything else is a type-only export (see [TypeScript types](#typescript-types)).
+
+### `<Vocal>` component
+
+#### Props
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `commands` | `CommandsMap \| null` | `null` | Map of vocal commands to callbacks. See [Vocal commands](#vocal-commands). |
+| `lang` | `string` | `'en-US'` | Language understood by the recognition ([BCP 47 language tag](https://tools.ietf.org/html/bcp47)). |
+| `grammars` | `SpeechGrammarList \| null` | `null` | Grammars understood by the recognition ([JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)). [Memoize it](#stable-references--memoization). |
+| `timeout` | `number` | `3000` | Time in ms to wait before discarding the recognition. Not applied in continuous mode, where the session is governed by `silenceTimeout` or an explicit stop. Changing this value during an active session takes effect the next time the timer re-arms. |
+| `silenceTimeout` | `number \| null` | `null` | When `continuous` is true, automatically stop the session after this many ms of silence following the last detected speech (the `speechend` event). `null` or `0` disables auto-stop (button click required). A change during an active session takes effect when the silence timer next re-arms (on the next `speechend`); a countdown already in progress keeps its original deadline, so switching to `null`/`0` does not cancel an auto-stop that is already pending until speech resumes. |
+| `precision` | `number` | `0.4` | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word commands always use exact lookup. See [Vocal commands](#vocal-commands). |
+| `maxAlternatives` | `number` | `1` | Maximum number of recognition alternatives per segment. Set to 3–5 for homophone tolerance. See [Vocal commands](#vocal-commands). |
+| `continuous` | `boolean` | `false` | Keep the recognition session open after each result. See [How it works](#how-it-works-single-shot-vs-continuous-mode). |
+| `interimResults` | `boolean` | `false` | Emit provisional (non-final) transcripts through `onResult`. See [Interim results & live captions](#interim-results--live-captions). |
+| `engine` | `SpeechEngineFactory` | `undefined` | Custom speech recognition backend. When omitted, the built-in Web Speech API engine is used. See [Custom speech engines](#custom-speech-engines) and [memoize it](#stable-references--memoization). |
+| `style` | `CSSProperties \| null` | `null` | Styles of the root element if `className` is not specified. |
+| `className` | `string \| null` | `null` | Class of the root element. |
+| `ariaLabel` | `string` | `'start recognition'` | Accessible label for the default button. |
+| `outlineStyle` | `string \| null` | `'2px solid'` | Focus outline style applied to the default button. |
+| `onStart` | `((event: Event) => void) \| null` | `null` | Handler called when the recognition starts. |
+| `onEnd` | `((event?: Event) => void) \| null` | `null` | Handler called when the recognition ends. |
+| `onSpeechStart` | `((event: Event) => void) \| null` | `null` | Handler called when the speech starts. |
+| `onSpeechEnd` | `((event: Event) => void) \| null` | `null` | Handler called when the speech ends. |
+| `onResult` | `OnResultCallback \| null` | `null` | Handler called when a result is recognized. Invoked as `onResult(bestAlternative, event)` — the best alternative is the **first** argument, the event is second. |
+| `onError` | `OnErrorCallback \| null` | `null` | Handler called with a structured `VocalError`. See [Error handling](#error-handling). |
+| `onNoMatch` | `((event: Event) => void) \| null` | `null` | Handler called when no result can be recognized. |
+| `onPermission` | `((state: PermissionState) => void) \| null` | `null` | Handler called with the microphone `PermissionState`. See [Microphone permission](#microphone-permission). |
+| `signal` | `AbortSignal \| null` | `null` | `AbortSignal` propagated to the underlying `start()` call. See [Cancelling a start in flight](#cancelling-a-start-in-flight). |
+
+#### Children as a function
+
+When `children` is a function, it receives exactly four arguments in this order:
+
+| Argument | Type | Description |
+| --- | --- | --- |
+| `start` | `() => void` | The function used to start the recognition. |
+| `stop` | `() => void` | The function used to stop the recognition. |
+| `isStarted` | `boolean` | A flag that indicates whether the recognition is started or not. |
+| `permissionState` | `PermissionState \| null` | Current microphone permission (`'granted'`/`'denied'`/`'prompt'`), tracked without starting a session. `null` until known or when the Permissions API is unavailable. See [Microphone permission](#microphone-permission). |
 
 ### `useVocal` hook
-
-#### Basic usage
 
 ```javascript
 import React, { useEffect, useState } from 'react'
@@ -358,7 +415,7 @@ const App = () => {
 }
 ```
 
----
+> The raw `result` event handler passed to `subscribe` is `(event, transcript, alternatives)` — event first — which is why the example above destructures `(_event, bestAlternative)`. This differs from the `onResult` **prop**, which is `(bestAlternative, event)`. See [Events](#events).
 
 #### Signature
 
@@ -366,18 +423,14 @@ const App = () => {
 useVocal(lang, grammars, maxAlternatives, continuous, interimResults, engine)
 ```
 
-| Args            | Type              | Default | Description                                                                                     |
-| --------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------- |
-| lang            | string            | 'en-US' | Language understood by the recognition [BCP 47 language tag](https://tools.ietf.org/html/bcp47) |
-| grammars        | SpeechGrammarList | null    | Grammars understood by the recognition [JSpeech Grammar Format](https://www.w3.org/TR/jsgf/)    |
-| maxAlternatives | number            | 1       | Maximum number of recognition alternatives per segment                                          |
-| continuous      | boolean           | false   | Keep the recognition session open after each result                                             |
-| interimResults  | boolean           | false   | Emit provisional (non-final) transcripts as the user is still speaking (live captions)          |
-| engine          | SpeechEngineFactory | undefined | Custom recognition backend (a `SpeechEngineFactory`). Omit to use the built-in Web Speech engine. See [Custom speech engines](#custom-speech-engines). |
-
-> :warning: **Memoize non-primitive arguments.** `useVocal` rebuilds its recognition instance whenever an argument changes identity. `grammars` and `engine` are non-primitive, so passing a fresh value each render — `useVocal(lang, new SpeechGrammarList())` or `useVocal(lang, null, 1, false, false, createGladiaEngine({ apiKey }))` — triggers a teardown/rebuild cycle on every render. Wrap such arguments in `useMemo` to keep their identity stable across renders.
-
----
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `lang` | `string` | `'en-US'` | Recognition language. Same semantics as the [`lang` prop](#props). |
+| `grammars` | `SpeechGrammarList \| null` | `null` | Recognition grammars. Same as the [`grammars` prop](#props); [memoize it](#stable-references--memoization). |
+| `maxAlternatives` | `number` | `1` | Maximum recognition alternatives per segment. Same as the [`maxAlternatives` prop](#props). |
+| `continuous` | `boolean` | `false` | Keep the session open after each result. See [How it works](#how-it-works-single-shot-vs-continuous-mode). |
+| `interimResults` | `boolean` | `false` | Emit provisional transcripts. See [Interim results & live captions](#interim-results--live-captions). |
+| `engine` | `SpeechEngineFactory` | `undefined` | Custom recognition backend. Omit to use the built-in Web Speech engine. See [Custom speech engines](#custom-speech-engines); [memoize it](#stable-references--memoization). |
 
 #### Return value
 
@@ -385,17 +438,17 @@ useVocal(lang, grammars, maxAlternatives, continuous, interimResults, engine)
 const [ref, { start, stop, abort, subscribe, unsubscribe, clean, isRecording, permissionState }]
 ```
 
-| Args            | Type                       | Description                                          |
-| --------------- | -------------------------- | ---------------------------------------------------- |
-| ref             | Ref                        | React ref to the underlying `@untemps/vocal` instance |
-| start           | func                       | Function to start the recognition. Accepts an optional `{ signal }` argument — an `AbortSignal` propagated to the underlying `start()` call. Returns a `Promise<void>` that resolves once the session starts and rejects with the original error on microphone/permission failures. |
-| stop            | func                       | Function to stop the recognition                     |
-| abort           | func                       | Function to abort the recognition                    |
-| subscribe       | func                       | Function to subscribe to recognition events          |
-| unsubscribe     | func                       | Function to unsubscribe to recognition events        |
-| clean           | func                       | Function to remove all event listeners and clean up the recognition instance |
-| isRecording     | bool                       | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
-| permissionState | `PermissionState \| null` | Reactive microphone permission state. See [Microphone permission](#microphone-permission). |
+| Field | Type | Description |
+| --- | --- | --- |
+| `ref` | `RefObject<VocalInstance \| null>` | React ref to the underlying `@untemps/vocal` instance. |
+| `start` | `(options?: { signal?: AbortSignal }) => Promise<void>` | Starts the recognition. Accepts an optional `{ signal }` — an `AbortSignal` propagated to the underlying `start()` call (see [Cancelling a start in flight](#cancelling-a-start-in-flight)). Returns a `Promise<void>` that resolves once the session starts and **rejects** with the original error on microphone/permission failures. |
+| `stop` | `() => void` | Stops the recognition. |
+| `abort` | `() => void` | Aborts the recognition. |
+| `subscribe` | `(eventType, handler) => void` | Subscribes to a recognition [event](#events). |
+| `unsubscribe` | `(eventType, handler?) => void` | Unsubscribes from a recognition [event](#events). |
+| `clean` | `() => void` | Removes all event listeners and cleans up the recognition instance. |
+| `isRecording` | `boolean` | Reactive flag mirroring whether a session is active. `true` between `start()` and the next `end`/`error` event. Updated optimistically on `start()` so the UI re-renders at click time. |
+| `permissionState` | `PermissionState \| null` | Reactive microphone permission state. See [Microphone permission](#microphone-permission). |
 
 #### Cancelling a start in flight
 
@@ -411,13 +464,11 @@ const [, { start }] = useVocal('en-US')
 start({ signal: controller.signal })
 ```
 
-**Behavior note** — the underlying `@untemps/vocal` library still swallows the `AbortError` internally (as of 2.2.0): the promise returned by `start()` resolves silently rather than rejecting (see [untemps/vocal#129](https://github.com/untemps/vocal/issues/129), where the reject-on-abort fix is targeted for the next major, 3.0.0). `react-vocal` compensates by tracking whether the `start` event actually fired during the call and rolling `isRecording` back to `false` whenever it did not — regardless of whether a signal was provided — so consumers of `<Vocal>` or `useVocal` do not need any extra handling. If you bypass the hook and access the underlying `VocalInstance` via the ref returned by `useVocal`, you must observe the `start` event yourself to know when recognition truly began.
+**Behavior note** — the underlying `@untemps/vocal` library still swallows the `AbortError` internally (as of 2.3.5), so `start()` resolves silently on abort rather than rejecting ([untemps/vocal#129](https://github.com/untemps/vocal/issues/129), with the reject-on-abort fix targeted for 3.0.0). `react-vocal` compensates by tracking whether the `start` event actually fired and rolling `isRecording` back to `false` when it did not, so consumers of `<Vocal>` or `useVocal` need no extra handling. Only if you bypass the hook and drive the underlying `VocalInstance` via `ref` must you observe the `start` event yourself.
 
 ### `useCommands` hook
 
-The `useCommands` hook is the same command-matching primitive used internally by the `Vocal` component. Export it directly when you build a custom UI on top of `useVocal` and want to reuse the matching logic instead of re-implementing it.
-
-#### Basic usage
+The `useCommands` hook is the same command-matching primitive used internally by the `Vocal` component. Use it directly when you build a custom UI on top of `useVocal` and want to reuse the matching logic instead of re-implementing it.
 
 ```javascript
 import { useVocal, useCommands } from '@untemps/react-vocal'
@@ -450,26 +501,20 @@ const App = () => {
 useCommands(commands, precision)
 ```
 
-| Args      | Type   | Default | Description                                                                                              |
-| --------- | ------ | ------- | -------------------------------------------------------------------------------------------------------- |
-| commands  | object | null    | A `{ key: callback }` map. Keys are lowercased internally. Callbacks receive `(rawInput, commandKey)`.   |
-| precision | number | 0.4     | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word keys use exact lookup. |
+| Argument | Type | Default | Description |
+| --- | --- | --- | --- |
+| `commands` | `CommandsMap \| null` | `undefined` | A `{ key: callback }` map (optional; omitting is treated as no commands). Keys are lowercased internally. Callbacks receive `(rawInput, commandKey)`. |
+| `precision` | `number` | `0.4` | Fuse.js score threshold for **phrase** command keys only (lower = stricter). Single-word keys use exact lookup. |
 
-#### Return value
+#### Return value & matching rules
 
-`useCommands` returns a `triggerCommand(rawInput)` function. Passing a transcript runs it against the commands map and invokes the matching callback if any, returning its result. Returns `null` when no command matches.
+`useCommands` returns a `triggerCommand(rawInput)` function. Passing a transcript runs it against the commands map and invokes the matching callback if any, returning its result. It returns `null` when no command matches (and a callback that itself returns `null` is treated as no-match and falls through).
 
-Matching rules:
+Matching, in order: single-word keys use exact case-insensitive lookup (each word of a multi-word transcript tried individually); phrase keys use Fuse.js fuzzy matching gated by `precision`; the first non-`null` callback result wins. See [Vocal commands](#vocal-commands) for the full precedence, homophone, and fuse.js-fallback semantics.
 
-- **Single-word keys** (e.g. `red`, `submit`): exact case-insensitive lookup, with each word of the input tried individually so a key fires even when embedded in a phrase (`I want some red` triggers `red`).
-- **Phrase keys** (e.g. `change the background color`): Fuse.js fuzzy matching against the joined multi-word transcript, gated by `precision`. A single-word transcript is never fuzzy-matched against a phrase key. fuse.js is loaded lazily; if it's not installed, the hook falls back to substring matching.
-- **Precedence** (mixed maps): an exact single-word utterance is tried first, then phrase fuzzy matching, then single words embedded in a multi-word transcript. The first command whose callback returns a non-`null` value wins; a `null` return is treated as no-match and falls through.
+### `isSupported`
 
-### Browser support flag
-
-#### Basic usage
-
-`isSupported` is a function that returns `true` when the browser supports the Web Speech API and the MediaDevices API that `@untemps/vocal` relies on. (The Permissions API is used at runtime to watch microphone permission, but it is not part of the support check.) It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
+`isSupported` returns `true` when the browser supports the Web Speech API and the MediaDevices API that `@untemps/vocal` relies on. (The Permissions API is used at runtime to watch microphone permission, but it is **not** part of the support check.) It is safe to call during server-side rendering — it returns `false` when `window` is undefined.
 
 ```javascript
 import { Vocal, isSupported } from '@untemps/react-vocal'
@@ -489,7 +534,70 @@ const engine = createGladiaEngine({ apiKey })
 isSupported(engine) // probes the engine's own support (microphone + transport) instead of SpeechRecognition
 ```
 
-### Custom speech engines
+### `classifyError` & `VocalError`
+
+`onError` (and `useVocal().start` rejections) surface a structured `VocalError` so consumers can branch on a stable category. See [Error handling](#error-handling) for the conceptual branching example.
+
+```typescript
+interface VocalError {
+	type: 'permission-denied' | 'no-speech' | 'network' | 'audio-capture' | 'service-not-allowed' | 'aborted' | 'unknown'
+	message: string
+	original: unknown
+}
+```
+
+Mapping rules:
+
+| `type` | Source |
+| --- | --- |
+| `permission-denied` | `SpeechRecognitionErrorEvent` `not-allowed` or `DOMException` `NotAllowedError` |
+| `no-speech` | `SpeechRecognitionErrorEvent` `no-speech` |
+| `network` | `SpeechRecognitionErrorEvent` `network` |
+| `audio-capture` | `SpeechRecognitionErrorEvent` `audio-capture` or `DOMException` `NotFoundError` / `NotReadableError` |
+| `service-not-allowed` | `SpeechRecognitionErrorEvent` `service-not-allowed` |
+| `aborted` | `SpeechRecognitionErrorEvent` `aborted` or `DOMException` `AbortError` |
+| `unknown` | Anything else (generic Errors, non-Error values) |
+
+The `classifyError(err)` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `useVocal().start({ signal })` call site.
+
+### Events
+
+Subscribe to these through `useVocal().subscribe` / `unsubscribe` (or the corresponding `on*` props on `<Vocal>`):
+
+| Event | Description |
+| --- | --- |
+| `audioend` | Fired when the user agent has finished capturing audio for recognition. |
+| `audiostart` | Fired when the user agent has started to capture audio for recognition. |
+| `end` | Fired when the recognition service has disconnected. |
+| `error` | Fired when a recognition error occurs. |
+| `nomatch` | Fired when the recognition service returns a final result with no significant recognition. |
+| `permission` | Fired with the current microphone `PermissionState` when first observed and on every change. The handler receives `(event, state)` where `state` is `'granted'`/`'denied'`/`'prompt'`. See [Microphone permission](#microphone-permission). |
+| `result` | Fired when the recognition service returns a result. The handler receives `(event, transcript, alternatives)` — **event first**. |
+| `soundend` | Fired when any sound — recognisable or not — has stopped being detected. |
+| `soundstart` | Fired when any sound — recognisable or not — has been detected. |
+| `speechend` | Fired when speech recognized by the recognition service has stopped being detected. |
+| `speechstart` | Fired when sound recognized by the recognition service as speech has been detected. |
+| `start` | Fired when the recognition service has begun listening to incoming audio. |
+
+> The raw `result` event handler signature is `(event, transcript, alternatives)` — event first — which is distinct from the `onResult` prop's `(bestAlternative, event)` order. Likewise the `permission` event handler receives `(event, state)`.
+
+### TypeScript types
+
+`@untemps/react-vocal` is written in TypeScript and ships full type declarations. The public surface is typed end-to-end:
+
+- **Component props** — `VocalProps`, `OnResultCallback`, `OnErrorCallback`
+- **Hook shapes** — `UseVocalActions`, `UseVocalReturn`, `CommandCallback`, `CommandsMap`, `TriggerCommand`
+- **Error classification** — `VocalError`, `VocalErrorType` (the [`classifyError`](#classifyerror--vocalerror) helper is a value export)
+- **`isSupported`** — a value export re-exported from `@untemps/vocal`
+- **Engine authoring** — `SpeechEngineFactory`, `SpeechEngineInstance`, `SpeechEngineContext`, `CreateVocalOptions`, `EngineBackend`, `EngineConnectContext`, `EngineSession` — re-exported from `@untemps/vocal`; see [Custom speech engines](#custom-speech-engines)
+
+```typescript
+import { Vocal, useVocal, isSupported, createEngine, type VocalProps, type CommandsMap } from '@untemps/react-vocal'
+```
+
+The optional TypeScript peer dependency is noted in [Installation](#installation).
+
+## Custom speech engines
 
 By default `Vocal` and `useVocal` drive the browser's Web Speech API. Pass an `engine` — any `SpeechEngineFactory` — to target a different backend instead: a cloud STT service (Gladia, Deepgram, OpenAI…) or an on-device model. Because a custom engine does not rely on `SpeechRecognition`, it also brings speech recognition to browsers that lack it (e.g. Firefox). Omitting `engine` keeps the built-in Web Speech engine, so existing code is unaffected.
 
@@ -519,17 +627,17 @@ const App = () => <Vocal engine={engine} lang="en-US" interimResults onResult={(
 
 The engine authoring surface is re-exported from `@untemps/vocal`, so you can build one without adding a second dependency:
 
-| Export            | Kind     | Description                                                                                                                                                                                                                 |
-| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `createEngine`    | function | Scaffolds a `SpeechEngineFactory` from a small backend (`isSupported?` + `connect`). It owns microphone acquisition, `AbortSignal` handling, the `fr-FR → fr` language reduction, transcript aggregation in continuous mode, and the `start`/`result`/`end`/`error` lifecycle — your backend implements only its transport. |
-| `WebSpeechEngine` | function | The built-in Web Speech engine factory — the default backend used when no `engine` is passed.                                                                                                                              |
-| _types_           | types    | `SpeechEngineFactory`, `SpeechEngineInstance`, `SpeechEngineContext`, `CreateVocalOptions`, `EngineBackend`, `EngineConnectContext`, `EngineSession` for engine authors.                                                    |
+| Export | Kind | Description |
+| --- | --- | --- |
+| `createEngine` | function | Scaffolds a `SpeechEngineFactory` from a small backend (`isSupported?` + `connect`). It owns microphone acquisition, `AbortSignal` handling, the `fr-FR → fr` language reduction, transcript aggregation in continuous mode, and the `start`/`result`/`end`/`error` lifecycle — your backend implements only its transport. |
+| `WebSpeechEngine` | function | The built-in Web Speech engine factory — the default backend used when no `engine` is passed. |
+| _types_ | types | `SpeechEngineFactory`, `SpeechEngineInstance`, `SpeechEngineContext`, `CreateVocalOptions`, `EngineBackend`, `EngineConnectContext`, `EngineSession` for engine authors. |
 
-> :warning: **Memoize the engine.** Like `grammars`, a fresh factory identity on every render tears down and rebuilds the recognition instance. Wrap it in `useMemo` keyed on its inputs (e.g. the API key).
+Wrap the engine in `useMemo` so its identity stays stable across renders — see [Stable references & memoization](#stable-references--memoization).
 
 See the [`@untemps/vocal` custom-engine guide](https://github.com/untemps/vocal#custom-speech-engines) for the full contract and additional reference backends.
 
-#### Example: a Gladia cloud engine
+### Example: Gladia cloud engine
 
 The [demo](./dev) wires a real [Gladia](https://gladia.io) engine behind this seam — it streams PCM16 audio to Gladia over a WebSocket (an `AudioWorklet` converts Float32 → PCM16 off the main thread) and maps Gladia's partial/final transcripts onto `onResult`:
 
@@ -544,101 +652,9 @@ const GladiaMic = ({ apiKey, lang }: { apiKey: string; lang: string }) => {
 }
 ```
 
-Run `yarn dev` and open the **Custom engine — Gladia** card to try it (bring your own [Gladia](https://gladia.io) API key). The key stays in the browser and is proxied through Vite for local convenience — in production, mint short-lived credentials server-side and never ship a raw key to the client.
+Serve the demo (see [Development](#development)) and open the **Custom engine — Gladia** card to try it (bring your own [Gladia](https://gladia.io) API key). The key stays in the browser and is proxied through Vite for local convenience — in production, mint short-lived credentials server-side and never ship a raw key to the client.
 
-### Events
-
-| Events      | Description                                                                               |
-| ----------- | ----------------------------------------------------------------------------------------- |
-| audioend    | Fired when the user agent has finished capturing audio for recognition                    |
-| audiostart  | Fired when the user agent has started to capture audio for recognition                    |
-| end         | Fired when the recognition service has disconnected                                       |
-| error       | Fired when a recognition error occurs                                                     |
-| nomatch     | Fired when the recognition service returns a final result with no significant recognition |
-| permission  | Fired with the current microphone `PermissionState` when first observed and on every change. The handler receives `(event, state)` where `state` is `'granted'`/`'denied'`/`'prompt'`. See [Microphone permission](#microphone-permission). |
-| result      | Fired when the recognition service returns a result                                       |
-| soundend    | Fired when any sound — recognisable or not — has stopped being detected                   |
-| soundstart  | Fired when any sound — recognisable or not — has been detected                            |
-| speechend   | Fired when speech recognized by the recognition service has stopped being detected        |
-| speechstart | Fired when sound recognized by the recognition service as speech has been detected        |
-| start       | fired when the recognition service has begun listening to incoming audio                  |
-
-### Microphone permission
-
-Since `@untemps/vocal` 2.2, `react-vocal` surfaces the microphone permission state **without starting a recognition session** (no `getUserMedia` prompt). `useVocal` begins watching `navigator.permissions` at mount and exposes the result reactively as `permissionState` — and the `Vocal` component forwards it through the `onPermission` prop and the fourth argument of the children function. The value is `'granted'`, `'denied'`, `'prompt'`, or `null` while still unknown (or when the Permissions API is unavailable, e.g. some browsers or SSR).
-
-Use it to gate the UI before the user ever clicks — for example, to hide the button or show guidance when access is already denied:
-
-```javascript
-import { Vocal } from '@untemps/react-vocal'
-
-const App = () => (
-	<Vocal onPermission={(state) => console.log('microphone permission:', state)}>
-		{(start, stop, isStarted, permissionState) =>
-			permissionState === 'denied' ? (
-				<p>Microphone access is blocked — enable it in your browser settings.</p>
-			) : (
-				<button onClick={isStarted ? stop : start}>{isStarted ? 'Stop' : 'Start'}</button>
-			)
-		}
-	</Vocal>
-)
-```
-
-With the `useVocal` hook the same state is available directly:
-
-```javascript
-const [, { start, permissionState }] = useVocal('en-US')
-```
-
-### Notes
-
-The process to grant microphone access permissions is automatically managed by the hook (internally used by the `Vocal`
-component).
-
-### Error classification
-
-`onError` receives a structured `VocalError` object so consumers can branch on the error category without parsing low-level error names or messages.
-
-```typescript
-interface VocalError {
-	type: 'permission-denied' | 'no-speech' | 'network' | 'audio-capture' | 'service-not-allowed' | 'aborted' | 'unknown'
-	message: string
-	original: unknown
-}
-```
-
-Mapping rules:
-
-| `type`                | Source                                                                              |
-| --------------------- | ----------------------------------------------------------------------------------- |
-| `permission-denied`   | `SpeechRecognitionErrorEvent` `not-allowed` or `DOMException` `NotAllowedError`     |
-| `no-speech`           | `SpeechRecognitionErrorEvent` `no-speech`                                           |
-| `network`             | `SpeechRecognitionErrorEvent` `network`                                             |
-| `audio-capture`       | `SpeechRecognitionErrorEvent` `audio-capture` or `DOMException` `NotFoundError` / `NotReadableError` |
-| `service-not-allowed` | `SpeechRecognitionErrorEvent` `service-not-allowed`                                 |
-| `aborted`             | `SpeechRecognitionErrorEvent` `aborted` or `DOMException` `AbortError`              |
-| `unknown`             | Anything else (generic Errors, non-Error values)                                    |
-
-Example:
-
-```javascript
-<Vocal
-	onError={(err) => {
-		if (err.type === 'permission-denied') {
-			showPermissionPrompt()
-		} else if (err.type === 'no-speech') {
-			hint('Try speaking louder')
-		} else {
-			console.error(err.original)
-		}
-	}}
-/>
-```
-
-The `classifyError` helper used internally is also exported for consumers who want to apply the same classification to errors caught at the `useVocal().start({ signal })` call site.
-
-### Testing
+## Testing
 
 The library has no dedicated injection prop — tests inject a custom vocal instance through standard vitest module mocking. Build a minimal `VocalInstance`-shaped object and return it from a mocked `createVocal`:
 
@@ -683,7 +699,7 @@ it('reacts to a recognized command', async () => {
 })
 ```
 
-The same pattern works for `useVocal`. There is no public prop or argument to swap the vocal instance — the module-level mock is the supported, stable entry point.
+The same pattern works for `useVocal`. There is no public prop or argument to swap the vocal instance — the module-level mock is the supported, stable entry point for both `Vocal` and `useVocal`.
 
 ## Development
 
@@ -697,9 +713,12 @@ yarn dev
 
 Contributions are warmly welcomed:
 
--   Fork the repository
--   Create a feature branch (preferred name convention: `[feature type]_[imperative verb]-[description of the feature]`)
--   Develop the feature AND write the tests (or write the tests AND develop the feature)
--   Commit your changes
-    using [Conventional Commits](https://www.conventionalcommits.org/)
--   Submit a Pull Request
+- Fork the repository
+- Create a feature branch (preferred name convention: `[feature type]_[imperative verb]-[description of the feature]`)
+- Develop the feature AND write the tests (or write the tests AND develop the feature)
+- Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/)
+- Submit a Pull Request
+
+## License
+
+[MIT](./LICENSE) © Vincent Le Badezet
