@@ -5,9 +5,11 @@
     React component and hook for speech recognition, with voice commands and pluggable STT engines
 </p>
 
-[![npm](https://img.shields.io/npm/v/@untemps/react-vocal?style=for-the-badge)](https://www.npmjs.com/package/@untemps/react-vocal)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/untemps/react-vocal/publish.yml?style=for-the-badge)](https://github.com/untemps/react-vocal/actions)
-[![Codecov](https://img.shields.io/codecov/c/github/untemps/react-vocal?style=for-the-badge)](https://codecov.io/gh/untemps/react-vocal)
+<p align="center">
+    <a href="https://www.npmjs.com/package/@untemps/react-vocal"><img src="https://img.shields.io/npm/v/@untemps/react-vocal?style=for-the-badge" alt="npm"/></a>
+    <a href="https://github.com/untemps/react-vocal/actions"><img src="https://img.shields.io/github/actions/workflow/status/untemps/react-vocal/publish.yml?style=for-the-badge" alt="GitHub Workflow Status"/></a>
+    <a href="https://codecov.io/gh/untemps/react-vocal"><img src="https://img.shields.io/codecov/c/github/untemps/react-vocal?style=for-the-badge" alt="Codecov"/></a>
+</p>
 
 <p align="center">
     🔴&nbsp;<strong><a href="https://react-vocal.vercel.app">LIVE DEMO</a></strong>&nbsp;🔴
