@@ -2,7 +2,7 @@
     <img src="assets/react-vocal.png" alt="react-vocal" height="150"/>
 </p>
 <p align="center">
-    A React component and hook to initiate a SpeechRecognition session
+    React component and hook for speech recognition, with voice commands and pluggable STT engines
 </p>
 
 ---
