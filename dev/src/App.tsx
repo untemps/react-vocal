@@ -34,14 +34,12 @@ export const App = () => {
 						Web Speech API + custom engines · React
 					</span>
 					<h1>
-						Add voice to any React UI, in <span className="accent">one component</span>.
+						Speech recognition for React, in <span className="accent">one component</span>.
 					</h1>
 					<p>
-						react-vocal turns speech recognition into a component and a hook — voice commands, live
-						dictation, custom buttons and typed error handling. The browser’s Web Speech API is the default,
-						but a pluggable engine seam lets you swap in a cloud or on-device STT backend — even where
-						SpeechRecognition is missing. Every card below is live; open “View source” to see the exact
-						code.
+						Voice commands, live dictation, custom buttons and typed errors — plus a pluggable engine seam
+						that swaps the browser’s Web Speech API for a cloud or on-device backend. Every card is live;
+						open “View source” for the code.
 					</p>
 					<div className="intro__meta">
 						<span>
