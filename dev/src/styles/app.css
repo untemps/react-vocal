@@ -174,7 +174,6 @@
 .intro h1 {
 	margin-top: var(--space-3);
 	font-size: var(--step-4);
-	max-width: 16ch;
 }
 .intro h1 .accent {
 	color: var(--brand-red);
