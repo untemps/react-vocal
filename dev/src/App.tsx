@@ -31,18 +31,21 @@ export const App = () => {
 				<section className="intro">
 					<span className="intro__eyebrow">
 						<span className="brand__dot" />
-						Web Speech API · React
+						Web Speech API + custom engines · React
 					</span>
 					<h1>
-						Add voice to any React UI, in <span className="accent">one component</span>.
+						Speech recognition for React,
+						<br />
+						in <span className="accent">one&nbsp;component</span>.
 					</h1>
 					<p>
-						react-vocal wraps the browser’s SpeechRecognition into a component and a hook — voice commands,
-						live dictation, custom buttons, pluggable cloud engines and typed error handling. Every card
-						below is live; open “View source” to see the exact code.
+						Voice commands, live dictation, custom buttons and typed errors — plus a pluggable engine seam
+						that swaps the browser’s Web Speech API for a cloud or on-device backend.
 					</p>
 					<div className="intro__meta">
-						<span>Click a mic and speak — recognition happens in your browser.</span>
+						<span>
+							Click a mic and speak — recognition runs in your browser, or in a cloud engine you plug in.
+						</span>
 						<a
 							href="https://github.com/untemps/react-vocal#readme"
 							target="_blank"

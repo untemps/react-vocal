@@ -15,7 +15,7 @@ export const SupportCard = ({ supported }: { supported: boolean }) => (
 	<Card
 		title="Feature detection"
 		badge="isSupported"
-		description="Before showing a mic, call isSupported(). It returns true only when the browser exposes the Web Speech API and microphone access — the single check that drives graceful degradation across this whole page."
+		description="Before showing a mic, call isSupported(). With no argument it returns true only when the browser exposes the Web Speech API and microphone access; pass a custom engine factory and it probes that backend instead. The single check that drives graceful degradation across this whole page."
 		code={CODE}
 	>
 		<div className="card__stage card__stage--center">
@@ -23,8 +23,9 @@ export const SupportCard = ({ supported }: { supported: boolean }) => (
 				{supported ? 'Supported in this browser' : 'Not available in this browser'}
 			</Pill>
 			<p className="hint">
-				Works in Chrome, Edge and Safari. Firefox doesn’t ship <code>SpeechRecognition</code>, and every browser
-				needs a secure context (HTTPS, or localhost).
+				Works in Chrome, Edge and Safari. Firefox doesn’t ship <code>SpeechRecognition</code> — but a custom
+				engine (see the Gladia card) brings recognition there too. Every browser still needs a secure context
+				(HTTPS, or localhost).
 			</p>
 		</div>
 	</Card>
