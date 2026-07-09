@@ -34,12 +34,11 @@ export const App = () => {
 						Web Speech API + custom engines · React
 					</span>
 					<h1>
-						Speech recognition for React, in <span className="accent">one component</span>.
+						Speech recognition for React, in <span className="accent">one&nbsp;component</span>.
 					</h1>
 					<p>
 						Voice commands, live dictation, custom buttons and typed errors — plus a pluggable engine seam
-						that swaps the browser’s Web Speech API for a cloud or on-device backend. Every card is live;
-						open “View source” for the code.
+						that swaps the browser’s Web Speech API for a cloud or on-device backend.
 					</p>
 					<div className="intro__meta">
 						<span>
