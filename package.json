@@ -6,15 +6,21 @@
 	"license": "MIT",
 	"description": "React component and hook for speech recognition, with voice commands and pluggable STT engines",
 	"keywords": [
-		"Web Speech API",
-		"SpeechRecognition",
-		"speech",
+		"react",
+		"react-component",
+		"react-hook",
+		"speech-recognition",
 		"speech-to-text",
-		"React",
-		"ReactJS",
-		"component",
+		"voice-commands",
+		"voice-recognition",
+		"web-speech-api",
+		"stt",
+		"dictation",
+		"microphone",
+		"typescript",
+		"speech",
 		"hook",
-		"javascript"
+		"component"
 	],
 	"private": false,
 	"publishConfig": {
