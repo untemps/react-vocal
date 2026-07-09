@@ -354,7 +354,7 @@ export const Vocal = ({
 							padding: 0,
 							cursor: 'pointer',
 							...(style ?? {}),
-							outline: isFocused && outlineStyle ? outlineStyle : 'none',
+							...(outlineStyle ? { outline: isFocused ? outlineStyle : 'none' } : {}),
 						}
 			}
 			className={className ?? undefined}

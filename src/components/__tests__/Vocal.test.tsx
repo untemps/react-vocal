@@ -332,6 +332,18 @@ describe('Vocal', () => {
 		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline: outlineStyle })
 	})
 
+	it('keeps the native focus ring when outlineStyle is null', () => {
+		const { getByTestId } = render(getInstance({ outlineStyle: null }))
+		fireEvent.focus(getByTestId('__vocal-root__'))
+		expect(getByTestId('__vocal-root__')).not.toHaveStyle({ outline: 'none' })
+	})
+
+	it('preserves a consumer style.outline when outlineStyle is null', () => {
+		const outline = '2px dotted green'
+		const { getByTestId } = render(getInstance({ outlineStyle: null, style: { outline } }))
+		expect(getByTestId('__vocal-root__')).toHaveStyle({ outline })
+	})
+
 	it('not uses style when className is set', () => {
 		const { getByTestId } = render(getInstance({ className: 'foo' }))
 		expect(getByTestId('__vocal-root__')).not.toHaveStyle({ cursor: 'pointer' })
